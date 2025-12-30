@@ -4,8 +4,12 @@ import { Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import FloatingInput from '../input/FloatingInput';
+import { createTheme, FloatingLabel } from 'flowbite-react';
 
 export default function Login() {
+    const customTheme = createTheme({
+
+    })
     const [showPassword, setShowPassword] = useState(false);
     const { signIn } = useAuth();
 
@@ -52,7 +56,6 @@ export default function Login() {
                             onChange={handleChange}
                             label="Email"
                         />
-
 
                         <div className="mb-10">
 

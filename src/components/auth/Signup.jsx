@@ -1,6 +1,6 @@
 import logo from '../../assets/logo.png';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Flag } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import FloatingInput from '../input/FloatingInput';
@@ -8,6 +8,7 @@ import FloatingInput from '../input/FloatingInput';
 export default function Signup() {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const { signUp } = useAuth();
     const navigate = useNavigate();
@@ -26,6 +27,8 @@ export default function Signup() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        setLoading(true);
 
         // const emailRegex = /^[^\s@]+@1cloudng\.com$/;
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,}$/;
@@ -55,6 +58,8 @@ export default function Signup() {
             navigate('/login')
         } catch (error) {
             alert(error.message);
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -75,13 +80,14 @@ export default function Signup() {
                     <h1 className='text-[#26599F] font-bold text-[40px] mb-2'>Sign Up</h1>
                     <p className='font-bold text-[20px] mb-8'>See Your Growth and Get Support!</p>
 
-                    <form action="" onSubmit={handleSubmit}>
+                    <form action="" method='post' onSubmit={handleSubmit}>
                         <FloatingInput
                             type="text"
                             name='full_name'
                             value={form.full_name}
                             onChange={handleChange}
                             label="Name"
+                            // autoComplete='off'
                         />
 
                         <FloatingInput
@@ -90,6 +96,7 @@ export default function Signup() {
                             value={form.email}
                             onChange={handleChange}
                             label="Email"
+                            // autoComplete='off'
                         />
 
                         <div className="mb-4">
@@ -102,6 +109,7 @@ export default function Signup() {
                                     value={form.password}
                                     onChange={handleChange}
                                     label="Password"
+                                    // autoComplete='new-password'
                                 />
 
                                 <button
@@ -124,6 +132,7 @@ export default function Signup() {
                                     value={form.confirm}
                                     onChange={handleChange}
                                     label="Confirm Password"
+                                    // autoComplete='new-password'
                                 />
 
                                 <button
@@ -137,14 +146,12 @@ export default function Signup() {
                         </div>
 
 
-                        <button type='submit' className='w-full mb-3 bg-[#26599F] text-white font-bold text-[24px] border-blue-600 hover:bg-blue-900 focus:ring-blue-500 py-2 rounded-xl' size='lg'>Sign Up</button>
+                        <button type='submit' className='w-full mb-3 bg-[#26599F] text-white font-bold text-[24px] border-blue-600 hover:bg-blue-900 focus:ring-blue-500 py-2 rounded-xl' size='lg' disabled={loading}>{loading ? 'Signing Up...' : 'Sign Up'}</button>
 
                         <p className='text-center'>Already have an account? <Link to="/login" className='text-[#26599F] font-bold'>Login</Link> </p>
                     </form>
 
                 </div>
-
-
 
             </div>
         </div>

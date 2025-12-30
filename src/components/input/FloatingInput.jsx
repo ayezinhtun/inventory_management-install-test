@@ -5,6 +5,7 @@ export default function FloatingInput({
   onChange,
   label,
   required = true,
+//   autoComplete = "off"
 }) {
   return (
     <div className="relative mb-5">
@@ -15,6 +16,7 @@ export default function FloatingInput({
         onChange={onChange}
         placeholder=" "
         required={required}
+        // autoComplete={autoComplete}
         className="peer block w-full text-[18px] text-[#545454] font-bold rounded-lg border border-gray-300 bg-white shadow-sm px-2 py-3 placeholder-transparent focus:outline-none focus:ring-2 focus:ring-[#26599F] focus:border-[#26599F] "
       />
 
