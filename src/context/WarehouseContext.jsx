@@ -20,7 +20,10 @@ export const getWarehouse = async () => {
             name,
             description,
             region_id,
-            regions(name)
+            regions (
+                id,
+                name
+            )
         `)
         .order('created_at', {ascending: false})
 

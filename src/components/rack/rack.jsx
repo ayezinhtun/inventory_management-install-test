@@ -1,19 +1,29 @@
-import { ChevronDown, Edit2, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Edit2, Trash2 } from "lucide-react";
+import { useState } from "react";
 
-export default function RackComponent({backgroundColor, title}) {
+
+export default function RackComponent({ rack }) {
+    const [collapsed, setCollapsed] = useState({});
+
     return (
-        <div className="">
+        <div>
             <div
                 className="text-white p-4 flex items-center justify-between"
-                style={{ backgroundColor }}
+                style={{ backgroundColor: rack.color || '#3b82f6' }}
             >
                 <div className="flex items-center">
-                    <div className="me-2 cursor-pointer">
-                        <ChevronDown />
+                    <div
+                        className="me-2 cursor-pointer"
+                        onClick={() => setCollapsed(prev => ({
+                            ...prev,
+                            [rack.id]: !prev[rack.id]
+                        }))}
+                    >
+                        {collapsed[rack.id] ? <ChevronDown /> : <ChevronUp />}
                     </div>
                     <div>
-                        <h3 className="font-bold">{title}</h3>
-                        <p className="text-sm">42U | Server | Active | Location A</p>
+                        <h3 className="font-bold">{rack.name}</h3>
+                        <p className="text-sm">{rack.size_u} U | {rack.type} | {rack.status} <br /> {rack.warehouse.name} | {rack.warehouse.region_name}</p>
                     </div>
                 </div>
                 <div className="flex items-center">
@@ -22,37 +32,24 @@ export default function RackComponent({backgroundColor, title}) {
                 </div>
             </div>
 
-            <div className="flex shadow-sm flex-col">
-                <div
-                    className="group relative flex items-center h-8 border border-gray-300 group"
-                    style={{ backgroundColor: "white", color: "black" }}
-                >
-                    <div className="w-6 text-right pr-1">3</div>
-                    {/* <div className="flex-1 flex items-center justify-center cursor-pointer">
-                        <span className="absolute inset-0 flex items-center justify-center text-[#26599F] font-bold text-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer z-10">+</span>
-                    </div> */}
-                </div>
+            {!collapsed[rack.id] && (
+                <div className="flex shadow-sm flex-col">
+                    {Array.from({ length: rack.size_u }, (_, i) => {
+                        const u = rack.size_u - i;
+                        return (
+                            <div
+                                key={u}
+                                className="group relative flex items-center h-8 border border-gray-300 group"
+                                style={{ backgroundColor: "white", color: "black" }}
+                            >
+                                <div className="w-6 text-right pr-1">{u}</div>
+                            </div>
+                        )
+                    })}
 
-                <div
-                    className="group relative flex items-center h-8 border border-gray-300 group"
-                    style={{ backgroundColor: "white", color: "black" }}
-                >
-                    <div className="w-6 text-right pr-1">2</div>
-                    {/* <div className="flex-1 flex items-center justify-center cursor-pointer">
-                        <span className="absolute inset-0 flex items-center justify-center text-[#26599F] font-bold text-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer z-10">+</span>
-                    </div> */}
                 </div>
+            )}
 
-                <div
-                    className="relative flex items-center h-8 border border-gray-300 group"
-                    style={{ backgroundColor: "white", color: "black" }}
-                >
-                    <div className="w-6 text-right pr-1">1</div>
-                    {/* <div className="flex-1 flex items-center justify-center cursor-pointer">
-                        <span className="absolute inset-0 flex items-center justify-center text-[#26599F] font-bold text-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer z-10">+</span>
-                    </div> */}
-                </div>
-            </div>
         </div>
 
     )

@@ -1,11 +1,29 @@
 import { CirclePlus, Download } from "lucide-react"
 import RackComponent from "../components/rack/rack"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import AddRack from "../components/rack/addrack";
+import { fetchRack } from "../context/RackContext";
 
 export default function Rack() {
 
     const [showAddModal, setShowAddModal] = useState(false);
+
+
+    const [racks, setRacks] = useState([]);
+
+    const rackData = async () => {
+        try {
+            const data = await fetchRack();
+            setRacks(data);
+        } catch (error) {
+            console.log('Error in fetch rack', error);
+        }
+    };
+
+
+    useEffect(() => {
+        rackData();
+    }, [])
 
     return (
 
@@ -30,15 +48,23 @@ export default function Rack() {
             </div>
 
             <div className="grid grid-cols-3 gap-4">
-                <RackComponent backgroundColor="#51ae7a" title="Rack01" />
-                <RackComponent backgroundColor="#329fcd" title="Rack02" />
-                <RackComponent backgroundColor="#CD6032" title="Rack03" />
+                {racks.length === 0 ? (
+                    <div className="col-span-3 text-center text-gray-500 py-10">
+                        No racks found
+                    </div>
+                ) : (
 
+                    racks.map((rack) => (
+                        <RackComponent key={rack.id} rack={rack} />
+                    ))
+
+                )}
             </div>
 
             {showAddModal &&
-                <AddRack onClose={() => setShowAddModal(false)}/>
+                <AddRack onClose={() => setShowAddModal(false)} onAdd={rackData} />
             }
+
         </div>
     )
 }
