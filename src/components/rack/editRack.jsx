@@ -1,36 +1,55 @@
 import { CircleX, Cross, Warehouse, X } from "lucide-react";
-import { FloatingLabel, Textarea, Button } from "flowbite-react";
-import { useEffect, useState } from "react";
-import { createRack } from "../../context/RackContext";
+import { Button } from "flowbite-react";
+import { useState } from "react";
+import { updateRack } from "../../context/RackContext";
+import { supabase } from "../../../supabase/supabase-client";
 
-export default function AddRack({ onClose, onAdd, warehouse}) {
+export default function EditRack({ onClose, rack, warehouse, onUpdate }) {
 
     const [form, setForm] = useState({
-        name: '',
-        size_u: '42',
-        type: 'mixed',
-        status: 'active',
-        color: '#3b82f6',
-        notes: '',
-        warehouse_id: ''
+        name: rack.name || '',
+        size_u: rack.size_u || '',
+        type: rack.type || '',
+        status: rack.status || '',
+        color: rack.color || '',
+        notes: rack.notes || '',
+        warehouse_id: rack.warehouse_id || ''
     })
 
     const handleChange = (e) => {
-        const {name, value} = e.target;
-        setForm({...form, [name]: value})
+        const { name, value } = e.target;
+
+        setForm({ ...form, [name]: value })
     }
 
-    const handleSubmit = async(e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        try{
-            await createRack(form);
-            setForm({name: '', size_u: '', type: '', status: '', color: '', notes: '', warehouse_id: ''})
-            alert('Rack Added Success');
-            onAdd();
+
+        try {
+            //fetch devices in this rack
+            const { data: occupiedDevices } = await supabase
+                .from("inventorys")
+                .select("start_unit, height")
+                .eq("rack_id", rack.id)
+
+            const highestUsedUnit = occupiedDevices.length
+                ? Math.max(...occupiedDevices.map(d => d.start_unit + d.height - 1))
+                : 0;
+
+            if (form.size_u < highestUsedUnit) {
+                alert(
+                    `Cannot reduce rack size. The highest occupied unit is ${highestUsedUnit}U.`
+                );
+                return;
+            }
+
+            await updateRack(rack.id, form);
+            alert('Rack Updated Success!');
+            onUpdate();
             onClose();
-        }catch(error) {
-            console.log('Error Adding racks', error);
-            alert('Failed to add Rack')
+        } catch (error) {
+            console.log('Error in update rack', error);
+            alert('Failed to update rack')
         }
     }
 
@@ -41,7 +60,7 @@ export default function AddRack({ onClose, onAdd, warehouse}) {
 
             <div className="relative z-10 bg-white backdrop-blur-md w-[700px] rounded-lg shadow-xl rounded-md">
                 <div className="flex items-center justify-between p-4 rounded-t-md border-b border-gray-200">
-                    <h1 className="text-xl font-bold">Add Rack</h1>
+                    <h1 className="text-xl font-bold">Edit Rack</h1>
                     <X onClick={onClose} className="w-6 h-6 text-gray-600 cursor-pointer hover:text-red-500" />
                 </div>
                 <form className="p-6" onSubmit={handleSubmit}>
@@ -76,7 +95,7 @@ export default function AddRack({ onClose, onAdd, warehouse}) {
                     <div className="grid grid-cols-2 gap-4">
                         <div className="mb-4">
                             <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Size (U) <span className="text-red-500">*</span></label>
-                            <select name="size_u" value={form.size_u} onChange={handleChange} id=""
+                            <select name="size_u" value={form.size_u} onChange={handleChange}
                                 className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
                             >
                                 <option value="22">22U</option>
@@ -86,7 +105,7 @@ export default function AddRack({ onClose, onAdd, warehouse}) {
 
                         <div className="mb-4">
                             <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Type <span className="text-red-500">*</span></label>
-                            <select name="type" value={form.type} onChange={handleChange} id=""
+                            <select name="type" value={form.type} onChange={handleChange}
                                 className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
                             >
                                 <option value="mixed">Mixed</option>
@@ -98,7 +117,7 @@ export default function AddRack({ onClose, onAdd, warehouse}) {
                     <div className="grid grid-cols-2 gap-4">
                         <div className="mb-4">
                             <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Status <span className="text-red-500">*</span></label>
-                            <select name="status" value={form.status} onChange={handleChange} id=""
+                            <select name="status" value={form.status} onChange={handleChange}
                                 className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
                             >
                                 <option value="active">Active</option>
@@ -135,7 +154,7 @@ export default function AddRack({ onClose, onAdd, warehouse}) {
                         type="submit"
                         className="w-full bg-[#26599F] text-lg"
                     >
-                        Add
+                        Edit
                     </Button>
                 </form>
             </div>

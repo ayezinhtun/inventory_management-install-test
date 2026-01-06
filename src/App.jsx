@@ -36,9 +36,9 @@ function App() {
           <Route path="/customer" element={<Customer />} />
           <Route path="/user" element={<UserMangement />} />
           <Route path="/audit" element={<Audit />} />
-          <Route path="/inventory-detail" element={<InventoryDetail />} />
+          <Route path="/inventory-detail/:id" element={<InventoryDetail />} />
           <Route path="/create-inventory" element={<CreateInventory />} />
-          <Route path="/edit-inventory" element={<EditInventory />} />
+          <Route path="/edit-inventory/:id" element={<EditInventory />} />
           <Route path="/notification" element={<Notification />} />
         </Route>
       </Route>

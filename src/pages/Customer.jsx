@@ -1,19 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CardComponent from "../components/card/crad";
-import { CirclePlus, Delete, Download, Edit, ListFilter, MapPin, Pen, Search, Trash2, UsersRound } from "lucide-react"
+import { CirclePlus, Contact, Delete, Download, Edit, ListFilter, MapPin, Pen, Search, Trash2, UsersRound } from "lucide-react"
 import Pagination from "../components/pagination/pagination";
 import { Checkbox, Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
 import { Dropdown, DropdownItem } from "flowbite-react";
 import AddCustomer from "../components/customer/addCustomer";
 import EditCustomer from "../components/customer/editCustomer";
+import { deleteCustomer, getCustomer } from "../context/CustomerContext";
+import { exportToCSV } from "../utils/exportUtils";
 
 
 export default function Customer() {
-
-    const customers = [
-        { name: "Aye Aye", comapny_name: "1cloud", contact_email: "aye@gmail.com", contact_number: "09 123-456-789", address: "Yangon" },
-        { name: "Aye Aye", comapny_name: "1cloud", contact_email: "aye@gmail.com", contact_number: "09 123-456-789", address: "Yangon" },
-    ];
 
     // for search in the input search
     const [searchItem, setSearchItem] = useState("");
@@ -25,15 +22,75 @@ export default function Customer() {
     // for show add form modal
     const [showModal, setShowModal] = useState(false);
 
-    //for show edit form modal
+
+
+    // for fetch customer define state
+    const [customers, setCustomers] = useState([]);
+
+    const [loading, setLoading] = useState(false);
+
+    //for edit 
+    const [selectedCustomer, setSelectedCustomer] = useState([]);
+
     const [showEditModal, setShowEditModal] = useState(false);
+
+    //for fetch customer
+    const fetchCustomer = async () => {
+        setLoading(true);
+        try {
+            const data = await getCustomer();
+
+            setCustomers(data);
+        } catch(error) {
+            console.error('Error fetching in Customer', error);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    // for delete customer
+    const handleDelete = async (id) => {
+        const isConfirmed = window.confirm('Are you sure to dlete this customer');
+
+
+        if (!isConfirmed) return;
+
+        try {
+            await deleteCustomer(id);
+            fetchCustomer();
+        } catch (error) {
+            console.error(error);
+            alert('Failed to delete customer');
+        }
+    }
+
+
+    // for edit
+    const handleEdit = (customer) => {
+        setSelectedCustomer(customer);
+        setShowEditModal(true)
+    }
+
+    //for export
+    const handleExportCSV = () => {
+        const data = customers.map(c => ({
+            Name: c.contact_person, 
+            "Company Name": c.company_name, 
+            "Contact Email": c.contact_email, 
+            "Contact Number": c.contact_number, 
+            "Address": c.address
+        }));
+
+        const headers = ['Name', 'Company Name', 'Contact Email', 'Contact Number', 'Address'];
+        exportToCSV(data, `customer-${new Date().toISOString().slice(0, 10)}.csv`, headers);
+    }
 
 
     // this is for search and filter
     const filteredCustomers = customers.filter(customer =>
-        customer.name.toLowerCase().includes(searchItem.toLowerCase()) &&
+        customer.contact_person.toLowerCase().includes(searchItem.toLowerCase()) &&
 
-        (nameFilter === "" || customer.name === nameFilter)
+        (nameFilter === "" || customer.contact_person === nameFilter)
     )
 
     // this is for pagination
@@ -45,6 +102,11 @@ export default function Customer() {
     const currentCustomers = filteredCustomers.slice(indexOfFirst, indexOfLast);
 
     const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
+
+
+    useEffect(() => {
+        fetchCustomer();
+    }, [])
 
     return (
         <div>
@@ -82,12 +144,13 @@ export default function Customer() {
                             <span>Add New Customer</span>
                         </div>
 
-                        <div
+                        <button
+                            onClick={handleExportCSV}
                             className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-[#26599F] hover:bg-blue-900 hover:border-none hover:outline-none'
                         >
                             <Download className="w-5 h-5 mr-2" />
                             <span>Export</span>
-                        </div>
+                        </button>
                     </div>
 
 
@@ -107,7 +170,7 @@ export default function Customer() {
                                 >
                                     All
                                 </DropdownItem>
-                                {Array.from(new Set(customers.map(r => r.name))).map((name, idx) => (
+                                {Array.from(new Set(customers.map(r => r.contact_person))).map((name, idx) => (
                                     <DropdownItem
                                         key={idx}
                                         onClick={() => {
@@ -118,7 +181,7 @@ export default function Customer() {
                                         {name}
                                     </DropdownItem>
                                 ))}
-                                
+
 
                             </Dropdown>
                         </div>
@@ -144,27 +207,48 @@ export default function Customer() {
                             </TableRow>
                         </TableHead>
                         <TableBody className="divide-y divide-gray-200">
-                            {currentCustomers.map((customer, index) => {
-                                return (
-                                    <TableRow key={index} className="bg-white dark:border-gray-700 dark:bg-gray-800">
-                                        <TableCell className="p-4">
-                                            <Checkbox />
-                                        </TableCell>
-                                        <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                                            {customer.name}
-                                        </TableCell>
-                                        <TableCell>{customer.comapny_name}</TableCell>
-                                        <TableCell>{customer.contact_email}</TableCell>
-                                        <TableCell>{customer.contact_number}</TableCell>
-                                        <TableCell>{customer.address}</TableCell>
+                            {loading ? (
+                                <TableRow>
+                                    <TableCell colSpan={5} className="text-center py-5">
+                                        Loading...
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
 
-                                        <TableCell className="flex items-center space-x-3">
-                                            <Pen className="text-[#26599F]" onClick={() => setShowEditModal(true)} />
-                                            <Trash2 className="text-red-500" />
+                                currentCustomers.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell
+                                            colSpan={5}
+                                            className="text-center"
+                                        >
+                                            No Customer found
                                         </TableCell>
                                     </TableRow>
+                                ) : (
+                                    currentCustomers.map((customer, index) => {
+                                        return (
+                                            <TableRow key={index} className="bg-white dark:border-gray-700 dark:bg-gray-800">
+                                                <TableCell className="p-4">
+                                                    <Checkbox />
+                                                </TableCell>
+                                                <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                                    {customer.contact_person}
+                                                </TableCell>
+                                                <TableCell>{customer.company_name}</TableCell>
+                                                <TableCell>{customer.contact_email}</TableCell>
+                                                <TableCell>{customer.contact_number}</TableCell>
+                                                <TableCell>{customer.address}</TableCell>
+
+                                                <TableCell className="flex items-center space-x-3">
+                                                    <Pen className="text-[#26599F]" onClick={() => handleEdit(customer)} />
+                                                    <Trash2 className="text-red-500" onClick={() => handleDelete(customer.id)} />
+                                                </TableCell>
+                                            </TableRow>
+                                        )
+                                    })
                                 )
-                            })}
+
+                            )}
                         </TableBody>
                     </Table>
                 </div>
@@ -178,11 +262,12 @@ export default function Customer() {
             </div>
 
             {showModal &&
-                <AddCustomer onClose={() => setShowModal(false)} />
+                <AddCustomer onClose={() => setShowModal(false)} onAdd={fetchCustomer} />
             }
 
-            {showEditModal &&
-                <EditCustomer onClose={() => setShowEditModal(false)} />
+            {showEditModal && selectedCustomer && (
+                <EditCustomer customer={selectedCustomer} onClose={() => setShowEditModal(false)} onUpdate={fetchCustomer}/>
+            )
             }
         </div>
     )

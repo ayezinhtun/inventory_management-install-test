@@ -31,6 +31,7 @@ export default function AddRegion({ onClose , onAdd }) {
         }
     }
 
+
     return (
         <div className="fixed inset-0 flex items-center justify-center z-50">
 
@@ -39,7 +40,7 @@ export default function AddRegion({ onClose , onAdd }) {
             <div className="relative z-10 bg-white backdrop-blur-md w-[600px] rounded-lg shadow-xl rounded-md">
                 <div className="flex items-center justify-between border-b border-gray-200 p-4 rounded-t-md">
                     <h1 className="text-xl font-bold">Add Region</h1>
-                    <CircleX onClick={onClose} className="w-6 h-6 text-gray-600 cursor-pointer hover:text-red-500" />
+                    <X onClick={onClose} className="w-6 h-6 text-gray-600 cursor-pointer hover:text-red-500" />
                 </div>
                 <form className="p-6" onSubmit={handleSubmit}>
                     <div className="mb-4">

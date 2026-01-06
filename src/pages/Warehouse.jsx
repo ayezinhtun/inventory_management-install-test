@@ -45,6 +45,7 @@ export default function Warehouse() {
         (regionFilter === "" || warehouse.regions?.name === regionFilter)
     )
 
+
     // this is for pagination
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 3;
@@ -103,6 +104,7 @@ export default function Warehouse() {
         setShowEditModal(true);
     }
 
+    // for export
     const handleExportCSV = () => {
         const data = warehouses.map(w => ({
             Name: w.name,
@@ -110,7 +112,7 @@ export default function Warehouse() {
             Description: w.description
         }));
 
-        const headers = ['Name','Region', 'Description'];
+        const headers = ['Name', 'Region', 'Description'];
         exportToCSV(data, `warehouses-${new Date().toISOString().slice(0, 10)}.csv`, headers);
     }
 
@@ -311,8 +313,9 @@ export default function Warehouse() {
                 <AddWarehouse onClose={() => setShowModal(false)} region={regions} onAdd={fetchWarehouses} />
             }
 
-            {showEditModal &&
+            {showEditModal && selectedWarehouse && (
                 <EditWarehouse warehouse={selectedWarehouse} region={regions} onClose={() => setShowEditModal(false)} onUpdate={fetchWarehouses} />
+            )
             }
         </div>
     )

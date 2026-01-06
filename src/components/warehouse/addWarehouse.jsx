@@ -40,7 +40,7 @@ export default function AddWarehouse({ onClose, region, onAdd }) {
             <div className="relative z-10 bg-white backdrop-blur-md w-[600px] rounded-lg shadow-xl rounded-md">
                 <div className="flex items-center justify-between border-b border-gray-200 p-4 rounded-t-md">
                     <h1 className="text-xl font-bold">Add Warehouse</h1>
-                    <CircleX onClick={onClose} className="w-6 h-6 text-gray-600 cursor-pointer hover:text-red-500" />
+                    <X onClick={onClose} className="w-6 h-6 text-gray-600 cursor-pointer hover:text-red-500" />
                 </div>
                 <form className="p-6" onSubmit={handleSubmit}>
                     <div className="mb-4">

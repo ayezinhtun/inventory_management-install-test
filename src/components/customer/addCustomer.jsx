@@ -1,7 +1,37 @@
 import { CircleX, Cross, X } from "lucide-react";
 import { FloatingLabel, Textarea, Button } from "flowbite-react";
+import { useState } from "react";
+import { createCustomer } from "../../context/CustomerContext";
 
-export default function AddCustomer({ onClose }) {
+export default function AddCustomer({ onClose, onAdd }) {
+
+    const [form, setForm] = useState({
+        company_name: '',
+        contact_person: '',
+        contact_email: '',
+        contact_number: '', 
+        address: ''
+    })
+
+    const handleChange = (e) => {
+        const {name, value} = e.target;
+        setForm({...form, [name]: value})
+    }
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        try{
+            await createCustomer(form);
+            setForm({company_name: '', contact_person: '', contact_email: '', contact_number: '', address: ''})
+            alert('Customer Added Success!');
+            await onAdd();
+            onClose();
+        }catch(error) {
+            console.error('Error adding in Customer', error);
+            alert('Failed to add Customer');
+        }
+    }
 
     return (
         <div className="fixed inset-0 flex items-center justify-center z-50">
@@ -11,13 +41,16 @@ export default function AddCustomer({ onClose }) {
             <div className="relative z-10 bg-white backdrop-blur-md w-[600px] rounded-lg shadow-xl rounded-md">
                 <div className="flex items-center justify-between border-b border-gray-200 p-4 rounded-t-md">
                     <h1 className="text-xl font-bold">Add Customer</h1>
-                    <CircleX onClick={onClose} className="w-6 h-6 text-gray-600 cursor-pointer hover:text-red-500" />
+                    <X onClick={onClose} className="w-6 h-6 text-gray-600 cursor-pointer hover:text-red-500" />
                 </div>
-                <form className="p-6">
+                <form className="p-6" onSubmit={handleSubmit}>
                     <div className="mb-4">
                         <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Company Name <span className="text-red-500">*</span></label>
                         <input
                             type="text"
+                            name="company_name"
+                            value={form.company_name}
+                            onChange={handleChange}
                             placeholder="OneCloud"
                             className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
                         />
@@ -28,6 +61,9 @@ export default function AddCustomer({ onClose }) {
                             <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Contact Person <span className="text-red-500">*</span></label>
                             <input
                                 type="text"
+                                name="contact_person"
+                                value={form.contact_person}
+                                onChange={handleChange}
                                 className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
                             />
                         </div>
@@ -36,6 +72,9 @@ export default function AddCustomer({ onClose }) {
                             <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Contact Email <span className="text-red-500">*</span></label>
                             <input
                                 type="text"
+                                name="contact_email"
+                                value={form.contact_email}
+                                onChange={handleChange}
                                 placeholder="example@gmail.com"
                                 className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
                             />
@@ -46,6 +85,9 @@ export default function AddCustomer({ onClose }) {
                         <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Contact Number <span className="text-red-500">*</span></label>
                         <input
                             type="text"
+                            name="contact_number"
+                            value={form.contact_number}
+                            onChange={handleChange}
                             placeholder="09 123-456-789"
                             className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
                         />
@@ -54,6 +96,9 @@ export default function AddCustomer({ onClose }) {
                     <div className="mb-4">
                         <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Address <span className="text-red-500">*</span></label>
                         <textarea
+                            name="address"
+                            value={form.address}
+                            onChange={handleChange}
                             placeholder="Yangon"
                             className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
                         />

@@ -1,6 +1,6 @@
 create table public.racks (
     id uuid primary key default gen_random_uuid(),
-    warehouse_id uuid not null references warehouses(id) on delete cascade,
+    warehouse_id uuid not null references warehouses(id) on delete restrict,
     name text not null,
     size_u int default 42 not null,
     type text default 'mixed',
@@ -38,3 +38,6 @@ on public.racks
 for delete
 to authenticated
 using (true);
+
+
+-- rack name is do with unique in the sql editor direct

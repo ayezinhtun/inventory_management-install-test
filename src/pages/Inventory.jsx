@@ -1,39 +1,106 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CardComponent from "../components/card/crad";
 import { CirclePlus, Delete, Download, Edit, Eye, ListFilter, MapPin, Package, Pen, Search, Trash2 } from "lucide-react"
 import Pagination from "../components/pagination/pagination";
 import { Checkbox, Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
 import { Dropdown, DropdownItem } from "flowbite-react";
 import EditRegionModal from "../components/region/editregion";
-import AddInventory from "../components/Inventory/addInventory";
 import { Link } from 'react-router-dom'
+import { fetchInventory, deleteInventory } from "../context/InventoryContext";
+import { getWarehouse } from "../context/WarehouseContext";
+import { fetchRack } from "../context/RackContext";
+import { exportToCSV } from "../utils/exportUtils";
 
 export default function Inventory() {
 
-    const inventorys = [
-        { name: "Device01", serial_no: "serial001", status: "Active" },
-        { name: "Device01", serial_no: "serial001", status: "Active" },
-    ];
+    const [inventorys, setInventorys] = useState([]);
 
     // for search in the input search
     const [searchItem, setSearchItem] = useState("");
 
+    //for fetch warehouse
+    const [warehouses, setWarehouses] = useState([]);
+
+    //for fetch rack
+    const [racks, setRacks] = useState([])
+
     // for filter
     const [showFilter, setShowFilter] = useState(false);
     const [nameFilter, setNameFilter] = useState("");
+    const [statusFilter, setstatusFilter] = useState("");
+    const [warehouseFilter, setWarehouseFilter] = useState("");
+    const [rackFilter, setRackFilter] = useState("");
 
-    // for show add form modal
-    // const [showModal, setShowModal] = useState(false);
 
     //for show edit form modal
     const [showEditModal, setShowEditModal] = useState(false);
 
+    const [loading, setLoading] = useState(false);
+
+    //for fetch warehouses
+    const fetchWarehouses = async () => {
+        setLoading(true);
+        try {
+            const data = await getWarehouse();
+            setWarehouses(data);
+        } catch (error) {
+            console.log('Errror fetching Warehouses:', error);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    //for fetch racks
+    const RackData = async () => {
+        setLoading(true);
+        try {
+            const data = await fetchRack();
+            setRacks(data);
+        } catch (error) {
+            console.log('Errror fetching racks:', error);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    const InventoryData = async () => {
+        setLoading(true);
+        try {
+            const data = await fetchInventory();
+            setInventorys(data);
+        } catch (error) {
+            console.log('Error in fetch Inventory', error);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    // for delete inventory
+    const handleDelete = async (id) => {
+        const isConfirmed = window.confirm("Are you sure to delete this Inventory?");
+
+        if (!isConfirmed) return;
+
+        try {
+            await deleteInventory(id);
+            InventoryData();
+        } catch (error) {
+            alert('Failed to delete Inventory');
+        }
+    }
 
     // this is for search and filter
     const filteredInventorys = inventorys.filter(inventory =>
         inventory.name.toLowerCase().includes(searchItem.toLowerCase()) &&
 
-        (nameFilter === "" || inventory.name === nameFilter)
+        (nameFilter === "" || inventory.name === nameFilter) &&
+
+        (statusFilter === "" || inventory.status === statusFilter) &&
+
+        (warehouseFilter === "" || inventory.warehouses?.name === warehouseFilter) &&
+
+        (rackFilter === "" || inventory.racks?.name === rackFilter)
+
     )
 
     // this is for pagination
@@ -45,6 +112,36 @@ export default function Inventory() {
     const currentInventorys = filteredInventorys.slice(indexOfFirst, indexOfLast);
 
     const totalPages = Math.ceil(filteredInventorys.length / itemsPerPage);
+
+
+    const handleExportCSV = () => {
+        const data = inventorys.map(i => ({
+            Name: i.name,
+            Warehouse: i.warehouses?.name || '', 
+            Rack: i.racks?.name || '',
+            Status: i.status, 
+            "Serial No": i.serial_no, 
+            Type: i.type, 
+            Model: i.model, 
+            Vendor: i.vendor, 
+            "Start Unit": i.start_unit, 
+            Height: i.height, 
+            Color: i.color, 
+            Notes: i.notes, 
+            Attributes: Object.entries(i.attributes || {})
+                .map(([key, val]) => `${key}: ${val}`)
+                .join(",")
+        }));
+
+        const headers = ['Name', 'Warehouse', 'Rack', 'Status', 'Serial No', 'Type', 'Model', 'Vendor',  'Start Unit', 'Height', 'Color', 'Notes', 'Attributes'];
+        exportToCSV(data, `inventorys-${new Date().toISOString().slice(0, 10)}.csv`, headers);
+    }
+    useEffect(() => {
+        InventoryData();
+        fetchWarehouses();
+        RackData();
+
+    }, [])
 
     return (
         <div>
@@ -76,52 +173,141 @@ export default function Inventory() {
                     <div className="flex space-x-5">
                         <Link to='/create-inventory'
                             className='flex items-center border rounded-lg p-2 px-4  cursor-pointer text-gray-500 hover:ring-4 hover:ring-primary-300 hover:border-none'
-                            // onClick={() => setShowModal(true)}
                         >
                             <CirclePlus className="w-5 h-5 mr-2" />
                             <span>Add New Inventory</span>
                         </Link>
 
-                        <div
+                        <button
+                            onClick={handleExportCSV}
                             className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-[#26599F] hover:bg-blue-900 hover:border-none hover:outline-none'
                         >
                             <Download className="w-5 h-5 mr-2" />
                             <span>Export</span>
-                        </div>
+                        </button>
                     </div>
 
 
                 </div>
 
                 {showFilter && (
-                    <div className="grid grid-cols-5 gap-4 py-3 px-5 border-b border-gray-200">
-                        <div className="flex flex-col space-y-2">
-                            <label className="text-gray-700 font-medium">Name:</label>
-
-                            <Dropdown label="Filter by Name" className="border border-gray-300 bg-white text-gray700 hover:bg-white" dismissOnClick={false}>
-                                <DropdownItem
-                                    onClick={() => {
-                                        setNameFilter("");
-                                        setCurrentPage(1);
-                                    }}
-                                >
-                                    All
-                                </DropdownItem>
-                                {Array.from(new Set(inventorys.map(r => r.name))).map((name, idx) => (
+                    <div className="flex items-center justify-between py-3 px-5 border-b border-gray-200">
+                        <div className="grid grid-cols-5 gap-2">
+                            <div className="flex flex-col space-y-2">
+                                <Dropdown label="Filter by Name" className="border border-gray-300 bg-white text-gray700 hover:bg-white" dismissOnClick={true}>
                                     <DropdownItem
-                                        key={idx}
                                         onClick={() => {
-                                            setNameFilter(name);
+                                            setNameFilter("");
                                             setCurrentPage(1);
                                         }}
                                     >
-                                        {name}
+                                        All
                                     </DropdownItem>
-                                ))}
+                                    {Array.from(new Set(inventorys.map(inventory => inventory.name))).map((name, idx) => (
+                                        <DropdownItem
+                                            key={idx}
+                                            onClick={() => {
+                                                setNameFilter(name);
+                                                setCurrentPage(1);
+                                            }}
+                                        >
+                                            {name}
+                                        </DropdownItem>
+                                    ))}
 
-                            </Dropdown>
+                                </Dropdown>
+
+
+                            </div>
+
+                            <div className="flex flex-col space-y-2">
+                                <Dropdown label="Filter by Status" className="border border-gray-300 bg-white text-gray700 hover:bg-white" dismissOnClick={true}>
+                                    <DropdownItem
+                                        onClick={() => {
+                                            setNameFilter("");
+                                            setCurrentPage(1);
+                                        }}
+                                    >
+                                        All
+                                    </DropdownItem>
+                                    {Array.from(new Set(inventorys.map(inventory => inventory.status))).map((status, idx) => (
+                                        <DropdownItem
+                                            key={idx}
+                                            onClick={() => {
+                                                setstatusFilter(status);
+                                                setCurrentPage(1);
+                                            }}
+                                        >
+                                            {status}
+                                        </DropdownItem>
+                                    ))}
+
+                                </Dropdown>
+                            </div>
+
+                            <div className="flex flex-col space-y-2">
+                                <Dropdown label="Filter by Warehouse" className="border border-gray-300 bg-white text-gray700 hover:bg-white" dismissOnClick={true}>
+                                    <DropdownItem
+                                        onClick={() => {
+                                            setNameFilter("");
+                                            setCurrentPage(1);
+                                        }}
+                                    >
+                                        All
+                                    </DropdownItem>
+                                    {Array.from(new Set(warehouses.map(warehouse => warehouse.name))).map((name, idx) => (
+                                        <DropdownItem
+                                            key={idx}
+                                            onClick={() => {
+                                                setWarehouseFilter(name);
+                                                setCurrentPage(1);
+                                            }}
+                                        >
+                                            {name}
+                                        </DropdownItem>
+                                    ))}
+
+                                </Dropdown>
+                            </div>
+
+                            <div className="flex flex-col space-y-2">
+                                <Dropdown label="Filter by Rack" className="border border-gray-300 bg-white text-gray700 hover:bg-white" dismissOnClick={true}>
+                                    <DropdownItem
+                                        onClick={() => {
+                                            setNameFilter("");
+                                            setCurrentPage(1);
+                                        }}
+                                    >
+                                        All
+                                    </DropdownItem>
+                                    {Array.from(new Set(racks.map(r => r.name))).map((name, idx) => (
+                                        <DropdownItem
+                                            key={idx}
+                                            onClick={() => {
+                                                setRackFilter(name);
+                                                setCurrentPage(1);
+                                            }}
+                                        >
+                                            {name}
+                                        </DropdownItem>
+                                    ))}
+
+                                </Dropdown>
+                            </div>
+
+
                         </div>
+
+
+                        <button
+                            onClick={() => { setNameFilter(""); setstatusFilter(""); setWarehouseFilter(""); setRackFilter(""); setCurrentPage(1); }}
+                            className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-[#26599F] hover:bg-blue-900 hover:border-none hover:outline-none'
+                        >
+                            <span>Reset Filters</span>
+                        </button>
+
                     </div>
+
                 )}
 
                 <div className="overflow-x-auto rounded-lg">
@@ -133,6 +319,8 @@ export default function Inventory() {
                                 </TableHeadCell>
                                 <TableHeadCell>Name</TableHeadCell>
                                 <TableHeadCell>Serial Number</TableHeadCell>
+                                <TableHeadCell>Warehouse</TableHeadCell>
+                                <TableHeadCell>Rack</TableHeadCell>
                                 <TableHeadCell>Status</TableHeadCell>
 
                                 <TableHeadCell colSpan={3}>
@@ -141,25 +329,49 @@ export default function Inventory() {
                             </TableRow>
                         </TableHead>
                         <TableBody className="divide-y divide-gray-200">
-                            {currentInventorys.map((inventory, index) => {
-                                return (
-                                    <TableRow key={index} className="bg-white dark:border-gray-700 dark:bg-gray-800">
-                                        <TableCell className="p-4">
-                                            <Checkbox />
-                                        </TableCell>
-                                        <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                                            {inventory.name}
-                                        </TableCell>
-                                        <TableCell>{inventory.serial_no}</TableCell>
-                                        <TableCell>{inventory.status}</TableCell>
-                                        <TableCell className="flex items-center space-x-3">
-                                            <Link to='/edit-inventory'><Pen className="text-[#26599F]"/></Link>
-                                            <Link to='/inventory-detail'><Eye className="text-[#8B5CF6]" /></Link>
-                                            <Trash2 className="text-red-500" />
+                            {loading ? (
+                                <TableRow>
+                                    <TableCell colSpan={5} className="text-center py-5">
+                                        Loading...
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                currentInventorys.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell
+                                            colSpan={5}
+                                            className="text-center"
+                                        >
+                                            No Inventory found
                                         </TableCell>
                                     </TableRow>
+                                ) : (
+
+                                    currentInventorys.map((inventory, id) => {
+                                        return (
+                                            <TableRow key={inventory.id} className="bg-white dark:border-gray-700 dark:bg-gray-800">
+                                                <TableCell className="p-4">
+                                                    <Checkbox />
+                                                </TableCell>
+                                                <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                                    {inventory.name}
+                                                </TableCell>
+                                                <TableCell>{inventory.serial_no}</TableCell>
+                                                <TableCell>{inventory.warehouses.name}</TableCell>
+                                                <TableCell>{inventory.racks.name}</TableCell>
+                                                <TableCell>{inventory.status}</TableCell>
+                                                <TableCell className="flex items-center space-x-3">
+                                                    <Link to={`/edit-inventory/${inventory.id}`}><Pen className="text-[#26599F]" /></Link>
+                                                    <Link to={`/inventory-detail/${inventory.id}`}><Eye className="text-[#8B5CF6]" /></Link>
+                                                    <Trash2 className="text-red-500" onClick={() => handleDelete(inventory.id)} />
+                                                </TableCell>
+                                            </TableRow>
+                                        )
+                                    })
+
                                 )
-                            })}
+                            )}
+
                         </TableBody>
                     </Table>
                 </div>
@@ -170,7 +382,7 @@ export default function Inventory() {
                     onPageChange={setCurrentPage}
                 />
             </div>
-            
+
 
             {/* 
             {showModal &&

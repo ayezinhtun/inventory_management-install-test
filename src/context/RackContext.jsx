@@ -23,10 +23,14 @@ export const fetchRack = async() => {
         color,
         notes,
         warehouse_id,
-        warehouse (
+        warehouses (
+            id,
             name,
             region_id,
-            region_name
+            regions (
+                id,
+                name
+            )
         )
     `)
     .order('created_at', {ascending: false})
