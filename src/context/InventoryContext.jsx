@@ -50,9 +50,10 @@ export const fetchInventoryById = async (id) => {
     const { data, error } = await supabase
         .from("inventorys")
         .select(`
-                id, 
+        id, 
         warehouse_id, 
         rack_id, 
+        customer_id,
         name,
         status,
         serial_no, 
@@ -72,7 +73,11 @@ export const fetchInventoryById = async (id) => {
         warehouses(
             id,
             name
-        )    
+        ), 
+        customers(
+            id, 
+            company_name
+        ) 
     `)
         .eq("id", id)
         .single();

@@ -44,12 +44,38 @@ export const AuthProvider = ({ children }) => {
     }
 
     //for signin
+    // const signIn = async ({ email, password }) => {
+    //     const { data, error } = await supabase.auth.signInWithPassword({
+    //         email,
+    //         password
+    //     });
+    //     if (error) throw error;
+    //     return data;
+    // }
+
     const signIn = async ({ email, password }) => {
         const { data, error } = await supabase.auth.signInWithPassword({
             email,
             password
         });
         if (error) throw error;
+
+        const userId = data.user?.id;
+
+        if(!userId) throw new Error("User not found");
+
+        const {data: profile, error: profileError} = await supabase
+        .from("user_profile")
+        .select("status")
+        .eq("id", userId)
+        .single();
+
+        if(profileError) throw profileError;
+
+        if(profile.status !== "active") {
+            await supabase.auth.signOut();
+            throw new Error("Your account is inactive")
+        }
         return data;
     }
 

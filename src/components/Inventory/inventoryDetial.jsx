@@ -66,9 +66,11 @@ export default function InventoryDetail() {
                         <div>
                             <span className="font-medium">Warehouse:</span> {inventory.warehouses.name}
                         </div>
-                        <div>
-                            <span className="font-medium">Rack:</span> {inventory.racks.name}
-                        </div>
+                        {inventory.racks && (
+                            <div>
+                                <span className="font-medium">Rack:</span> {inventory.racks.name}
+                            </div>
+                        )}
                         <div>
                             <span className="font-medium">Status:</span> {inventory.status}
                         </div>
@@ -84,12 +86,16 @@ export default function InventoryDetail() {
                         <div>
                             <span className="font-medium">Vendor:</span> {inventory.vendor}
                         </div>
-                        <div>
-                            <span className="font-medium">Start Unit:</span> {inventory.start_unit}
-                        </div>
-                        <div>
-                            <span className="font-medium">Height (U):</span> {inventory.height}
-                        </div>
+                        {inventory.start_unit && (
+                            <div>
+                                <span className="font-medium">Start Unit:</span> {inventory.start_unit}
+                            </div>
+                        )}
+                        {inventory.height && (
+                            <div>
+                                <span className="font-medium">Height (U):</span> {inventory.height}
+                            </div>
+                        )}
                         <div>
                             <span className="font-medium">Color:</span>{" "}
                             <span
@@ -98,6 +104,12 @@ export default function InventoryDetail() {
                             ></span>
                         </div>
                     </div>
+
+                    {inventory.customers && (
+                        <div>
+                            <span className="font-medium">Company Name:</span> {inventory.customers?.company_name}
+                        </div>
+                    )}
 
                     {/* Notes */}
                     <div className="mt-4">

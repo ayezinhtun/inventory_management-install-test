@@ -10,6 +10,7 @@ import { fetchInventory, deleteInventory } from "../context/InventoryContext";
 import { getWarehouse } from "../context/WarehouseContext";
 import { fetchRack } from "../context/RackContext";
 import { exportToCSV } from "../utils/exportUtils";
+import AddCustomer from "../components/Inventory/addCustomer";
 
 export default function Inventory() {
 
@@ -36,6 +37,11 @@ export default function Inventory() {
     const [showEditModal, setShowEditModal] = useState(false);
 
     const [loading, setLoading] = useState(false);
+
+    // for show add customer form modal
+    const [showModal, setShowModal] = useState(false);
+
+    const [selectedInventoryId, setSelectedInventoryId] = useState(null);
 
     //for fetch warehouses
     const fetchWarehouses = async () => {
@@ -91,6 +97,7 @@ export default function Inventory() {
 
     // this is for search and filter
     const filteredInventorys = inventorys.filter(inventory =>
+        
         inventory.name.toLowerCase().includes(searchItem.toLowerCase()) &&
 
         (nameFilter === "" || inventory.name === nameFilter) &&
@@ -117,23 +124,23 @@ export default function Inventory() {
     const handleExportCSV = () => {
         const data = inventorys.map(i => ({
             Name: i.name,
-            Warehouse: i.warehouses?.name || '', 
+            Warehouse: i.warehouses?.name || '',
             Rack: i.racks?.name || '',
-            Status: i.status, 
-            "Serial No": i.serial_no, 
-            Type: i.type, 
-            Model: i.model, 
-            Vendor: i.vendor, 
-            "Start Unit": i.start_unit, 
-            Height: i.height, 
-            Color: i.color, 
-            Notes: i.notes, 
+            Status: i.status,
+            "Serial No": i.serial_no,
+            Type: i.type,
+            Model: i.model,
+            Vendor: i.vendor,
+            "Start Unit": i.start_unit,
+            Height: i.height,
+            Color: i.color,
+            Notes: i.notes,
             Attributes: Object.entries(i.attributes || {})
                 .map(([key, val]) => `${key}: ${val}`)
                 .join(",")
         }));
 
-        const headers = ['Name', 'Warehouse', 'Rack', 'Status', 'Serial No', 'Type', 'Model', 'Vendor',  'Start Unit', 'Height', 'Color', 'Notes', 'Attributes'];
+        const headers = ['Name', 'Warehouse', 'Rack', 'Status', 'Serial No', 'Type', 'Model', 'Vendor', 'Start Unit', 'Height', 'Color', 'Notes', 'Attributes'];
         exportToCSV(data, `inventorys-${new Date().toISOString().slice(0, 10)}.csv`, headers);
     }
     useEffect(() => {
@@ -224,7 +231,7 @@ export default function Inventory() {
                                 <Dropdown label="Filter by Status" className="border border-gray-300 bg-white text-gray700 hover:bg-white" dismissOnClick={true}>
                                     <DropdownItem
                                         onClick={() => {
-                                            setNameFilter("");
+                                            setstatusFilter("");
                                             setCurrentPage(1);
                                         }}
                                     >
@@ -357,13 +364,22 @@ export default function Inventory() {
                                                     {inventory.name}
                                                 </TableCell>
                                                 <TableCell>{inventory.serial_no}</TableCell>
-                                                <TableCell>{inventory.warehouses.name}</TableCell>
-                                                <TableCell>{inventory.racks.name}</TableCell>
+                                                <TableCell>{inventory.warehouses?.name}</TableCell>
+                                                <TableCell>{inventory.racks?.name}</TableCell>
                                                 <TableCell>{inventory.status}</TableCell>
                                                 <TableCell className="flex items-center space-x-3">
                                                     <Link to={`/edit-inventory/${inventory.id}`}><Pen className="text-[#26599F]" /></Link>
                                                     <Link to={`/inventory-detail/${inventory.id}`}><Eye className="text-[#8B5CF6]" /></Link>
                                                     <Trash2 className="text-red-500" onClick={() => handleDelete(inventory.id)} />
+                                                    <button
+                                                        onClick={() => {
+                                                            setSelectedInventoryId(inventory.id)
+                                                            setShowModal(true)
+                                                        }}
+                                                        className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-[#26599F] hover:bg-blue-900 hover:border-none hover:outline-none'
+                                                    >
+                                                        <span>Sell To Customer</span>
+                                                    </button>
                                                 </TableCell>
                                             </TableRow>
                                         )
@@ -384,10 +400,10 @@ export default function Inventory() {
             </div>
 
 
-            {/* 
+
             {showModal &&
-                <AddInventory onClose={() => setShowModal(false)} />
-            } */}
+                <AddCustomer onClose={() => setShowModal(false)} inventoryId={selectedInventoryId} onAdd={InventoryData}/>
+            }
 
             {showEditModal &&
                 <EditRegionModal onClose={() => setShowEditModal(false)} />

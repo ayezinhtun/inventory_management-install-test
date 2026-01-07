@@ -1,11 +1,29 @@
 import { Eye, EyeOff } from "lucide-react"
 import { useState } from "react"
+import { useUserProfiles } from "../../context/UserProfileContext";
 
 export default function PasswordTab() {
+    const { updatePassword } = useUserProfiles();
+
     const [showPassword, setShowPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+    const [currentPassword, setCurrentPassword] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+
+    const handleUpdatePassword = async () => {
+        const result = await updatePassword(currentPassword, newPassword, confirmPassword);
+
+        alert(result.message);
+
+        if (result.success) {
+            setCurrentPassword("");
+            setNewPassword("");
+            setConfirmPassword("");
+        }
+    }
     return (
         <div>
             <h3 className="text-[20px] font-bold mb-6">Change Password</h3>
@@ -17,6 +35,8 @@ export default function PasswordTab() {
                     <div className="relative flex items-center">
                         <input
                             type={showPassword ? "text" : "password"}
+                            value={currentPassword}
+                            onChange={(e) => setCurrentPassword(e.target.value)}
                             className="w-full px-3 py-3 border-2 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
                         />
                         <button
@@ -35,6 +55,8 @@ export default function PasswordTab() {
                     <div className="relative flex items-center">
                         <input
                             type={showNewPassword ? "text" : "password"}
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
                             className="w-full px-3 py-3 border-2 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
                         />
                         <button
@@ -52,6 +74,8 @@ export default function PasswordTab() {
                     <div className="relative flex items-center">
                         <input
                             type={showConfirmPassword ? "text" : "password"}
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
                             className="w-full px-3 py-3 border-2 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
                         />
                         <button
@@ -66,7 +90,10 @@ export default function PasswordTab() {
 
 
                 <div className="col-span-2">
-                    <button className="bg-[#26599F] hover:bg-blue-900 font-bold text-white px-6 py-3 rounded mt-4">
+                    <button
+                        onClick={handleUpdatePassword}
+                        className="bg-[#26599F] hover:bg-blue-900 font-bold text-white px-6 py-3 rounded mt-4"
+                    >
                         Update Password
                     </button>
                 </div>

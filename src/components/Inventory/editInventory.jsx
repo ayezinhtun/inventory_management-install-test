@@ -10,6 +10,10 @@ export default function EditInventory() {
     const { id } = useParams(); // inventory id
     const navigate = useNavigate();
 
+    const [customers, setCustomers] = useState([]);
+
+    const [customerId, setCustomerId] = useState(null);
+
     const [form, setForm] = useState({
         name: "",
         warehouse_id: "",
@@ -48,6 +52,7 @@ export default function EditInventory() {
             if (error) return console.error(error);
 
             setForm({
+                ...form,
                 name: data.name,
                 warehouse_id: data.warehouse_id,
                 rack_id: data.rack_id,
@@ -61,8 +66,11 @@ export default function EditInventory() {
                 color: data.color || "#10b981",
                 notes: data.notes || "",
                 attributes: data.attributes || {},
-                image: data.image || null
+                image: data.image || null,
+                customer_id: data.customer_id || null,
             });
+
+            setCustomerId(data.customer_id || null);
 
             if (data.image) {
                 const { data: { publicUrl } } = supabase.storage
@@ -251,7 +259,8 @@ export default function EditInventory() {
                     start_unit: form.start_unit ?? null,
                     height: form.height ?? null,
                     notes: form.notes || null,
-                    image: imageUrl
+                    image: imageUrl, 
+                    customer_id: form.customer_id || null
                 })
                 .eq("id", id);
 
@@ -264,6 +273,27 @@ export default function EditInventory() {
             alert(err.message);
         }
     };
+
+    // for fetch customer
+    useEffect(() => {
+        const fetchCustomers = async () => {
+            const { data, error } = await supabase
+                .from("customers")
+                .select("id, company_name")
+                .order("company_name");
+
+            if (!error) setCustomers(data);
+        };
+
+        fetchCustomers();
+    }, []);
+
+    const handleCustomerChange = (e) => {
+        setCustomerId(e.target.value || null);
+        setForm(prev => ({
+            ...prev, customer_id: e.target.value || null
+        }))
+    }
 
     return (
         <div>
@@ -382,11 +412,34 @@ export default function EditInventory() {
                                 <input type="number" name="height" value={form.height ?? ""} onChange={e => setForm(prev => ({ ...prev, height: e.target.value === "" ? null : Number(e.target.value) }))} min={1} disabled={!selectedRack} className="w-full p-2.5 border border-gray-300 rounded-lg" placeholder={selectedRack ? "Enter height" : "Disabled without rack"} />
                             </div>
 
+                            {form.status === "sold" && (
+                                <div>
+                                    <label className="block text-sm font-medium mb-2 text-gray-900">
+                                        Customer
+                                    </label>
+                                    <select
+                                        value={customerId || ""}
+                                        onChange={handleCustomerChange}
+                                        className="w-full p-2.5 border border-gray-300 rounded-lg"
+                                    >
+                                        <option value="">Select Customer</option>
+                                        {customers.map(c => (
+                                            <option key={c.id} value={c.id}>
+                                                {c.company_name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+
+
                             {/* Color */}
                             <div>
                                 <label className="block text-sm font-medium mb-2 text-gray-900">Color</label>
                                 <input type="color" name="color" value={form.color} onChange={handleChange} className="p-2 h-11.5 border border-gray-300 rounded-lg cursor-pointer" />
                             </div>
+
+
                         </div>
 
                         {/* Notes */}

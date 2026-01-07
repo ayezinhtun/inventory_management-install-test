@@ -1,17 +1,21 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CardComponent from "../components/card/crad";
 import { CirclePlus, Delete, Download, Edit, ListFilter, MapPin, Pen, Save, Search, Trash2, User } from "lucide-react"
 import Pagination from "../components/pagination/pagination";
 import { Checkbox, Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
 import { Dropdown, DropdownItem } from "flowbite-react";
-
+import { useUserProfiles } from "../context/UserProfileContext";
+import { getWarehouse } from "../context/WarehouseContext";
+import { getRegion } from "../context/RegionContext";
+import { supabase } from "../../supabase/supabase-client";
 
 export default function UserMangement() {
 
-    const users = [
-        { name: "Aye Aye", email: "aye@gamil.com", role: "admin", regions: ["Yangon", "Naypyitaw"], warehouses: ["TWC"] },
-        { name: "Aye Aye", email: "aye@gamil.com", role: "admin", regions: ["Yangon"], warehouses: ["TWC", "DC"] },
-    ];
+    const { users, updateUserRole, deleteUser } = useUserProfiles();
+
+    const [regions, setRegions] = useState([]);
+
+    const [warehouses, setWarehouses] = useState([]);
 
     // for search in the input search
     const [searchItem, setSearchItem] = useState("");
@@ -20,6 +24,174 @@ export default function UserMangement() {
     const [showFilter, setShowFilter] = useState(false);
     const [nameFilter, setNameFilter] = useState("");
 
+    const [roleChanges, setRoleChanges] = useState({});
+
+    const [userRegions, setUserRegions] = useState({});
+
+    const [userWarehouses, setUserWarehouses] = useState({});
+
+
+    //for fetch region
+    useEffect(() => {
+        const fetchRegions = async () => {
+            try {
+                const data = await getRegion();
+                setRegions(data);
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
+        fetchRegions();
+    }, [])
+
+    //for fetch warheouse
+    useEffect(() => {
+        const fetchWarehouses = async () => {
+            try {
+                const data = await getWarehouse();
+                setWarehouses(data);
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
+        fetchWarehouses();
+    }, [])
+
+    useEffect(() => {
+        const fetchUserWarehouses = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from("user_warehouses")
+                    .select('*')
+
+                if (error) throw error;
+
+                const mapping = {};
+
+                data.forEach((item) => {
+                    if (!mapping[item.user_id]) mapping[item.user_id] = [];
+
+                    mapping[item.user_id].push(item.warehouse_id);
+                });
+
+                setUserWarehouses(mapping);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+
+        fetchUserWarehouses();
+    }, [users]);
+
+    useEffect(() => {
+        const fetchUserRegions = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from("user_regions")
+                    .select('*')
+
+                if (error) throw error;
+
+                const mapping = {};
+
+                data.forEach((region) => {
+                    if (!mapping[region.user_id]) mapping[region.user_id] = [];
+
+                    mapping[region.user_id].push(region.region_id);
+                });
+
+                setUserRegions(mapping);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+
+        fetchUserRegions();
+    }, [users]);
+
+    const handleRoleChange = (id, role) => {
+        setRoleChanges((prev) => ({
+            ...prev,
+            [id]: role
+        }));
+    }
+
+    //for checkbox
+    const handleWarehouseChange = (userId, warehouseId) => {
+        setUserWarehouses((prev) => {
+            const current = prev[userId] || [];
+
+            if (current.includes(warehouseId)) {
+                return { ...prev, [userId]: current.filter((id) => id !== warehouseId) }
+            } else {
+                return { ...prev, [userId]: [...current, warehouseId] }
+            }
+        })
+    }
+
+    //for check box
+    const handleRegionChange = (userId, regionId) => {
+        setUserRegions((prev) => {
+            const current = prev[userId] || [];
+
+            if (current.includes(regionId)) {
+                return { ...prev, [userId]: current.filter((id) => id !== regionId) }
+            } else {
+                return { ...prev, [userId]: [...current, regionId] }
+            }
+        })
+    }
+
+    const saveUserChanges = async (userId) => {
+        try {
+            const newRole = roleChanges[userId];
+            if (newRole) {
+                const success = await updateUserRole(userId, newRole);
+                if (success) {
+                    setRoleChanges((prev) => {
+                        const updated = { ...prev };
+                        delete updated[userId];
+                        return updated;
+                    })
+                }
+            }
+
+            // for region
+            const selectedRegions = userRegions[userId] || [];
+
+            await supabase.from("user_regions").delete().eq("user_id", userId);
+
+            const insertRegionData = selectedRegions.map((regionId) => ({
+                user_id: userId,
+                region_id: regionId
+            }));
+
+            if (insertRegionData.length > 0) {
+                await supabase.from("user_regions").insert(insertRegionData);
+            }
+
+            //for warehouse
+            const selectedWarehouses = userWarehouses[userId] || [];
+
+            await supabase.from("user_warehouses").delete().eq("user_id", userId);
+
+            const insertWarehouseData = selectedWarehouses.map((warehouseId) => ({
+                user_id: userId,
+                warehouse_id: warehouseId
+            }))
+
+            if (insertWarehouseData.length > 0) {
+                await supabase.from("user_warehouses").insert(insertWarehouseData);
+            }
+
+            alert("User Updated Successfully!");
+        } catch (error) {
+            console.error(error);
+            alert("Error updating user.")
+        }
+    }
 
     // this is for search and filter
     const filteredUsers = users.filter(user =>
@@ -37,6 +209,7 @@ export default function UserMangement() {
     const currentUsers = filteredUsers.slice(indexOfFirst, indexOfLast);
 
     const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+
 
     return (
         <div>
@@ -65,17 +238,7 @@ export default function UserMangement() {
                         </div>
                     </div>
 
-                    <div className="flex space-x-5">
-
-
-                        <div
-                            className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-[#26599F] hover:bg-blue-900 hover:border-none hover:outline-none'
-                        >
-                            <Download className="w-5 h-5 mr-2" />
-                            <span>Export</span>
-                        </div>
-                    </div>
-
+                    
 
                 </div>
 
@@ -139,36 +302,58 @@ export default function UserMangement() {
                                             {user.name}
                                         </TableCell>
                                         <TableCell>{user.email}</TableCell>
-                                        <TableCell>{user.role}</TableCell>
+                                        <TableCell>
+                                            <select
+                                                name=""
+                                                id=""
+                                                value={roleChanges[user.id] || user.role}
+                                                onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                                                className="border rounded p-2 w-full"
+                                            >
+                                                <option value="admin">Admin</option>
+                                                <option value="PM">PM</option>
+                                                <option value="PC">PC</option>
+                                                <option value="engineer">Engineer</option>
+                                            </select>
+                                        </TableCell>
                                         <TableCell>
                                             <div className="flex items-center space-x-3">
-                                                {user.regions.map((region, idx) => (
-                                                    <label key={idx} className="flex items-center space-x-2 text-sm">
-                                                        <Checkbox />
-                                                        <span>{region}</span>
+                                                {regions.map((region) => (
+                                                    <label key={region.id} className="flex items-center space-x-2 text-sm">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={userRegions[user.id]?.includes(region.id) || false}
+                                                            onChange={() => handleRegionChange(user.id, region.id)}
+                                                        />
+                                                        <span>{region.name}</span>
                                                     </label>
                                                 ))}
                                             </div>
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex items-center space-x-3">
-                                                {user.warehouses.map((warehouse, idx) => (
-                                                    <label key={idx} className="flex items-cneter space-x-2 text-sm">
-                                                        <Checkbox />
-                                                        <span>{warehouse}</span>
+                                                {warehouses.map((warehouse) => (
+                                                    <label key={warehouse.id} className="flex items-cneter space-x-2 text-sm">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={userWarehouses[user.id]?.includes(warehouse.id) || false}
+                                                            onChange={() => handleWarehouseChange(user.id, warehouse.id)}
+                                                        />
+                                                        <span>{warehouse.name}</span>
                                                     </label>
                                                 ))}
                                             </div>
                                         </TableCell>
 
                                         <TableCell className="flex items-center space-x-3">
-                                            <div
+                                            <button
+                                                onClick={() => saveUserChanges(user.id)}
                                                 className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-[#26599F] hover:bg-blue-900 hover:border-none hover:outline-none'
                                             >
                                                 <span>Save</span>
-                                            </div>
+                                            </button>
 
-                                            <Trash2 className="text-red-500" />
+                                            <Trash2 onClick={() => deleteUser(user.id)} className="text-red-500" />
                                         </TableCell>
                                     </TableRow>
                                 )
@@ -188,3 +373,4 @@ export default function UserMangement() {
         </div>
     )
 }
+
