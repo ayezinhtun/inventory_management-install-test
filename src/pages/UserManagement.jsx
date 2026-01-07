@@ -302,11 +302,11 @@ export default function UserMangement() {
                                             {user.name}
                                         </TableCell>
                                         <TableCell>{user.email}</TableCell>
-                                        <TableCell>
+                                        <TableCell className="p-4 min-w-[120px]">
                                             <select
                                                 name=""
                                                 id=""
-                                                value={roleChanges[user.id] || user.role}
+                                                value={roleChanges[user.id] || user.role || "engineer"}
                                                 onChange={(e) => handleRoleChange(user.id, e.target.value)}
                                                 className="border rounded p-2 w-full"
                                             >
@@ -333,7 +333,7 @@ export default function UserMangement() {
                                         <TableCell>
                                             <div className="flex items-center space-x-3">
                                                 {warehouses.map((warehouse) => (
-                                                    <label key={warehouse.id} className="flex items-cneter space-x-2 text-sm">
+                                                    <label key={warehouse.id} className="flex items-center space-x-2 text-sm">
                                                         <input
                                                             type="checkbox"
                                                             checked={userWarehouses[user.id]?.includes(warehouse.id) || false}
