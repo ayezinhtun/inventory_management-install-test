@@ -92,7 +92,6 @@ export default function Login() {
                         <img src={logo} alt="" className='h-[100px] mb-10' />
                         <p className='text-[20px] mt-3 font-bold'>Welcome Back!</p>
                     </div>
-
                 </div>
 
             </div>

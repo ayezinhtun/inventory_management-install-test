@@ -358,6 +358,17 @@ export default function CreateInventory() {
                     <div className="col-span-9">
                         <div className="grid grid-cols-3 gap-2 gap-y-2">
                             <div>
+                                <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Type <span className="text-red-500">*</span></label>
+                                <select name="type" value={form.type} onChange={handleChange} id=""
+                                    className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
+                                >
+                                    <option value="">Select Type</option>
+                                    <option value="server">Server</option>
+                                    <option value="switch">Switch</option>
+                                    <option value="router">Router</option>
+                                </select>
+                            </div>
+                            <div>
                                 <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Device Name <span className="text-red-500">*</span></label>
                                 <input
                                     type="text"
@@ -421,19 +432,6 @@ export default function CreateInventory() {
                                     placeholder="Serial01"
                                     className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
                                 />
-                            </div>
-
-
-                            <div>
-                                <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Type <span className="text-red-500">*</span></label>
-                                <select name="type" value={form.type} onChange={handleChange} id=""
-                                    className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
-                                >
-                                    <option value="">Select Type</option>
-                                    <option value="server">Server</option>
-                                    <option value="switch">Switch</option>
-                                    <option value="router">Router</option>
-                                </select>
                             </div>
 
                             <div>
@@ -543,7 +541,7 @@ export default function CreateInventory() {
                         {form.type && (
                             <div className="mt-2">
                                 <label className="block mb-2 text-gray-900 text-sm font-medium">
-                                    {form.type} Specification
+                                    {form.type.toUpperCase()} Specification
                                 </label>
                                 <div className="border border-gray-200 px-2 py-4 rounded">
                                     <div>

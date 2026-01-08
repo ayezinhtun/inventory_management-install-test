@@ -178,12 +178,12 @@ export default function Inventory() {
                     </div>
 
                     <div className="flex space-x-5">
-                        <Link to='/create-inventory'
+                        {/* <Link to='/create-inventory'
                             className='flex items-center border rounded-lg p-2 px-4  cursor-pointer text-gray-500 hover:ring-4 hover:ring-primary-300 hover:border-none'
                         >
                             <CirclePlus className="w-5 h-5 mr-2" />
                             <span>Add New Inventory</span>
-                        </Link>
+                        </Link> */}
 
                         <button
                             onClick={handleExportCSV}
@@ -371,7 +371,7 @@ export default function Inventory() {
                                                     <Link to={`/edit-inventory/${inventory.id}`}><Pen className="text-[#26599F]" /></Link>
                                                     <Link to={`/inventory-detail/${inventory.id}`}><Eye className="text-[#8B5CF6]" /></Link>
                                                     <Trash2 className="text-red-500" onClick={() => handleDelete(inventory.id)} />
-                                                    <button
+                                                    {/* <button
                                                         onClick={() => {
                                                             setSelectedInventoryId(inventory.id)
                                                             setShowModal(true)
@@ -379,7 +379,7 @@ export default function Inventory() {
                                                         className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-[#26599F] hover:bg-blue-900 hover:border-none hover:outline-none'
                                                     >
                                                         <span>Sell To Customer</span>
-                                                    </button>
+                                                    </button> */}
                                                 </TableCell>
                                             </TableRow>
                                         )

@@ -16,13 +16,16 @@ import CreateInventory from "./components/Inventory/createInventory"
 import EditInventory from "./components/Inventory/editInventory"
 import Notification from "./pages/Notification"
 import ProtectedRoute from "./routes/ProtectedRoute"
-
+import Pending from "./pages/Pending"
+import AdminRoute from "./routes/AdminRoute"
+import CreatePart from "./components/Inventory/addPart"
 
 function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/pending" element={<Pending />} />
 
 
       <Route element={<ProtectedRoute />}>
@@ -33,11 +36,14 @@ function App() {
           <Route path="/warehouse" element={<Warehouse />} />
           <Route path="/rack" element={<Rack />} />
           <Route path="/inventory" element={<Inventory />} />
+          <Route path="/inventory/add-part" element={<CreatePart />} />
           <Route path="/customer" element={<Customer />} />
-          <Route path="/user" element={<UserMangement />} />
+          <Route element={<AdminRoute />}>
+            <Route path="/user" element={<UserMangement />} />
+          </Route>
           <Route path="/audit" element={<Audit />} />
           <Route path="/inventory-detail/:id" element={<InventoryDetail />} />
-          <Route path="/create-inventory" element={<CreateInventory />} />
+          <Route path="/inventory/create-inventory" element={<CreateInventory />} />
           <Route path="/edit-inventory/:id" element={<EditInventory />} />
           <Route path="/notification" element={<Notification />} />
         </Route>

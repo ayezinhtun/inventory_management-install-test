@@ -23,12 +23,12 @@ export const UserProfileProvider = ({ children }) => {
             .select("*")
             .eq("status", "active")
 
-            if(error) 
-                console.error("Error fetching users:", error.message);
-            
-            else setUsers(data);
+        if (error)
+            console.error("Error fetching users:", error.message);
 
-            setLoading(false);
+        else setUsers(data);
+
+        setLoading(false);
     }
 
     const updateUserRole = async (id, newRole) => {
@@ -36,16 +36,16 @@ export const UserProfileProvider = ({ children }) => {
         const currentRole = users.find(u => u.id === id)?.role;
 
         // optimistic update
-        setUsers(prev => prev.map(u => u.id === id ? {...u, role: newRole} : u));
+        setUsers(prev => prev.map(u => u.id === id ? { ...u, role: newRole } : u));
 
-        const {error} = await supabase
+        const { error } = await supabase
             .from("user_profile")
-            .update({role: newRole})
+            .update({ role: newRole })
             .eq("id", id);
 
-        if(error) {
+        if (error) {
             // rollback if faild, meaning when failed to place in the user with the old current role
-            setUsers(prev => prev.map(u => u.id === id ? {...u, role: currentRole}: u));
+            setUsers(prev => prev.map(u => u.id === id ? { ...u, role: currentRole } : u));
             alert("Failed to update role:" + error.message);
             return false;
         }
@@ -63,51 +63,88 @@ export const UserProfileProvider = ({ children }) => {
     // }
 
     const deleteUser = async (id) => {
-        if(!window.confirm("Are you sure to delete this user?")) return;
-       const {error}  = await supabase
-       .from("user_profile")
-       .update({status: "inactive"})
-       .eq("id", id);
+        if (!window.confirm("Are you sure to delete this user?")) return;
+        const { error } = await supabase
+            .from("user_profile")
+            .update({ status: "inactive" })
+            .eq("id", id);
 
-       if(error) {
-        console.error(error);
-        alert("Failed to delete user");
-       }else {
-        setUsers(prev => prev.filter(u => u.id !== id));
-        alert("User marked as inactive");
-       }
+        if (error) {
+            console.error(error);
+            alert("Failed to delete user");
+        } else {
+            setUsers(prev => prev.filter(u => u.id !== id));
+            alert("User marked as inactive");
+        }
     }
 
     //for porfile page
     const fetchProfile = async () => {
-        if(!user) {
+        if (!user) {
             setProfile(null);
             setLoading(false);
             return;
         }
 
-        const {data, error} = await supabase
-        .from('user_profile')
-        .select('*')
-        .eq('id', user.id)
-        .single()
+        setLoading(true);
 
-        if(!error) setProfile(data);
+        try {
+            // Fetch main user profile
+            const { data: profileData, error: profileError } = await supabase
+                .from('user_profile')
+                .select('*')
+                .eq('id', user.id)
+                .single();
+
+            if (profileError) throw profileError;
+
+            // Fetch assigned regions
+            const { data: regionData, error: regionError } = await supabase
+                .from('user_regions')
+                .select('region_id')
+                .eq('user_id', user.id);
+
+            if (regionError) throw regionError;
+
+            // Fetch assigned warehouses
+            const { data: warehouseData, error: warehouseError } = await supabase
+                .from('user_warehouses')
+                .select('warehouse_id')
+                .eq('user_id', user.id);
+
+            if (warehouseError) throw warehouseError;
+
+            // Merge assignments into profileData
+            const profileWithAssignments = {
+                ...profileData,
+                assignments: {
+                    regions: regionData?.map(r => r.region_id) || [],
+                    warehouses: warehouseData?.map(w => w.warehouse_id) || []
+                }
+            };
+
+            setProfile(profileWithAssignments);
+        } catch (err) {
+            console.error("Error fetching profile with assignments:", err);
+            setProfile(null);
+        }
+
         setLoading(false);
     };
 
+
     // update profile name
     const updateProfileName = async (newName) => {
-        if(!profile) return false;
+        if (!profile) return false;
 
-        const {data, error} = await supabase
-        .from('user_profile')
-        .update({name: newName})
-        .eq('id', profile.id)
-        .select()
-        .single();
+        const { data, error } = await supabase
+            .from('user_profile')
+            .update({ name: newName })
+            .eq('id', profile.id)
+            .select()
+            .single();
 
-        if(error) {
+        if (error) {
             alert("Error updatin name");
             return false;
         }
@@ -119,32 +156,32 @@ export const UserProfileProvider = ({ children }) => {
 
     //for update password
     const updatePassword = async (currentPassword, newPassword, confirmPassword) => {
-        if(!profile) return {success: false, message: "No profile found"};
+        if (!profile) return { success: false, message: "No profile found" };
 
-        if(!currentPassword || !newPassword || !confirmPassword) {
-            return {success: false, message: "All fields are required"};
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            return { success: false, message: "All fields are required" };
         }
 
-        if(newPassword !== confirmPassword) {
-            return {success: false, message: "New Password and ConfirmPassword do not match"};
+        if (newPassword !== confirmPassword) {
+            return { success: false, message: "New Password and ConfirmPassword do not match" };
         }
 
         // Re-authenticate
-        const {error: signInError} = await supabase.auth.signInWithPassword ({
-            email: profile.email, 
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+            email: profile.email,
             password: currentPassword,
         });
 
-        if(signInError) {
-            return {success: false, message: "Current Password is incorrect"};
+        if (signInError) {
+            return { success: false, message: "Current Password is incorrect" };
         }
 
         //update password
-        const {error} = await supabase.auth.updateUser({password: newPassword});
+        const { error } = await supabase.auth.updateUser({ password: newPassword });
 
-        if(error) return {success: false, message: error.message};
+        if (error) return { success: false, message: error.message };
 
-        return {success: true, message: "Password updated successfully!"};
+        return { success: true, message: "Password updated successfully!" };
     }
 
     useEffect(() => {
@@ -153,7 +190,7 @@ export const UserProfileProvider = ({ children }) => {
     }, [user]);
 
     return (
-        <UserProfileContext.Provider value={{profile, users, loading, fetchUsers, updateUserRole, deleteUser, updateProfileName, updatePassword }}>
+        <UserProfileContext.Provider value={{ profile, users, loading, fetchUsers, updateUserRole, deleteUser, updateProfileName, updatePassword }}>
             {children}
         </UserProfileContext.Provider>
     )
