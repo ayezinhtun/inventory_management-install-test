@@ -64,6 +64,9 @@ export default function InventoryDetail() {
                             <span className="font-medium">Device Name:</span> {inventory.name}
                         </div>
                         <div>
+                            <span className="font-medium">Region:</span> {inventory.regions.name}
+                        </div>
+                        <div>
                             <span className="font-medium">Warehouse:</span> {inventory.warehouses.name}
                         </div>
                         {inventory.racks && (
@@ -103,13 +106,14 @@ export default function InventoryDetail() {
                                 style={{ backgroundColor: inventory.color }}
                             ></span>
                         </div>
+
+                        {inventory.quantity > 1 && (
+                             <div>
+                                <span className="font-medium">Quantity</span> {inventory.quantity}
+                            </div>
+                        )}
                     </div>
 
-                    {inventory.customers && (
-                        <div>
-                            <span className="font-medium">Company Name:</span> {inventory.customers?.company_name}
-                        </div>
-                    )}
 
                     {/* Notes */}
                     <div className="mt-4">

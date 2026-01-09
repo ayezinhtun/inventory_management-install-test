@@ -1,5 +1,5 @@
 import { CircleX, Cross, Warehouse, X } from "lucide-react";
-import { FloatingLabel, Textarea, Button } from "flowbite-react";
+import { FloatingLabel, Textarea, Button, Spinner } from "flowbite-react";
 import { ImagePlus, MoveLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -7,6 +7,7 @@ import { supabase } from "../../../supabase/supabase-client";
 import { InventoryCreate } from "../../context/InventoryContext";
 import { useNavigate } from "react-router-dom";
 import { getWarehouse } from "../../context/WarehouseContext";
+import { getRegion } from "../../context/RegionContext";
 
 export default function CreateInventory() {
 
@@ -15,6 +16,8 @@ export default function CreateInventory() {
     const [imagePreview, setImagePreview] = useState(null);
 
     const [imageFile, setImageFile] = useState(null);
+
+    const [regions, setRegions] = useState([]);
 
     const [warehouses, setWarehouses] = useState([]);
 
@@ -26,8 +29,11 @@ export default function CreateInventory() {
 
     const [error, setError] = useState(null);
 
+    const [loading, setLoading] = useState(false);
+
     const [form, setForm] = useState({
         name: "",
+        region_id: "",
         warehouse_id: "",
         rack_id: "",
         status: "inactive",
@@ -39,16 +45,49 @@ export default function CreateInventory() {
         height: null,
         color: "#10b981",
         notes: "",
-        attributes: {}
+        attributes: {},
+        quantity: 1
     });
 
     useEffect(() => {
+        const loadRegion = async () => {
+            const data = await getRegion();
+            setRegions(data || []);
+        };
+        loadRegion();
+    }, []);
+
+    // useEffect(() => {
+    //     const loadWh = async () => {
+    //         const data = await getWarehouse();
+    //         setWarehouses(data || []);
+    //     };
+    //     loadWh();
+    // }, []);
+
+    useEffect(() => {
         const loadWh = async () => {
-            const data = await getWarehouse();
-            setWarehouses(data || []);
+            if (!form.region_id) {
+                setWarehouses([]);
+                setForm((prev) => ({ ...prev, warehouse_id: "" }));
+                return;
+            }
+
+            const { data, error } = await supabase
+                .from('warehouses')
+                .select("id, name, region_id")
+                .eq("region_id", form.region_id)
+                .order("name");
+
+            if (error) {
+                console.error(error);
+                setWarehouses([]);
+            } else {
+                setWarehouses(data || []);
+            }
         };
         loadWh();
-    }, []);
+    }, [form.region_id]);
 
     useEffect(() => {
         const loadRacks = async () => {
@@ -191,6 +230,8 @@ export default function CreateInventory() {
 
         setError(null);
 
+        setLoading(true);
+
         try {
 
             // Upload image if provided
@@ -266,6 +307,7 @@ export default function CreateInventory() {
             // Submit via your context function
             await InventoryCreate({
                 ...form,
+                region_id: form.region_id || null,
                 warehouse_id: form.warehouse_id || null,
                 rack_id: form.rack_id || null,
                 start_unit: form.start_unit ?? null,
@@ -276,6 +318,7 @@ export default function CreateInventory() {
             alert("Inventory added successfully");
             setForm({
                 name: "",
+                region_id: "",
                 warehouse_id: "",
                 rack_id: "",
                 status: "inactive",
@@ -287,13 +330,16 @@ export default function CreateInventory() {
                 height: null,
                 color: "#10b981",
                 notes: "",
-                attributes: {}
+                attributes: {},
+                quantity: 1
             });
 
             setImagePreview(null);
             setImageFile(null);
         } catch (err) {
             console.log(err.message)
+        } finally {
+            setLoading(false);
         }
 
     };
@@ -311,8 +357,18 @@ export default function CreateInventory() {
                     <Button
                         type="submit"
                         className="bg-[#26599F] text-lg"
+                        disabled={loading}
                     >
-                        New Inventory
+                        {loading && (
+                            <div className="fixed inset-0 flex justify-center items-center ">
+                                <Spinner
+                                    aria-level="Loading..."
+                                    size="xl"
+                                    color="info"
+                                />
+                            </div>
+                        )}
+                        {loading ? "Saving..." : "Add Inventory"}
                     </Button>
                 </div>
                 <div className="grid grid-cols-12 gap-8">
@@ -382,6 +438,22 @@ export default function CreateInventory() {
 
                             <div>
                                 <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Warehouse <span className="text-red-500">*</span></label>
+                                <select name="region_id" id="" value={form.region_id} onChange={handleChange}
+                                    className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
+                                >
+                                    <option value="">
+                                        No Region
+                                    </option>
+                                    {regions.map((r) => (
+                                        <option key={r.id} value={r.id}>
+                                            {r.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Warehouse <span className="text-red-500">*</span></label>
                                 <select name="warehouse_id" id="" value={form.warehouse_id} onChange={handleChange}
                                     className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
                                 >
@@ -421,6 +493,7 @@ export default function CreateInventory() {
                                     <option value="sold">Sold</option>
                                 </select>
                             </div>
+
 
                             <div>
                                 <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Serial No </label>

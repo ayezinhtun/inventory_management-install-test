@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import CardComponent from "../components/card/crad";
 import { CirclePlus, Delete, Download, Edit, Eye, ListFilter, MapPin, Package, Pen, Search, Trash2 } from "lucide-react"
 import Pagination from "../components/pagination/pagination";
-import { Checkbox, Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
+import { Checkbox, Spinner, Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
 import { Dropdown, DropdownItem } from "flowbite-react";
 import EditRegionModal from "../components/region/editregion";
 import { Link } from 'react-router-dom'
@@ -97,7 +97,7 @@ export default function Inventory() {
 
     // this is for search and filter
     const filteredInventorys = inventorys.filter(inventory =>
-        
+
         inventory.name.toLowerCase().includes(searchItem.toLowerCase()) &&
 
         (nameFilter === "" || inventory.name === nameFilter) &&
@@ -149,6 +149,18 @@ export default function Inventory() {
         RackData();
 
     }, [])
+
+    if (loading) {
+        return (
+            <div className="fixed inset-0 flex justify-center items-center ">
+                <Spinner
+                    aria-level="Loading..."
+                    size="xl"
+                    color="info"
+                />
+            </div>
+        )
+    }
 
     return (
         <div>
@@ -368,7 +380,18 @@ export default function Inventory() {
                                                 <TableCell>{inventory.racks?.name}</TableCell>
                                                 <TableCell>{inventory.status}</TableCell>
                                                 <TableCell className="flex items-center space-x-3">
-                                                    <Link to={`/edit-inventory/${inventory.id}`}><Pen className="text-[#26599F]" /></Link>
+                                                    <Link
+                                                        to={
+                                                            inventory.type === "ram" || inventory.type === "cpu" || inventory.type === "ssd"
+                                                                ? `/edit-part/${inventory.id}`
+                                                                : `/edit-inventory/${inventory.id} `
+                                                        }
+
+                                                    >
+                                                        <Pen className="text-[#26599F]" />
+                                                    </Link>
+
+                                                    {/* <Link to={`/edit-inventory/${inventory.id} `}><Pen className="text-[#26599F]" /></Link> */}
                                                     <Link to={`/inventory-detail/${inventory.id}`}><Eye className="text-[#8B5CF6]" /></Link>
                                                     <Trash2 className="text-red-500" onClick={() => handleDelete(inventory.id)} />
                                                     {/* <button
@@ -402,7 +425,7 @@ export default function Inventory() {
 
 
             {showModal &&
-                <AddCustomer onClose={() => setShowModal(false)} inventoryId={selectedInventoryId} onAdd={InventoryData}/>
+                <AddCustomer onClose={() => setShowModal(false)} inventoryId={selectedInventoryId} onAdd={InventoryData} />
             }
 
             {showEditModal &&
