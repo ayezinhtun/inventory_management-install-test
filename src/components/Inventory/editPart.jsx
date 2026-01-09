@@ -86,7 +86,7 @@ export default function EditPart() {
         loadRegion();
     }, []);
 
-    // Load warehouses for selected region
+    // Load warehouses for seleccting region
     useEffect(() => {
         const loadWh = async () => {
             if (!form.region_id) {
