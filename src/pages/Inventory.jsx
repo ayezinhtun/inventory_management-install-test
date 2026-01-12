@@ -106,7 +106,9 @@ export default function Inventory() {
 
         (warehouseFilter === "" || inventory.warehouses?.name === warehouseFilter) &&
 
-        (rackFilter === "" || inventory.racks?.name === rackFilter)
+        (rackFilter === "" || inventory.racks?.name === rackFilter) &&
+
+        inventory.quantity > 0
 
     )
 
@@ -386,7 +388,7 @@ export default function Inventory() {
                                                     {/* <Link to={`/edit-inventory/${inventory.id} `}><Pen className="text-[#26599F]" /></Link> */}
                                                     <Link to={`/inventory-detail/${inventory.id}`}><Eye className="text-[#8B5CF6]" /></Link>
                                                     <Trash2 className="text-red-500" onClick={() => handleDelete(inventory.id)} />
-                                                    {/* <button
+                                                    <button
                                                         onClick={() => {
                                                             setSelectedInventoryId(inventory.id)
                                                             setShowModal(true)
@@ -394,7 +396,7 @@ export default function Inventory() {
                                                         className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-[#26599F] hover:bg-blue-900 hover:border-none hover:outline-none'
                                                     >
                                                         <span>Sell To Customer</span>
-                                                    </button> */}
+                                                    </button>
                                                 </TableCell>
                                             </TableRow>
                                         )

@@ -1,132 +1,108 @@
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import CardComponent from "../components/card/crad";
-import { CirclePlus, Delete, Download, Edit, Home, ListFilter, MapPin, Pen, Search, Trash2 } from "lucide-react"
-import Pagination from "../components/pagination/pagination";
+import { CirclePlus, Contact, Delete, Download, Edit, ListFilter, MapPin, Package, Pen, Search, Trash2, UsersRound } from "lucide-react"
 import { Checkbox, Spinner, Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
+import { getCustomerInventory, restoreSale } from "../context/CustomerInventory";
+import Pagination from "../components/pagination/pagination";
+import EditCustomerInventory from "../components/Inventory/editCustomerInventory";
 import { Dropdown, DropdownItem } from "flowbite-react";
-import AddWarehouse from "../components/warehouse/addWarehouse";
-import EditWarehouse from "../components/warehouse/editWarehouse";
-import { deleteWarehouse, getWarehouse } from "../context/WarehouseContext";
-import { getRegion } from "../context/RegionContext";
 import { exportToCSV } from "../utils/exportUtils";
 
-export default function Warehouse() {
 
-    const [warehouses, setWarehouses] = useState([]);
+export default function CustomerInventory() {
 
-    const [regions, setRegions] = useState([]);
+    const [customerInventory, setCustomerInventory] = useState([]);
 
     const [loading, setLoading] = useState(true);
 
-    // for search in the input search
     const [searchItem, setSearchItem] = useState("");
 
-    // for filter
     const [showFilter, setShowFilter] = useState(false);
+
     const [nameFilter, setNameFilter] = useState("");
 
-    const [regionFilter, setRegionFilter] = useState("");
+    const [restoreLoading, setRestoreLoading] = useState(false);
 
-    // for show add form modal
-    const [showModal, setShowModal] = useState(false);
+    const [selectedCustomerInventory, setSelectedCustomerInventory] = useState([]);
 
-    //for show edit form modal
     const [showEditModal, setShowEditModal] = useState(false);
 
-    //for edit
-    const [selectedWarehouse, setSelectedWarehouse] = useState(null);
+    const filteredInventorys = customerInventory.filter(c =>
+        c.customers?.contact_person.toLowerCase().includes(searchItem.toLowerCase()) &&
 
-    // this is for search and filter
-    const filteredWarehouses = warehouses.filter(warehouse =>
-        warehouse.name.toLowerCase().includes(searchItem.toLowerCase()) &&
-
-        (nameFilter === "" || warehouse.name === nameFilter) &&
-
-        (regionFilter === "" || warehouse.regions?.name === regionFilter)
+        (nameFilter === "" || c.customers?.contact_person === nameFilter)
     )
 
-
-    // this is for pagination
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 3;
 
     const indexOfLast = currentPage * itemsPerPage;
     const indexOfFirst = indexOfLast - itemsPerPage;
-    const currentWarehouses = filteredWarehouses.slice(indexOfFirst, indexOfLast);
-
-    const totalPages = Math.ceil(filteredWarehouses.length / itemsPerPage);
+    const currentInventorys = filteredInventorys.slice(indexOfFirst, indexOfLast);
 
 
-    //for fetch region
-    const fetchRegions = async () => {
+    const totalPages = Math.ceil(filteredInventorys.length / itemsPerPage);
 
-        try {
-            const data = await getRegion();
-            setRegions(data);
-        } catch (error) {
-            console.log('Error fetching Regions:', error);
-        }
-    }
-
-    //for fetch warehouses
-    const fetchWarehouses = async () => {
+    const fetchInventorys = async () => {
         setLoading(true);
+
         try {
-            const data = await getWarehouse();
-            setWarehouses(data);
+            const data = await getCustomerInventory();
+            setCustomerInventory(data);
         } catch (error) {
-            console.log('Errror fetching Warehouses:', error);
+            console.log('Error fetching Inventorys:', error);
         } finally {
             setLoading(false);
         }
     }
 
+    const handleRestore = async (sale) => {
+        const confirm = window.confirm(`Restore inventory "${sale.inventorys.name}" from customer "${sale.customers.contact_person}"? `);
+        if (!confirm) return;
 
-    //for delete warehouses
-    const handleDelete = async (id) => {
-        const isConfirmed = window.confirm("Are you sure to delete this Warehouse?");
-
-        if (!isConfirmed) return;
+        setRestoreLoading(true);
 
         try {
-            await deleteWarehouse(id);
-            fetchWarehouses();
+            await restoreSale(sale.id, sale.inventory_id, sale.quantity);
+            alert("Inventory restored successfully");
+            fetchInventorys();
         } catch (error) {
-            console.log('Error in delete warehouse', error)
-            alert('Failed to delete Warehouse');
+            alert("Failed to restore Inventory:" + error.message);
+        } finally {
+            setRestoreLoading(false);
         }
     }
 
-
-    // handle edit
-    const handleEdit = (warehouse) => {
-        setSelectedWarehouse(warehouse);
-        setShowEditModal(true);
+    const handleEdit = (i) => {
+        setSelectedCustomerInventory(i);
+        setShowEditModal(true)
     }
 
-    // for export
     const handleExportCSV = () => {
-        const data = warehouses.map(w => ({
-            Name: w.name,
-            Region: w.regions?.name || '',
-            Description: w.description
+        const data = customerInventory.map(i => ({
+            'Customer Name': i.customers?.contact_person, 
+            'Company Name': i.customers?.company_name, 
+            'Inventory Name': i.inventorys?.name, 
+            'Serial No': i.inventorys.serial_no, 
+            'Inventory Type': i.inventorys?.type, 
+            'Quantity': i.quantity, 
+            'Notes': i.notes
         }));
 
-        const headers = ['Name', 'Region', 'Description'];
-        exportToCSV(data, `warehouses-${new Date().toISOString().slice(0, 10)}.csv`, headers);
-    }
+        const headers = ['Customer Name', 'Company Name', 'Inventory Name', 'Serial No', 'Inventory Type', 'Quantity', 'Notes'];
+        exportToCSV(data, `customerinventorys-${new Date().toISOString().slice(0, 10)}.csv`, headers);
 
+    }
     useEffect(() => {
-        fetchWarehouses();
-        fetchRegions();
+        fetchInventorys();
     }, [])
 
     return (
         <div>
-            <h1 className="font-bold mb-5 text-[24px]">Warehouses</h1>
+            <h1 className="font-bold mb-5 text-[24px]">Inventorys</h1>
 
             <div className="grid grid-cols-3 gap-10 mb-5">
-                <CardComponent title="Total Warehouses" count={warehouses.length} icon={Home} />
+                <CardComponent title="Total Inventory" count={customerInventory.length} icon={Package} />
             </div>
 
             <div className="bg-white shadow rounded-lg border border-gray-200 overflow-auto">
@@ -146,16 +122,10 @@ export default function Warehouse() {
                             <ListFilter className="w-5 h-5 mr-2" />
                             <span>Filter</span>
                         </div>
+
                     </div>
 
                     <div className="flex space-x-5">
-                        <div
-                            className='flex items-center border rounded-lg p-2 px-4  cursor-pointer text-gray-500 hover:ring-4 hover:ring-primary-300 hover:border-none'
-                            onClick={() => setShowModal(true)}
-                        >
-                            <CirclePlus className="w-5 h-5 mr-2" />
-                            <span>Add New Warehouse</span>
-                        </div>
 
                         <button
                             onClick={handleExportCSV}
@@ -165,8 +135,6 @@ export default function Warehouse() {
                             <span>Export</span>
                         </button>
                     </div>
-
-
                 </div>
 
                 {showFilter && (
@@ -182,7 +150,7 @@ export default function Warehouse() {
                                     >
                                         All
                                     </DropdownItem>
-                                    {Array.from(new Set(warehouses.map(w => w.name))).map((name, idx) => (
+                                    {Array.from(new Set(customerInventory.map(c => c.customers?.contact_person))).map((name, idx) => (
                                         <DropdownItem
                                             key={idx}
                                             onClick={() => {
@@ -198,36 +166,11 @@ export default function Warehouse() {
 
 
                             </div>
-
-                            <div className="flex flex-col space-y-2">
-                                <Dropdown label="Filter by Region" className="border border-gray-300 bg-white text-gray700 hover:bg-white" dismissOnClick={true}>
-                                    <DropdownItem
-                                        onClick={() => {
-                                            setNameFilter("");
-                                            setCurrentPage(1);
-                                        }}
-                                    >
-                                        All
-                                    </DropdownItem>
-                                    {Array.from(new Set(regions.map(r => r.name))).map((name, idx) => (
-                                        <DropdownItem
-                                            key={idx}
-                                            onClick={() => {
-                                                setRegionFilter(name);
-                                                setCurrentPage(1);
-                                            }}
-                                        >
-                                            {name}
-                                        </DropdownItem>
-                                    ))}
-
-                                </Dropdown>
-                            </div>
                         </div>
 
 
                         <button
-                            onClick={() => { setNameFilter(""); setRegionFilter(""); setCurrentPage(1); }}
+                            onClick={() => { setNameFilter(""); setCurrentPage(1); }}
                             className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-[#26599F] hover:bg-blue-900 hover:border-none hover:outline-none'
                         >
                             <span>Reset Filters</span>
@@ -244,9 +187,13 @@ export default function Warehouse() {
                                 <TableHeadCell className="p-4">
                                     <Checkbox />
                                 </TableHeadCell>
-                                <TableHeadCell>Name</TableHeadCell>
-                                <TableHeadCell>Region Name</TableHeadCell>
-                                <TableHeadCell>Description</TableHeadCell>
+                                <TableHeadCell>Customer Name</TableHeadCell>
+                                <TableHeadCell>Company Name</TableHeadCell>
+                                <TableHeadCell>Inventory Name</TableHeadCell>
+                                <TableHeadCell>Serial No</TableHeadCell>
+                                <TableHeadCell>Inventory Type</TableHeadCell>
+                                <TableHeadCell>Quantity</TableHeadCell>
+                                <TableHeadCell>Notes</TableHeadCell>
 
                                 <TableHeadCell colSpan={2}>
                                     <span>Action</span>
@@ -255,45 +202,66 @@ export default function Warehouse() {
                         </TableHead>
                         <TableBody className="divide-y divide-gray-200">
                             {loading ? (
-                                <TableRow>
-                                    <TableCell colSpan={5} className="text-center py-5">
+                                <TableRow >
+                                    <TableCell colSpan={8} className="text-center py-5">
                                         <div>
                                             <Spinner size="xl" color="info" aria-label="Loading..." />
                                         </div>
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                currentWarehouses.length === 0 ? (
+                                currentInventorys.length === 0 ? (
                                     <TableRow>
                                         <TableCell
                                             colSpan={5}
                                             className="text-center"
                                         >
-                                            No Warehouse found
+                                            No Inventory found
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    currentWarehouses.map((warehouse, index) => {
+                                    currentInventorys.map((i) => {
                                         return (
-                                            <TableRow key={index} className="bg-white dark:border-gray-700 dark:bg-gray-800">
+                                            <TableRow key={i.id} className="bg-white dark:border-gray-700 dark:bg-gray-800">
                                                 <TableCell className="p-4">
                                                     <Checkbox />
                                                 </TableCell>
                                                 <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                                                    {warehouse.name}
+                                                    {i.customers?.contact_person}
                                                 </TableCell>
-                                                <TableCell>{warehouse.regions?.name}</TableCell>
-                                                <TableCell>{warehouse.description}</TableCell>
+                                                <TableCell>{i.customers?.company_name}</TableCell>
+                                                <TableCell>{i.inventorys.name}</TableCell>
+                                                <TableCell>{i.inventorys.serial_no}</TableCell>
+                                                <TableCell>{i.inventorys.type}</TableCell>
+                                                <TableCell>{i.quantity}</TableCell>
+                                                <TableCell>{i.notes}</TableCell>
+
+
                                                 <TableCell className="flex items-center space-x-3">
-                                                    <Pen className="text-[#26599F] hover:text-blue-600" onClick={() => handleEdit(warehouse)} />
-                                                    <Trash2 className="text-red-600 hover:text-red-500" onClick={() => handleDelete(warehouse.id)} />
+                                                    <Pen className="text-[#26599F] hover:text-blue-600" onClick={() => handleEdit(i)} />
+                                                    <Trash2 className="text-red-500" />
+                                                    <button
+                                                        onClick={() => handleRestore(i)}
+                                                        className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-[#26599F] hover:bg-blue-900 hover:border-none hover:outline-none'
+                                                    >
+                                                        {restoreLoading && (
+                                                            <div className="fixed inset-0 flex justify-center items-center ">
+                                                                <Spinner
+                                                                    aria-level="Loading..."
+                                                                    size="xl"
+                                                                    color="info"
+                                                                />
+                                                            </div>
+                                                        )}
+                                                        {restoreLoading ? "Restoring..." : "Restore"}
+                                                    </button>
                                                 </TableCell>
                                             </TableRow>
                                         )
                                     })
                                 )
-                            )
-                            }
+                            )}
+
                         </TableBody>
                     </Table>
                 </div>
@@ -304,16 +272,16 @@ export default function Warehouse() {
                     onPageChange={setCurrentPage}
                 />
 
+                {showEditModal && selectedCustomerInventory && (
+                    <EditCustomerInventory
+                        customerinventory={selectedCustomerInventory}
+                        onClose={() => setShowEditModal(false)}
+                        onUpdate={fetchInventorys}
+                    />
+                )}
+
             </div>
 
-            {showModal &&
-                <AddWarehouse onClose={() => setShowModal(false)} region={regions} onAdd={fetchWarehouses} />
-            }
-
-            {showEditModal && selectedWarehouse && (
-                <EditWarehouse warehouse={selectedWarehouse} region={regions} onClose={() => setShowEditModal(false)} onUpdate={fetchWarehouses} />
-            )
-            }
-        </div>
+        </div >
     )
 }

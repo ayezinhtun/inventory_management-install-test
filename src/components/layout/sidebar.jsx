@@ -1,81 +1,113 @@
-import { Archive, Box, ChevronDown, ChevronUp, Clock, Home, Layers, LayoutDashboard, MapPin, Package, User, UsersRound } from 'lucide-react';
-import logo from '../../assets/logo.png';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import {
+    LayoutDashboard,
+    Package,
+    MapPin,
+    Home,
+    Layers,
+    UsersRound,
+    User,
+    Clock,
+    ChevronDown,
+    ChevronUp,
+} from "lucide-react";
+import logo from "../../assets/logo.png";
 
 export default function SidebarComponent() {
     const location = useLocation();
     const navigate = useNavigate();
-    const [inventoryOpen, setInventoryOpen] = useState(false);
+
+    // Dynamic state for all menus with subLinks
+    const [openMenus, setOpenMenus] = useState({});
 
     const links = [
-        { id: 1, name: 'Dashboard', path: '/', icon: <LayoutDashboard className='h-5 w-5 mr-2' /> },
+        { id: 1, name: "Dashboard", path: "/", icon: <LayoutDashboard className="h-5 w-5 mr-2" /> },
         {
-            id: 2, name: 'Inventory', path: '/inventory', icon: <Package className='h-5 w-5 mr-2' />,
+            id: 2,
+            name: "Inventory",
+            path: "/inventory",
+            icon: <Package className="h-5 w-5 mr-2" />,
             subLinks: [
-                { id: '2-1', name: 'Add Inventory', path: '/inventory/create-inventory' },
-                { id: '2-2', name: 'Add Component', path: '/inventory/add-part' },
-            ]
+                { id: "2-1", name: "Add Inventory", path: "/inventory/create-inventory" },
+                { id: "2-2", name: "Add Component", path: "/inventory/add-part" },
+            ],
         },
-        { id: 3, name: 'Region', path: '/region', icon: <MapPin className='h-5 w-5 mr-2' /> },
-        { id: 4, name: 'Warehouse', path: '/warehouse', icon: <Home className='h-5 w-5 mr-2' /> },
-        { id: 5, name: 'Rack', path: '/rack', icon: <Layers className='h-5 w-5 mr-2' /> },
-        { id: 6, name: 'Customers', path: '/customer', icon: <UsersRound className='h-5 w-5 mr-2' /> },
-        { id: 7, name: 'Users', path: '/user', icon: <User className='h-5 w-5 mr-2' /> },
-        { id: 8, name: 'Audit Log', path: '/audit', icon: <Clock className='h-5 w-5 mr-2' /> },
+        { id: 3, name: "Region", path: "/region", icon: <MapPin className="h-5 w-5 mr-2" /> },
+        { id: 4, name: "Warehouse", path: "/warehouse", icon: <Home className="h-5 w-5 mr-2" /> },
+        { id: 5, name: "Rack", path: "/rack", icon: <Layers className="h-5 w-5 mr-2" /> },
+        {
+            id: 6,
+            name: "Customers",
+            path: "/customer",
+            icon: <UsersRound className="h-5 w-5 mr-2" />,
+            subLinks: [{ id: "6-1", name: "Inventory", path: "/customer/inventory" }],
+        },
+        { id: 7, name: "Users", path: "/user", icon: <User className="h-5 w-5 mr-2" /> },
+        { id: 8, name: "Audit Log", path: "/audit", icon: <Clock className="h-5 w-5 mr-2" /> },
     ];
 
-    // Open Inventory if current path is under /inventory
+    // Open the menu if current path starts with its path
     useEffect(() => {
-        if (location.pathname.startsWith('/inventory')) {
-            setInventoryOpen(true);
-        }
+        const newOpenMenus = {};
+        links.forEach((link) => {
+            if (link.subLinks && location.pathname.startsWith(link.path)) {
+                newOpenMenus[link.id] = true;
+            }
+        });
+        setOpenMenus(newOpenMenus);
     }, [location.pathname]);
 
+    const toggleMenu = (id) => {
+        setOpenMenus((prev) => ({ ...prev, [id]: !prev[id] }));
+    };
+
     return (
-        <div className='w-64 bg-white shadow-xl h-full fixed left-0 top-0 z-40 flex flex-col'>
-            <Link to='/' className='p-4 flex-col items-center space-x-3'>
-                <img src={logo} alt="logo" className='h-15 mb-1' />
-                <div>
-                    <h1 className='font-bold text-gray-900 text-[20px]'>Inventory Management</h1>
-                </div>
+        <div className="w-64 bg-white shadow-xl h-full fixed left-0 top-0 z-40 flex flex-col">
+            {/* Logo */}
+            <Link to="/" className="p-4 flex flex-col items-center space-x-3">
+                <img src={logo} alt="logo" className="h-15 mb-1" />
+                <h1 className="font-bold text-gray-900 text-[20px]">Inventory Management</h1>
             </Link>
 
-            <nav className='flex-1 p-4 space-y-2 overflow-y-auto'>
+            {/* Navigation */}
+            <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
                 {links.map((link) => {
-                    const isActive = location.pathname === link.path || location.pathname.startsWith(link.path + '/');
+                    const isActive =
+                        location.pathname === link.path || location.pathname.startsWith(link.path + "/");
 
                     if (link.subLinks) {
+                        const isOpen = openMenus[link.id];
+
                         return (
                             <div key={link.id}>
-                                {/* Inventory main link */}
                                 <div
                                     onClick={() => navigate(link.path)}
-                                    className={`cursor-pointer flex items-center justify-between px-3 py-3 rounded-xl border border-none font-bold hover:bg-[#F9F5FF] hover:border-[#F9F5FF] transition hover:text-[#26599F] ${isActive ? "bg-[#F9F5FF] text-[#26599F]" : ""}`}
+                                    className={`cursor-pointer flex items-center justify-between px-3 py-3 rounded-xl border-none font-bold hover:bg-[#F9F5FF] hover:text-[#26599F] transition ${isActive ? "bg-[#F9F5FF] text-[#26599F]" : ""
+                                        }`}
                                 >
-                                    <div className='flex items-center'>
+                                    <div className="flex items-center">
                                         {link.icon}
                                         <span>{link.name}</span>
                                     </div>
                                     <span
-                                        className='cursor-pointer'
-                                        onClick={(e) => { 
-                                            e.stopPropagation(); 
-                                            setInventoryOpen(!inventoryOpen); 
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            toggleMenu(link.id);
                                         }}
                                     >
-                                        {inventoryOpen ? <ChevronDown/> : <ChevronUp/>}
+                                        {isOpen ? <ChevronDown /> : <ChevronUp />}
                                     </span>
                                 </div>
 
-                                {/* Sub-links */}
-                                {inventoryOpen && (
-                                    <div className='ml-6 mt-1 flex flex-col space-y-1'>
+                                {isOpen && (
+                                    <div className="ml-6 mt-1 flex flex-col space-y-1">
                                         {link.subLinks.map((sub) => (
                                             <Link
                                                 key={sub.id}
                                                 to={sub.path}
-                                                className={`px-3 py-2 rounded-lg font-medium text-gray-700 hover:bg-[#F0EBFF] hover:text-[#26599F] ${location.pathname === sub.path ? 'bg-[#F0EBFF] text-[#26599F]' : ''}`}
+                                                className={`px-3 py-2 rounded-lg font-medium text-gray-700 hover:bg-[#F0EBFF] hover:text-[#26599F] ${location.pathname === sub.path ? "bg-[#F0EBFF] text-[#26599F]" : ""
+                                                    }`}
                                             >
                                                 {sub.name}
                                             </Link>
@@ -83,19 +115,20 @@ export default function SidebarComponent() {
                                     </div>
                                 )}
                             </div>
-                        )
+                        );
                     }
 
                     return (
                         <Link
                             key={link.id}
                             to={link.path}
-                            className={`flex items-center px-3 py-3 rounded-xl border border-none font-bold hover:bg-[#F9F5FF] hover:border-[#F9F5FF] transition hover:text-[#26599F] ${isActive ? "bg-[#F9F5FF] border-none text-[#26599F] " : ""}`}
+                            className={`flex items-center px-3 py-3 rounded-xl border-none font-bold hover:bg-[#F9F5FF] hover:text-[#26599F] transition ${isActive ? "bg-[#F9F5FF] text-[#26599F]" : ""
+                                }`}
                         >
                             {link.icon}
                             <span>{link.name}</span>
                         </Link>
-                    )
+                    );
                 })}
             </nav>
         </div>

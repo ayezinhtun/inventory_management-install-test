@@ -6,11 +6,19 @@ import { useNavigate } from "react-router-dom";
 import { getCustomer } from "../../context/CustomerContext";
 import { supabase } from "../../../supabase/supabase-client";
 
-export default function AddCustomer({ onClose, inventoryId, onAdd }) {
+export default function EditCustomerInventory({ onClose, customerinventory, onUpdate }) {
+
     const [customers, setCustomers] = useState([]);
-    const [selectedCustomerId, setSelectedCustomerId] = useState("");
-    const [soldQuantity, setSoldQuantity] = useState(1);
-    const [notes, setNotes] = useState("");
+    const [selectedCustomerId, setSelectedCustomerId] = useState(
+        customerinventory.customer_id
+    );
+    const [soldQuantity, setSoldQuantity] = useState(
+        customerinventory.quantity
+    );
+
+    const [notes, setNotes] = useState(
+        customerinventory.notes || ""
+    );
 
     const [loading, setLoading] = useState(false);
 
@@ -21,14 +29,27 @@ export default function AddCustomer({ onClose, inventoryId, onAdd }) {
         address: ""
     })
     // for fetch customer
-    const fetchCustomer = async () => {
-        try {
+    useEffect(() => {
+        const fetchCustomer = async () => {
             const data = await getCustomer();
             setCustomers(data);
-        } catch (error) {
-            console.log("Error fetching customer", error);
-        }
-    }
+
+            const customer = data.find(
+                (c) => c.id === customerinventory.customer_id
+            );
+
+            if (customer) {
+                setForm({
+                    contact_person: customer.contact_person || "",
+                    contact_email: customer.contact_email || "",
+                    contact_number: customer.contact_number || "",
+                    address: customer.address || "",
+                });
+            }
+        };
+
+        fetchCustomer();
+    }, [customerinventory.customer_id])
 
     const handleCustomerChange = (e) => {
         const id = e.target.value;
@@ -36,21 +57,14 @@ export default function AddCustomer({ onClose, inventoryId, onAdd }) {
 
         const customer = customers.find((c) => c.id === id);
 
-        if (customer) {
-            setForm({
-                contact_person: customer.contact_person || "",
-                contact_email: customer.contact_email || "",
-                contact_number: customer.contact_number || "",
-                address: customer.address || ""
-            });
-        } else {
-            setForm({
-                contact_person: "",
-                contact_email: "",
-                contact_number: "",
-                address: ""
-            })
-        }
+        if (!customer) return;
+
+        setForm({
+            contact_person: customer.contact_person || "",
+            contact_email: customer.contact_email || "",
+            contact_number: customer.contact_number || "",
+            address: customer.address || "",
+        });
     }
 
     // submit
@@ -59,82 +73,72 @@ export default function AddCustomer({ onClose, inventoryId, onAdd }) {
 
         setLoading(true);
 
-        if (!selectedCustomerId) {
-            alert("Please select a customer");
-            return;
-        }
+        try{
+            const inventoryId = customerinventory.inventory_id;
+            const oldQty = customerinventory.quantity;
+            const newQty = soldQuantity;
+            const diff = newQty - oldQty;
 
-        if (soldQuantity < 1) {
-            alert("Quantity must be at least 1");
-            return;
-        }
-
-        try {
-            // fetch current inventory
-            const { data: inventoryData, error: fetchError } = await supabase
-                .from('inventorys')
-                .select('*')
-                .eq('id', inventoryId)
-                .single();
-
-            if (fetchError || !inventoryData) {
-                alert("Errorr fetching inventory: " + (fetchError?.message || "Not found"));
+            if(newQty < 1) {
+                alert("Quantity must be at least 1");
                 return;
             }
 
-            if (inventoryData.quantity < soldQuantity) {
-                alert(`Not enough stock! Available: ${inventoryData.quantity}`);
-                return;
-            }
-
-            // update inventory quantity and status
-            const { data: updatedInventory, error: updateError } = await supabase
+            //fetch inventory
+            const {data: inventory, error: invErr} = await supabase
                 .from("inventorys")
-                .update({
-                    quantity: inventoryData.quantity - soldQuantity,
-                    status: inventoryData.quantity - soldQuantity <= 0 ? "Out of Stock" : inventoryData.status,
-                    rack_id: null,
-                    start_unit: null,
-                    height: null
-                })
+                .select("quantity, status")
                 .eq("id", inventoryId)
-                .select()
                 .single();
 
-            if (updateError) {
-                alert("Error updating Inventory: " + updateError.message);
+            if(invErr || !inventory) {
+                alert("Inventory not found");
                 return;
             }
 
-            // insert into customer_sales
-            const { error: saleError } = await supabase
+            if(inventory.quantity - diff < 0) {
+                alert(
+                    `Not enough stock . Available: ${inventory.quantity + oldQty}`
+                );
+
+                return;
+            }
+
+            // update inventory (difference only)
+            await supabase
+            .from('inventorys')
+            .update({
+                quantity: inventory.quantity - diff, 
+                status: 
+                    inventory.quantity - diff <=0 
+                        ? "Out of Stock"
+                        : "Active",
+            })
+            .eq("id", inventoryId);
+
+            // udpate customer sale
+            await supabase
                 .from("customer_sales")
-                .insert({
-                    inventory_id: inventoryId,
-                    customer_id: selectedCustomerId,
-                    quantity: soldQuantity,
-                    notes: notes
-                });
+                .update({
+                    customer_id: selectedCustomerId, 
+                    quantity: newQty, 
+                    notes: notes, 
+                })
+                .eq('id', customerinventory.id);
 
-            if (saleError) {
-                alert("Error recording sale:" + saleError.message);
-                return;
-            }
-
-            alert("Inventory sold successfully");
-            onAdd();
-            onClose();
-        } catch (err) {
-            console.log(err);
-            alert("Something went wrong?")
-        } finally {
-            setLoading(false)
+                alert("Sale updated Successfully");
+                onUpdate();
+                onClose();
+        }catch(error){
+            console.error(error); 
+            alert("Something went wrong");
+        }finally {
+            setLoading(false);
         }
-    }
+    };
 
-    useEffect(() => {
-        fetchCustomer();
-    }, []);
+
+   
 
     return (
         <div className="fixed inset-0 flex items-center justify-center z-50">
@@ -143,7 +147,7 @@ export default function AddCustomer({ onClose, inventoryId, onAdd }) {
 
             <div className="relative z-10 bg-white backdrop-blur-md w-[600px] max-h-[90vh] overflow-y-auto rounded-lg shadow-xl rounded-md">
                 <div className="flex items-center justify-between border-b border-gray-200 p-4 rounded-t-md">
-                    <h1 className="text-xl font-bold">Add Inventory Customer</h1>
+                    <h1 className="text-xl font-bold">Edit Customer Inventory</h1>
                     <X onClick={onClose} className="w-6 h-6 text-gray-600 cursor-pointer hover:text-red-500" />
                 </div>
                 <form className="p-6" onSubmit={handleSubmit}>
@@ -248,7 +252,7 @@ export default function AddCustomer({ onClose, inventoryId, onAdd }) {
                                 />
                             </div>
                         )}
-                        {loading ? "Saving..." : "Sell"}
+                        {loading ? "Updating..." : "Update"}
                     </Button>
                 </form>
             </div>

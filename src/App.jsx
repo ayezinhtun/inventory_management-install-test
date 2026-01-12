@@ -20,6 +20,7 @@ import Pending from "./pages/Pending"
 import AdminRoute from "./routes/AdminRoute"
 import CreatePart from "./components/Inventory/addPart"
 import EditPart from "./components/Inventory/editPart"
+import CustomerInventory from "./pages/CustomerInventory"
 
 function App() {
   return (
@@ -39,6 +40,7 @@ function App() {
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/inventory/add-part" element={<CreatePart />} />
           <Route path="/customer" element={<Customer />} />
+          <Route path="/customer/inventory" element={<CustomerInventory />} />
           <Route element={<AdminRoute />}>
             <Route path="/user" element={<UserMangement />} />
           </Route>
