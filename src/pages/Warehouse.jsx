@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import CardComponent from "../components/card/crad";
 import { CirclePlus, Delete, Download, Edit, Home, ListFilter, MapPin, Pen, Search, Trash2 } from "lucide-react"
 import Pagination from "../components/pagination/pagination";
-import { Checkbox, Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
+import { Checkbox, Spinner, Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
 import { Dropdown, DropdownItem } from "flowbite-react";
 import AddWarehouse from "../components/warehouse/addWarehouse";
 import EditWarehouse from "../components/warehouse/editWarehouse";
@@ -257,7 +257,9 @@ export default function Warehouse() {
                             {loading ? (
                                 <TableRow>
                                     <TableCell colSpan={5} className="text-center py-5">
-                                        Loading...
+                                       <div>
+                                            <Spinner size="xl" color="info" aria-label="Loading..." />
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             ) : (

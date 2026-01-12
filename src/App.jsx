@@ -19,6 +19,7 @@ import ProtectedRoute from "./routes/ProtectedRoute"
 import Pending from "./pages/Pending"
 import AdminRoute from "./routes/AdminRoute"
 import CreatePart from "./components/Inventory/addPart"
+import EditPart from "./components/Inventory/editPart"
 
 function App() {
   return (
@@ -45,6 +46,7 @@ function App() {
           <Route path="/inventory-detail/:id" element={<InventoryDetail />} />
           <Route path="/inventory/create-inventory" element={<CreateInventory />} />
           <Route path="/edit-inventory/:id" element={<EditInventory />} />
+          <Route path="/edit-part/:id" element={<EditPart />} />
           <Route path="/notification" element={<Notification />} />
         </Route>
       </Route>

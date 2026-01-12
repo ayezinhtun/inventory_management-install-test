@@ -3,6 +3,7 @@ import { useState, useRef, useEffect, useContext } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useUserProfiles } from '../../context/UserProfileContext';
+import { Spinner } from 'flowbite-react';
 
 export default function Header() {
     const { profile } = useUserProfiles();
@@ -11,6 +12,7 @@ export default function Header() {
     const dropdownRef = useRef(null);
     const location = useLocation();
     const { logOut } = useAuth();
+    const [loggingOut, setLoggingOut] = useState(false);
 
     const navigate = useNavigate();
 
@@ -33,12 +35,24 @@ export default function Header() {
 
     const handleLogout = async () => {
         setOpen(false);
-        await logOut();
-        navigate('./login');
+        setLoggingOut(true);
+
+        try {
+            await logOut();
+            navigate('./login');
+        } catch (err) {
+            console.error(err);
+            setLoggingOut(false);
+        }
     }
 
     return (
         <header className="bg-white shadow px-6 py-5 flex items-center justify-end sticky top-0 z-30">
+            {loggingOut && (
+                <div className="fixed inset-0 bg-white bg-opacity-70 flex justify-center items-center z-50">
+                    <Spinner size="xl" color="info" aria-label="Logging out..." />
+                </div>
+            )}
             <div className="flex items-center gap-2">
                 <Link to='/notification'>
                     <button type="button" className="relative flex">

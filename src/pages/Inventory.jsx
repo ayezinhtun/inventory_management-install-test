@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import CardComponent from "../components/card/crad";
 import { CirclePlus, Delete, Download, Edit, Eye, ListFilter, MapPin, Package, Pen, Search, Trash2 } from "lucide-react"
 import Pagination from "../components/pagination/pagination";
-import { Checkbox, Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
+import { Checkbox, Spinner, Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
 import { Dropdown, DropdownItem } from "flowbite-react";
 import EditRegionModal from "../components/region/editregion";
 import { Link } from 'react-router-dom'
@@ -97,7 +97,7 @@ export default function Inventory() {
 
     // this is for search and filter
     const filteredInventorys = inventorys.filter(inventory =>
-        
+
         inventory.name.toLowerCase().includes(searchItem.toLowerCase()) &&
 
         (nameFilter === "" || inventory.name === nameFilter) &&
@@ -124,6 +124,7 @@ export default function Inventory() {
     const handleExportCSV = () => {
         const data = inventorys.map(i => ({
             Name: i.name,
+            Region: i.regions?.name || '',
             Warehouse: i.warehouses?.name || '',
             Rack: i.racks?.name || '',
             Status: i.status,
@@ -134,13 +135,14 @@ export default function Inventory() {
             "Start Unit": i.start_unit,
             Height: i.height,
             Color: i.color,
+            Quantity: i.quantity,
             Notes: i.notes,
             Attributes: Object.entries(i.attributes || {})
                 .map(([key, val]) => `${key}: ${val}`)
                 .join(",")
         }));
 
-        const headers = ['Name', 'Warehouse', 'Rack', 'Status', 'Serial No', 'Type', 'Model', 'Vendor', 'Start Unit', 'Height', 'Color', 'Notes', 'Attributes'];
+        const headers = ['Name', 'Region', 'Warehouse', 'Rack', 'Status', 'Serial No', 'Type', 'Model', 'Vendor', 'Start Unit', 'Height', 'Color', 'Quantity', 'Notes', 'Attributes'];
         exportToCSV(data, `inventorys-${new Date().toISOString().slice(0, 10)}.csv`, headers);
     }
     useEffect(() => {
@@ -149,6 +151,7 @@ export default function Inventory() {
         RackData();
 
     }, [])
+
 
     return (
         <div>
@@ -329,7 +332,6 @@ export default function Inventory() {
                                 <TableHeadCell>Warehouse</TableHeadCell>
                                 <TableHeadCell>Rack</TableHeadCell>
                                 <TableHeadCell>Status</TableHeadCell>
-
                                 <TableHeadCell colSpan={3}>
                                     <span>Action</span>
                                 </TableHeadCell>
@@ -338,8 +340,10 @@ export default function Inventory() {
                         <TableBody className="divide-y divide-gray-200">
                             {loading ? (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="text-center py-5">
-                                        Loading...
+                                    <TableCell colSpan={6} className="text-center py-5">
+                                        <div>
+                                            <Spinner size="xl" color="info" aria-label="Loading..." />
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             ) : (
@@ -368,7 +372,18 @@ export default function Inventory() {
                                                 <TableCell>{inventory.racks?.name}</TableCell>
                                                 <TableCell>{inventory.status}</TableCell>
                                                 <TableCell className="flex items-center space-x-3">
-                                                    <Link to={`/edit-inventory/${inventory.id}`}><Pen className="text-[#26599F]" /></Link>
+                                                    <Link
+                                                        to={
+                                                            inventory.type === "ram" || inventory.type === "cpu" || inventory.type === "ssd"
+                                                                ? `/edit-part/${inventory.id}`
+                                                                : `/edit-inventory/${inventory.id} `
+                                                        }
+
+                                                    >
+                                                        <Pen className="text-[#26599F]" />
+                                                    </Link>
+
+                                                    {/* <Link to={`/edit-inventory/${inventory.id} `}><Pen className="text-[#26599F]" /></Link> */}
                                                     <Link to={`/inventory-detail/${inventory.id}`}><Eye className="text-[#8B5CF6]" /></Link>
                                                     <Trash2 className="text-red-500" onClick={() => handleDelete(inventory.id)} />
                                                     {/* <button
@@ -402,7 +417,7 @@ export default function Inventory() {
 
 
             {showModal &&
-                <AddCustomer onClose={() => setShowModal(false)} inventoryId={selectedInventoryId} onAdd={InventoryData}/>
+                <AddCustomer onClose={() => setShowModal(false)} inventoryId={selectedInventoryId} onAdd={InventoryData} />
             }
 
             {showEditModal &&

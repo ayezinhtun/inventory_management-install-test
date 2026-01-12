@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import CardComponent from "../components/card/crad";
 import { CirclePlus, Contact, Delete, Download, Edit, ListFilter, MapPin, Pen, Search, Trash2, UsersRound } from "lucide-react"
 import Pagination from "../components/pagination/pagination";
-import { Checkbox, Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
+import { Checkbox, Spinner, Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
 import { Dropdown, DropdownItem } from "flowbite-react";
 import AddCustomer from "../components/customer/addCustomer";
 import EditCustomer from "../components/customer/editCustomer";
@@ -41,7 +41,7 @@ export default function Customer() {
             const data = await getCustomer();
 
             setCustomers(data);
-        } catch(error) {
+        } catch (error) {
             console.error('Error fetching in Customer', error);
         } finally {
             setLoading(false);
@@ -74,10 +74,10 @@ export default function Customer() {
     //for export
     const handleExportCSV = () => {
         const data = customers.map(c => ({
-            Name: c.contact_person, 
-            "Company Name": c.company_name, 
-            "Contact Email": c.contact_email, 
-            "Contact Number": c.contact_number, 
+            Name: c.contact_person,
+            "Company Name": c.company_name,
+            "Contact Email": c.contact_email,
+            "Contact Number": c.contact_number,
             "Address": c.address
         }));
 
@@ -209,8 +209,10 @@ export default function Customer() {
                         <TableBody className="divide-y divide-gray-200">
                             {loading ? (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="text-center py-5">
-                                        Loading...
+                                    <TableCell colSpan={6} className="text-center py-5">
+                                        <div>
+                                            <Spinner size="xl" color="info" aria-label="Loading..." />
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             ) : (
@@ -218,7 +220,7 @@ export default function Customer() {
                                 currentCustomers.length === 0 ? (
                                     <TableRow>
                                         <TableCell
-                                            colSpan={5}
+                                            colSpan={6}
                                             className="text-center"
                                         >
                                             No Customer found
@@ -266,7 +268,7 @@ export default function Customer() {
             }
 
             {showEditModal && selectedCustomer && (
-                <EditCustomer customer={selectedCustomer} onClose={() => setShowEditModal(false)} onUpdate={fetchCustomer}/>
+                <EditCustomer customer={selectedCustomer} onClose={() => setShowEditModal(false)} onUpdate={fetchCustomer} />
             )
             }
         </div>

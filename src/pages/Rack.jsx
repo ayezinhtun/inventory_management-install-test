@@ -6,7 +6,8 @@ import { deleteRack, fetchRack } from "../context/RackContext";
 import EditRack from "../components/rack/editRack";
 import { getWarehouse } from "../context/WarehouseContext";
 import { exportToCSV } from "../utils/exportUtils";
-import {fetchInventory} from '../context/InventoryContext';
+import { fetchInventory } from '../context/InventoryContext';
+import { Spinner } from "flowbite-react";
 
 export default function Rack() {
 
@@ -24,7 +25,7 @@ export default function Rack() {
 
     const [selectedRack, setSelectedRack] = useState(null);
 
-    const [inventorys , setInventorys] = useState([]);
+    const [inventorys, setInventorys] = useState([]);
 
 
     //for fetch data from racks 
@@ -120,8 +121,8 @@ export default function Rack() {
 
             <div className="grid grid-cols-3 gap-4">
                 {loading ? (
-                    <div className="col-span-3 text-center text-gray-500 py-10">
-                        Loading...
+                    <div className="col-span-3 flex justify-center items-center">
+                        <Spinner size="xl" color="info" aria-label="Loading..." />
                     </div>
                 ) : (
                     racks.length === 0 ? (

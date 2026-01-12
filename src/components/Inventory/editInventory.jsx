@@ -4,18 +4,18 @@ import { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../../../supabase/supabase-client";
 import { getWarehouse } from "../../context/WarehouseContext";
-import { InventoryCreate } from "../../context/InventoryContext"; // optional, if you have update context
+import { getRegion } from "../../context/RegionContext";
+import { Spinner } from "flowbite-react";
 
 export default function EditInventory() {
     const { id } = useParams(); // inventory id
     const navigate = useNavigate();
 
-    const [customers, setCustomers] = useState([]);
-
-    const [customerId, setCustomerId] = useState(null);
+    const [loading, setLoading] = useState(false);
 
     const [form, setForm] = useState({
         name: "",
+        region_id: "",
         warehouse_id: "",
         rack_id: "",
         status: "inactive",
@@ -32,16 +32,17 @@ export default function EditInventory() {
 
     const [imagePreview, setImagePreview] = useState(null);
     const [imageFile, setImageFile] = useState(null);
+    const [regions, setRegions] = useState([]);
     const [warehouses, setWarehouses] = useState([]);
     const [racks, setRacks] = useState([]);
     const [attributeFields, setAttributeFields] = useState([]);
     const [selectedRack, setSelectedRack] = useState(null);
 
+
     // Load warehouses and inventory data
     useEffect(() => {
         const loadData = async () => {
-            const wh = await getWarehouse();
-            setWarehouses(wh || []);
+            setLoading(true);
 
             const { data, error } = await supabase
                 .from("inventorys")
@@ -51,9 +52,10 @@ export default function EditInventory() {
 
             if (error) return console.error(error);
 
-            setForm({
-                ...form,
+            setForm(prev => ({
+                ...prev,
                 name: data.name,
+                region_id: data.region_id,
                 warehouse_id: data.warehouse_id,
                 rack_id: data.rack_id,
                 status: data.status,
@@ -67,10 +69,9 @@ export default function EditInventory() {
                 notes: data.notes || "",
                 attributes: data.attributes || {},
                 image: data.image || null,
-                customer_id: data.customer_id || null,
-            });
+            }));
 
-            setCustomerId(data.customer_id || null);
+
 
             if (data.image) {
                 const { data: { publicUrl } } = supabase.storage
@@ -82,9 +83,26 @@ export default function EditInventory() {
 
 
             if (data.rack_id) setSelectedRack(data.rack_id);
+            setLoading(false)
         };
         loadData();
     }, [id]);
+
+    useEffect(() => {
+        const loadRegion = async () => {
+            const data = await getRegion();
+            setRegions(data || []);
+        };
+        loadRegion();
+    }, []);
+
+    useEffect(() => {
+        const loadWarehouse = async () => {
+            const data = await getWarehouse();
+            setWarehouses(data || []);
+        };
+        loadWarehouse();
+    }, []);
 
     // Load racks for selected warehouse
     useEffect(() => {
@@ -259,8 +277,7 @@ export default function EditInventory() {
                     start_unit: form.start_unit ?? null,
                     height: form.height ?? null,
                     notes: form.notes || null,
-                    image: imageUrl, 
-                    customer_id: form.customer_id || null
+                    image: imageUrl,
                 })
                 .eq("id", id);
 
@@ -274,25 +291,16 @@ export default function EditInventory() {
         }
     };
 
-    // for fetch customer
-    useEffect(() => {
-        const fetchCustomers = async () => {
-            const { data, error } = await supabase
-                .from("customers")
-                .select("id, company_name")
-                .order("company_name");
-
-            if (!error) setCustomers(data);
-        };
-
-        fetchCustomers();
-    }, []);
-
-    const handleCustomerChange = (e) => {
-        setCustomerId(e.target.value || null);
-        setForm(prev => ({
-            ...prev, customer_id: e.target.value || null
-        }))
+    if (loading) {
+        return (
+            <div className="fixed inset-0 flex justify-center items-center ">
+                <Spinner
+                    aria-level="Loading..."
+                    size="xl"
+                    color="info"
+                />
+            </div>
+        )
     }
 
     return (
@@ -337,10 +345,32 @@ export default function EditInventory() {
                     {/* Form Fields */}
                     <div className="col-span-9">
                         <div className="grid grid-cols-3 gap-2 gap-y-2">
+                            {/* Type */}
+                            <div>
+                                <label className="block text-sm font-medium mb-2 text-gray-900">
+                                    Type <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="type"
+                                    value={form.type}
+                                    readOnly
+                                    className="w-full p-2.5 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+                                />
+                            </div>
+
                             {/* Name */}
                             <div>
                                 <label className="block text-sm font-medium mb-2 text-gray-900">Device Name <span className="text-red-500">*</span></label>
                                 <input type="text" name="name" value={form.name} onChange={handleChange} placeholder="Device01" className="w-full p-2.5 border border-gray-300 rounded-lg" />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium mb-2 text-gray-900">Region <span className="text-red-500">*</span></label>
+                                <select name="region_id" value={form.region_id} onChange={handleChange} className="w-full p-2.5 border border-gray-300 rounded-lg">
+                                    <option value="">No Region</option>
+                                    {regions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                                </select>
                             </div>
 
                             {/* Warehouse */}
@@ -377,17 +407,6 @@ export default function EditInventory() {
                                 <input type="text" name="serial_no" value={form.serial_no} onChange={handleChange} placeholder="Serial01" className="w-full p-2.5 border border-gray-300 rounded-lg" />
                             </div>
 
-                            {/* Type */}
-                            <div>
-                                <label className="block text-sm font-medium mb-2 text-gray-900">Type <span className="text-red-500">*</span></label>
-                                <select name="type" value={form.type} onChange={handleChange} className="w-full p-2.5 border border-gray-300 rounded-lg">
-                                    <option value="">Select Type</option>
-                                    <option value="server">Server</option>
-                                    <option value="switch">Switch</option>
-                                    <option value="router">Router</option>
-                                </select>
-                            </div>
-
                             {/* Model */}
                             <div>
                                 <label className="block text-sm font-medium mb-2 text-gray-900">Model <span className="text-red-500">*</span></label>
@@ -412,26 +431,6 @@ export default function EditInventory() {
                                 <input type="number" name="height" value={form.height ?? ""} onChange={e => setForm(prev => ({ ...prev, height: e.target.value === "" ? null : Number(e.target.value) }))} min={1} disabled={!selectedRack} className="w-full p-2.5 border border-gray-300 rounded-lg" placeholder={selectedRack ? "Enter height" : "Disabled without rack"} />
                             </div>
 
-                            {form.status === "sold" && (
-                                <div>
-                                    <label className="block text-sm font-medium mb-2 text-gray-900">
-                                        Customer
-                                    </label>
-                                    <select
-                                        value={customerId || ""}
-                                        onChange={handleCustomerChange}
-                                        className="w-full p-2.5 border border-gray-300 rounded-lg"
-                                    >
-                                        <option value="">Select Customer</option>
-                                        {customers.map(c => (
-                                            <option key={c.id} value={c.id}>
-                                                {c.company_name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            )}
-
 
                             {/* Color */}
                             <div>
@@ -451,10 +450,11 @@ export default function EditInventory() {
                         {/* Attributes */}
                         {form.type && (
                             <div className="mt-2">
-                                <label className="block mb-2 text-gray-900 text-sm font-medium">{form.type} Specification</label>
+                                <label className="block mb-2 text-gray-900 text-sm font-medium">{form.type.toUpperCase()} Specification</label>
                                 <div className="border border-gray-200 px-2 py-4 rounded">{renderAttributes()}</div>
                             </div>
                         )}
+
                     </div>
                 </div>
             </form>

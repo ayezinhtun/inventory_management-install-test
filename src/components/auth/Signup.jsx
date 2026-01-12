@@ -4,6 +4,7 @@ import { Eye, EyeOff, Flag } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import FloatingInput from '../input/FloatingInput';
+import { Spinner } from 'flowbite-react';
 
 export default function Signup() {
     const [showPassword, setShowPassword] = useState(false);
@@ -49,11 +50,21 @@ export default function Signup() {
         }
 
         try {
-            await signUp({
+            const { data, error } = await signUp({
                 email: form.email,
                 password: form.password,
                 full_name: form.full_name
             });
+
+            if (error) {
+                if (error.message.includes("already registered")) {
+                    alert("User already exists");
+                } else {
+                    alert(error.message);
+                }
+                return;
+            }
+
             alert("Account created successful! Check your email");
             navigate('/login')
         } catch (error) {
@@ -65,7 +76,11 @@ export default function Signup() {
 
     return (
         <div className='min-h-screen flex items-center justify-center'>
-
+            {loading && (
+                <div className="fixed inset-0 bg-white bg-opacity-80 flex justify-center items-center z-50">
+                    <Spinner size="xl" color="info" aria-label="Logging out..." />
+                </div>
+            )}
             <div className='bg-[#EDECEC] rounded-sm shadow-sm p-12 w-full max-w-6xl grid grid-cols-2 gap-20'>
 
                 <div className='flex flex-col items-center justify-center'>
@@ -87,7 +102,7 @@ export default function Signup() {
                             value={form.full_name}
                             onChange={handleChange}
                             label="Name"
-                            // autoComplete='off'
+                        // autoComplete='off'
                         />
 
                         <FloatingInput
@@ -96,7 +111,7 @@ export default function Signup() {
                             value={form.email}
                             onChange={handleChange}
                             label="Email"
-                            // autoComplete='off'
+                        // autoComplete='off'
                         />
 
                         <div className="mb-4">
@@ -109,7 +124,7 @@ export default function Signup() {
                                     value={form.password}
                                     onChange={handleChange}
                                     label="Password"
-                                    // autoComplete='new-password'
+                                // autoComplete='new-password'
                                 />
 
                                 <button
@@ -132,7 +147,7 @@ export default function Signup() {
                                     value={form.confirm}
                                     onChange={handleChange}
                                     label="Confirm Password"
-                                    // autoComplete='new-password'
+                                // autoComplete='new-password'
                                 />
 
                                 <button

@@ -4,9 +4,12 @@ import { Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import FloatingInput from '../input/FloatingInput';
-import { createTheme, FloatingLabel } from 'flowbite-react';
+import { createTheme, FloatingLabel, Spinner } from 'flowbite-react';
+
 
 export default function Login() {
+    const [loading, setLoading] = useState(false);
+
     const customTheme = createTheme({
 
     })
@@ -27,6 +30,7 @@ export default function Login() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
 
         try {
             await signIn({
@@ -37,11 +41,18 @@ export default function Login() {
             navigate('/');
         } catch (error) {
             alert(error.message);
+        } finally {
+            setLoading(false);
         }
     }
 
     return (
         <div className='min-h-screen flex items-center justify-center'>
+            {loading && (
+                <div className="fixed inset-0 bg-white bg-opacity-80 flex justify-center items-center z-50">
+                    <Spinner size="xl" color="info" aria-label="Logging out..." />
+                </div>
+            )}
             <div className='bg-[#EDECEC] rounded-sm shadow-sm p-12 w-full max-w-6xl grid grid-cols-2 gap-20'>
 
                 <div className='flex flex-col justify-center px-10'>
@@ -80,7 +91,13 @@ export default function Login() {
                         </div>
 
 
-                        <button type='submit' className='w-full mb-3 bg-[#26599F] text-white font-bold text-[24px] border-blue-600 hover:bg-blue-900 focus:ring-blue-500 py-2 rounded-xl' size='lg'>Log in</button>
+                        <button
+                            type='submit'
+                            className='w-full mb-3 bg-[#26599F] text-white font-bold text-[24px] border-blue-600 hover:bg-blue-900 focus:ring-blue-500 py-2 rounded-xl'
+                            size='lg'
+                        >
+                            Log in
+                        </button>
 
                         <p className='text-center'>Not registered yet? <Link to="/signup" className='text-[#26599F] font-bold'>Sign Up</Link> </p>
                     </form>

@@ -1,34 +1,41 @@
 import { useEffect, useState } from "react";
 import { X, ImagePlus, MoveLeft } from "lucide-react";
-import { Button } from "flowbite-react";
+import { Button, Spinner } from "flowbite-react";
 import { Link } from "react-router-dom";
 import { getWarehouse } from "../../context/WarehouseContext";
 import { getRegion } from "../../context/RegionContext";
 import { supabase } from "../../../supabase/supabase-client";
+import { InventoryCreate } from "../../context/InventoryContext";
 
 export default function CreatePart() {
     const [imagePreview, setImagePreview] = useState(null);
-    const [imageFile, setImageFile] = useState(null);
 
-    const [warehouses, setWarehouses] = useState([]);
+    const [imageFile, setImageFile] = useState(null);
 
     const [regions, setRegions] = useState([]);
 
-    const [form, setForm] = useState({
-        type: "",
-        name: "",
-        serial_no: "",
-        model: "",
-        vendor: "",
-        quantity: 1,
-        color: "#10b981",
-        notes: "",
-        attributes: {},
-        region_id: "",
-        warehouse_id: ""
-    });
+    const [warehouses, setWarehouses] = useState([]);
 
     const [attributeFields, setAttributeFields] = useState([]);
+
+    const [error, setError] = useState(null);
+
+    const [loading, setLoading] = useState(false);
+
+    const [form, setForm] = useState({
+        name: "",
+        region_id: "",
+        warehouse_id: "",
+        status: "inactive",
+        serial_no: "",
+        type: "",
+        model: "",
+        vendor: "",
+        notes: "",
+        attributes: "",
+        quantity: 1
+    });
+
 
     // Default attributes by type
     const typeAttributes = {
@@ -39,8 +46,10 @@ export default function CreatePart() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setForm((prev) => ({ ...prev, [name]: value }));
-    };
+
+        setForm(prev => ({ ...prev, [name]: value }))
+    }
+
 
     const handleAttrChange = (e) => {
         const { name, value } = e.target;
@@ -67,22 +76,35 @@ export default function CreatePart() {
         const file = e.target.files[0];
         if (!file) return;
 
-        const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
-        if (!allowedTypes.includes(file.type)) {
-            alert("Only JPG/PNG allowed!");
+        // to validate type
+        const validateType = ["image/jpeg", "image/png", "image/jpg"];
+
+        if (!validateType.includes(file.type)) {
+            alert("File extention is not allowed!");
+            setImagePreview(null);
+            e.target.value(null);
+            setImageFile(null);
             return;
         }
 
-        if (file.size > 5 * 1024 * 1024) {
-            alert("File must be under 5MB!");
+
+        // to validate file size 
+        const validateFilesize = 5 * 1024 * 1024;
+
+        if (file.size > validateFilesize) {
+            alert("Only under 5MB are allowed!");
+            setImagePreview(null);
+            e.target.value(null);
+            setImageFile(null);
             return;
         }
 
         setImageFile(file);
         setImagePreview(URL.createObjectURL(file));
-    };
+    }
 
     const renderAttributes = () => {
+        const typeKey = (form.type || "").toLowerCase();
         const defaults = typeAttributes[form.type] || [];
         return (
             <div className="flex flex-col gap-2">
@@ -97,7 +119,7 @@ export default function CreatePart() {
                 <div className="grid grid-cols-3 gap-4 w-full">
                     {[...defaults, ...attributeFields].map((attr) => (
                         <div key={attr}>
-                            <label className="block text-sm font-medium mb-1">{attr}</label>
+                            <label className="block text-sm font-medium mb-1">{attr.toUpperCase()}</label>
                             <input
                                 type="text"
                                 name={attr}
@@ -112,35 +134,73 @@ export default function CreatePart() {
         );
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Simple validation
-        if (!form.type || !form.name || !form.model || !form.vendor) {
-            alert("Please fill in required fields!");
-            return;
+        setError(null);
+
+        setLoading(true);
+
+        try {
+            let imageUrl = null;
+            if (imageFile) {
+                const ext = imageFile.name.split(".").pop();
+                const filename = `${crypto.randomUUID()}.${ext}`;
+                const path = `inventory/${filename}`;
+                const { data, error } = await supabase.storage
+                    .from("inventory-images")
+                    .upload(path, imageFile, { upsert: false });
+                if (error) {
+                    alert(`Image upload failed: ${error.message}`);
+                    return;
+                }
+                imageUrl = data.path;
+            }
+
+            const { data: existing, error: fetchError } = await supabase
+                .from("inventorys")
+                .select("id")
+                .eq("name", form.name)
+                .limit(1)
+                .single();
+
+            if (existing) {
+                alert("This inventory name already exists. Please choose a different name.");
+                return;
+            }
+
+            await InventoryCreate({
+                ...form,
+                region_id: form.region_id || null,
+                warehouse_id: form.warehouse_id || null,
+                notes: form.notes || null,
+                image: imageUrl
+            });
+
+            alert("Inventory added successfully");
+
+            setForm({
+                name: "",
+                region_id: "",
+                warehouse_id: "",
+                status: "inactive",
+                serial_no: "",
+                type: "",
+                model: "",
+                vendor: "",
+                notes: "",
+                attributes: "",
+                quantity: 1
+            });
+
+            setImagePreview(null);
+            setImageFile(null);
+        } catch (err) {
+            console.log(err.message);
+        } finally {
+            setLoading(false)
         }
 
-        // For demo, just log the form
-        console.log("Form submitted:", form);
-        alert("Component added (UI demo only)");
-
-        // Reset form
-        setForm({
-            type: "",
-            name: "",
-            serial_no: "",
-            model: "",
-            vendor: "",
-            quantity: 1,
-            notes: "",
-            attributes: {},
-            region_id: "",
-            warehouse_id: "",
-        });
-        setImageFile(null);
-        setImagePreview(null);
-        setAttributeFields([]);
     };
 
     useEffect(() => {
@@ -173,7 +233,7 @@ export default function CreatePart() {
             }
         };
         loadWh();
-    }, [form.region_id]); // <-- run when region_id changes
+    }, [form.region_id]);
 
 
     return (
@@ -190,7 +250,16 @@ export default function CreatePart() {
                         <h1 className="font-bold text-[24px]">Add Component</h1>
                     </div>
                     <Button type="submit" className="bg-[#26599F] text-lg">
-                        Add Component
+                        {loading && (
+                            <div className="fixed inset-0 flex justify-center items-center ">
+                                <Spinner
+                                    aria-level="Loading..."
+                                    size="xl"
+                                    color="info"
+                                />
+                            </div>
+                        )}
+                        {loading ? "Saving..." : "Add Component"}
                     </Button>
                 </div>
 
@@ -297,6 +366,17 @@ export default function CreatePart() {
                                         {w.name}
                                     </option>
                                 ))}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Status <span className="text-red-500">*</span></label>
+                            <select name="status" value={form.status} onChange={handleChange} id=""
+                                className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
+                            >
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                                <option value="sold">Sold</option>
                             </select>
                         </div>
 

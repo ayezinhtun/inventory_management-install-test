@@ -3,7 +3,7 @@ import CardComponent from "../components/card/crad";
 import { CirclePlus, Delete, Download, Edit, ListFilter, MapPin, Pen, Search, Trash2 } from "lucide-react"
 import Pagination from "../components/pagination/pagination";
 import AddRegion from "../components/region/addregion";
-import { Checkbox, Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
+import { Checkbox, Spinner, Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
 import { Dropdown, DropdownItem } from "flowbite-react";
 import EditRegionModal from "../components/region/editregion";
 import { deleteRegion, getRegion } from "../context/RegionContext";
@@ -132,7 +132,7 @@ export default function Region() {
                             <CirclePlus className="w-5 h-5 mr-2" />
                             <span>Add New Region</span>
                         </div>
-                        
+
                         <button
                             onClick={handleExportCSV}
                             className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-[#26599F] hover:bg-blue-900 hover:border-none hover:outline-none'
@@ -203,7 +203,9 @@ export default function Region() {
                             {loading ? (
                                 <TableRow>
                                     <TableCell colSpan={5} className="text-center py-5">
-                                        Loading...
+                                        <div>
+                                            <Spinner size="xl" color="info" aria-label="Loading..." />
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             ) : (

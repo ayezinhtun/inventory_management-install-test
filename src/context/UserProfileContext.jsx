@@ -13,7 +13,9 @@ export const UserProfileProvider = ({ children }) => {
 
     const [users, setUsers] = useState([]);
 
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
+
+    const [profileLoading, setProfileLoading] = useState(true);
 
     // this is for to show user list in usermanagement
     const fetchUsers = async () => {
@@ -86,7 +88,7 @@ export const UserProfileProvider = ({ children }) => {
             return;
         }
 
-        setLoading(true);
+        setProfileLoading(true);
 
         try {
             // Fetch main user profile
@@ -129,7 +131,7 @@ export const UserProfileProvider = ({ children }) => {
             setProfile(null);
         }
 
-        setLoading(false);
+        setProfileLoading(false);
     };
 
 
@@ -190,7 +192,7 @@ export const UserProfileProvider = ({ children }) => {
     }, [user]);
 
     return (
-        <UserProfileContext.Provider value={{ profile, users, loading, fetchUsers, updateUserRole, deleteUser, updateProfileName, updatePassword }}>
+        <UserProfileContext.Provider value={{ profile,profileLoading,  users, loading, fetchUsers, updateUserRole, deleteUser, updateProfileName, updatePassword }}>
             {children}
         </UserProfileContext.Provider>
     )

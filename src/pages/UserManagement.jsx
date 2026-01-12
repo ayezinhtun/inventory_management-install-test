@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import CardComponent from "../components/card/crad";
 import { CirclePlus, Delete, Download, Edit, ListFilter, MapPin, Pen, Save, Search, Trash2, User } from "lucide-react"
 import Pagination from "../components/pagination/pagination";
-import { Checkbox, Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
+import { Checkbox, Spinner, Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
 import { Dropdown, DropdownItem } from "flowbite-react";
 import { useUserProfiles } from "../context/UserProfileContext";
 import { getWarehouse } from "../context/WarehouseContext";
@@ -29,6 +29,8 @@ export default function UserMangement() {
     const [userRegions, setUserRegions] = useState({});
 
     const [userWarehouses, setUserWarehouses] = useState({});
+
+    const [loading, setLoading] = useState(false);
 
 
     //for fetch region
@@ -61,6 +63,7 @@ export default function UserMangement() {
 
     useEffect(() => {
         const fetchUserWarehouses = async () => {
+            setLoading(true);
             try {
                 const { data, error } = await supabase
                     .from("user_warehouses")
@@ -79,6 +82,8 @@ export default function UserMangement() {
                 setUserWarehouses(mapping);
             } catch (error) {
                 console.log(error);
+            } finally {
+                setLoading(false);
             }
         };
 
@@ -87,6 +92,7 @@ export default function UserMangement() {
 
     useEffect(() => {
         const fetchUserRegions = async () => {
+            setLoading(true);
             try {
                 const { data, error } = await supabase
                     .from("user_regions")
@@ -105,6 +111,8 @@ export default function UserMangement() {
                 setUserRegions(mapping);
             } catch (error) {
                 console.log(error);
+            } finally {
+                setLoading(false);
             }
         };
 
@@ -238,7 +246,7 @@ export default function UserMangement() {
                         </div>
                     </div>
 
-                    
+
 
                 </div>
 
@@ -292,8 +300,16 @@ export default function UserMangement() {
                             </TableRow>
                         </TableHead>
                         <TableBody className="divide-y divide-gray-200">
-                            {currentUsers.map((user, index) => {
-                                return (
+                            {loading ? (
+                                <TableRow>
+                                    <TableCell colSpan={6} className="text-center py-5">
+                                        <div>
+                                            <Spinner size="xl" color="info" aria-label="Loading..." />
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                currentUsers.map((user, index) => (
                                     <TableRow key={index} className="bg-white dark:border-gray-700 dark:bg-gray-800">
                                         <TableCell className="p-4">
                                             <Checkbox />
@@ -357,7 +373,10 @@ export default function UserMangement() {
                                         </TableCell>
                                     </TableRow>
                                 )
-                            })}
+                                )
+
+                            )}
+
                         </TableBody>
                     </Table>
                 </div>
