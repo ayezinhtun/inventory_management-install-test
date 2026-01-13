@@ -11,6 +11,7 @@ import {
     Clock,
     ChevronDown,
     ChevronUp,
+    ClipboardList,
 } from "lucide-react";
 import logo from "../../assets/logo.png";
 
@@ -43,8 +44,9 @@ export default function SidebarComponent() {
             icon: <UsersRound className="h-5 w-5 mr-2" />,
             subLinks: [{ id: "6-1", name: "Inventory", path: "/customer/inventory" }],
         },
-        { id: 7, name: "Users", path: "/user", icon: <User className="h-5 w-5 mr-2" /> },
-        { id: 8, name: "Audit Log", path: "/audit", icon: <Clock className="h-5 w-5 mr-2" /> },
+        { id: 7, name: "Request Inventory", path: "/request-inventory", icon: <ClipboardList className="h-5 w-5 mr-2" /> },
+        { id: 8, name: "Users", path: "/user", icon: <User className="h-5 w-5 mr-2" /> },
+        { id: 9, name: "Audit Log", path: "/audit", icon: <Clock className="h-5 w-5 mr-2" /> },
     ];
 
     // Open the menu if current path starts with its path

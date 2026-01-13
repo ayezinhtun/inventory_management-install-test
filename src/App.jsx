@@ -21,6 +21,7 @@ import AdminRoute from "./routes/AdminRoute"
 import CreatePart from "./components/Inventory/addPart"
 import EditPart from "./components/Inventory/editPart"
 import CustomerInventory from "./pages/CustomerInventory"
+import RequestInventory from "./components/Inventory/requestInventory"
 
 function App() {
   return (
@@ -47,6 +48,7 @@ function App() {
           <Route path="/audit" element={<Audit />} />
           <Route path="/inventory-detail/:id" element={<InventoryDetail />} />
           <Route path="/inventory/create-inventory" element={<CreateInventory />} />
+          <Route path="/request-inventory" element={<RequestInventory/>} />
           <Route path="/edit-inventory/:id" element={<EditInventory />} />
           <Route path="/edit-part/:id" element={<EditPart />} />
           <Route path="/notification" element={<Notification />} />
