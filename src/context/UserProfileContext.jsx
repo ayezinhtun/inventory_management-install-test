@@ -19,18 +19,23 @@ export const UserProfileProvider = ({ children }) => {
 
     // this is for to show user list in usermanagement
     const fetchUsers = async () => {
-        setLoading(true);
-        const { data, error } = await supabase
-            .from("user_profile")
-            .select("*")
-            .eq("status", "active")
+        try {
+            setLoading(true);
 
-        if (error)
-            console.error("Error fetching users:", error.message);
+            const { data, error } = await supabase
+                .from("user_profile")
+                .select("*")
+                .eq("status", "active");
 
-        else setUsers(data);
+            if (error) throw error;
 
-        setLoading(false);
+            setUsers(data || []);
+        } catch (err) {
+            console.error("Error fetching users:", err.message);
+            setUsers([]);
+        } finally {
+            setLoading(false);
+        }
     }
 
     const updateUserRole = async (id, newRole) => {
@@ -84,7 +89,7 @@ export const UserProfileProvider = ({ children }) => {
     const fetchProfile = async () => {
         if (!user) {
             setProfile(null);
-            setLoading(false);
+            setProfileLoading(false);
             return;
         }
 
@@ -187,12 +192,20 @@ export const UserProfileProvider = ({ children }) => {
     }
 
     useEffect(() => {
-        fetchUsers();
+        if (!user) {
+            setProfile(null);
+            setProfileLoading(false);
+            setUsers([]);
+            setLoading(false);
+            return;
+        }
+
         fetchProfile();
     }, [user]);
 
+
     return (
-        <UserProfileContext.Provider value={{ profile,profileLoading,  users, loading, fetchUsers, updateUserRole, deleteUser, updateProfileName, updatePassword }}>
+        <UserProfileContext.Provider value={{ profile, profileLoading, users, loading, fetchUsers, updateUserRole, deleteUser, updateProfileName, updatePassword }}>
             {children}
         </UserProfileContext.Provider>
     )

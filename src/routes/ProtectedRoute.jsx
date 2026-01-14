@@ -8,7 +8,7 @@ export default function ProtectedRoute() {
     const { user, loading: authLoading } = useAuth();
     const { profile, profileLoading } = useUserProfiles();
 
-    if (authLoading || profileLoading) {
+    if (authLoading || (user && profileLoading)) {
         return (
             <div className="fixed inset-0 flex justify-center items-center ">
                 <Spinner
