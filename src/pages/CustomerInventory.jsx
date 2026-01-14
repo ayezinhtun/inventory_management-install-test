@@ -239,7 +239,7 @@ export default function CustomerInventory() {
 
                                                 <TableCell className="flex items-center space-x-3">
                                                     <Pen className="text-[#26599F] hover:text-blue-700" onClick={() => handleEdit(i)} />
-                                                    <Trash2 className="text-red-500 hover:text-red-700 cursor-pointer" />
+                                                    {/* <Trash2 className="text-red-500 hover:text-red-700 cursor-pointer" /> */}
                                                     <button
                                                         onClick={() => handleRestore(i)}
                                                         className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-[#26599F] hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2 transition'
