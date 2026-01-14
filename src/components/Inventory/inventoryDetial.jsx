@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { X, MoveLeft } from "lucide-react";
 import { Button } from "flowbite-react";
 import { fetchInventoryById } from "../../context/InventoryContext";
+import { Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
 
 export default function InventoryDetail() {
     const { id } = useParams();
@@ -56,85 +57,161 @@ export default function InventoryDetail() {
                     </div>
                 </div>
 
-
-                {/* Details */}
                 <div className="col-span-9">
-                    <div className="grid grid-cols-3 gap-2 gap-y-2 text-gray-700">
-                        <div>
-                            <span className="font-medium">Device Name:</span> {inventory.name}
-                        </div>
-                        <div>
-                            <span className="font-medium">Region:</span> {inventory.regions.name}
-                        </div>
-                        <div>
-                            <span className="font-medium">Warehouse:</span> {inventory.warehouses.name}
-                        </div>
-                        {inventory.racks && (
-                            <div>
-                                <span className="font-medium">Rack:</span> {inventory.racks.name}
-                            </div>
-                        )}
-                        <div>
-                            <span className="font-medium">Status:</span> {inventory.status}
-                        </div>
-                        <div>
-                            <span className="font-medium">Serial No:</span> {inventory.serial_no}
-                        </div>
-                        <div>
-                            <span className="font-medium">Type:</span> {inventory.type}
-                        </div>
-                        <div>
-                            <span className="font-medium">Model:</span> {inventory.model}
-                        </div>
-                        <div>
-                            <span className="font-medium">Vendor:</span> {inventory.vendor}
-                        </div>
-                        {inventory.start_unit && (
-                            <div>
-                                <span className="font-medium">Start Unit:</span> {inventory.start_unit}
-                            </div>
-                        )}
-                        {inventory.height && (
-                            <div>
-                                <span className="font-medium">Height (U):</span> {inventory.height}
-                            </div>
-                        )}
-                        <div>
-                            <span className="font-medium">Color:</span>{" "}
-                            <span
-                                className="inline-block w-5 h-5 rounded"
-                                style={{ backgroundColor: inventory.color }}
-                            ></span>
+                    <div className="grid grid-cols-2 gap-4 items-start">
+                        <div className="overflow-x-auto shadow-sm">
+                            <Table hoverable className="bg-gray-200 rounded-md">
+                                <TableHead>
+                                    <TableRow>
+                                        <TableHeadCell className="bg-gray-200">Device Information</TableHeadCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody className="divide-y">
+                                    <TableRow className="bg-white border-bottom border-gray-300  border-dashed">
+                                        <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                            Device Name
+                                        </TableCell>
+                                        <TableCell>{inventory.name}</TableCell>
+                                    </TableRow>
+                                    <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
+                                        <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                            Region
+                                        </TableCell>
+                                        <TableCell>{inventory.regions.name}</TableCell>
+                                    </TableRow>
+                                    <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
+                                        <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                            Warehouse
+                                        </TableCell>
+                                        <TableCell>{inventory.warehouses.name}</TableCell>
+                                    </TableRow>
+                                    <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
+                                        <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                            Status
+                                        </TableCell>
+                                        <TableCell>{inventory.status}</TableCell>
+                                    </TableRow>
+                                    <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
+                                        <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                            Serial No
+                                        </TableCell>
+                                        <TableCell>{inventory.serial_no}</TableCell>
+                                    </TableRow>
+                                    <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
+                                        <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                            Type
+                                        </TableCell>
+                                        <TableCell>{inventory.type}</TableCell>
+                                    </TableRow>
+                                    <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
+                                        <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                            Model
+                                        </TableCell>
+                                        <TableCell>{inventory.model}</TableCell>
+                                    </TableRow>
+                                    <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
+                                        <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                            Vendor
+                                        </TableCell>
+                                        <TableCell>{inventory.vendor}</TableCell>
+                                    </TableRow>
+                                    <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
+                                        <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                            Color
+                                        </TableCell>
+                                        <TableCell>
+                                            <span className="inline-block w-20 h-7 rounded" style={{ backgroundColor: inventory.color }}>
+                                            </span>
+                                        </TableCell>
+                                    </TableRow>
+
+                                    {inventory.quantity > 1 && (
+                                        <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
+                                            <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                                Quantity
+                                            </TableCell>
+                                            <TableCell>{inventory.quantity}</TableCell>
+                                        </TableRow>
+                                    )}
+
+                                    <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
+                                        <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                            Notes
+                                        </TableCell>
+                                        <TableCell>{inventory.notes || ''}</TableCell>
+                                    </TableRow>
+                                </TableBody>
+                            </Table>
                         </div>
 
-                        {inventory.quantity > 1 && (
-                             <div>
-                                <span className="font-medium">Quantity</span> {inventory.quantity}
+                        <div className="flex flex-col gap-y-4">
+                            {inventory.racks && (
+                                <div className="overflow-x-auto shadow-sm">
+                                    <Table hoverable className="bg-gray-200 rounded-md">
+                                        <TableHead>
+                                            <TableRow>
+                                                <TableHeadCell className="bg-gray-200">Rack Information</TableHeadCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody className="divide-y">
+                                            {inventory.racks && (
+                                                <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
+                                                    <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                                        Rack
+                                                    </TableCell>
+                                                    <TableCell>{inventory.racks.name}</TableCell>
+                                                </TableRow>
+                                            )}
+
+                                            {inventory.start_unit && (
+                                                <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
+                                                    <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                                        Start Unit
+                                                    </TableCell>
+                                                    <TableCell>{inventory.start_unit}</TableCell>
+                                                </TableRow>
+                                            )}
+
+                                            {inventory.height && (
+                                                <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
+                                                    <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                                        Height
+                                                    </TableCell>
+                                                    <TableCell>{inventory.height}</TableCell>
+                                                </TableRow>
+                                            )}
+
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            )}
+
+                            <div className="overflow-x-auto shadow-sm">
+                                <Table hoverable className="bg-gray-200 rounded-md">
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableHeadCell className="bg-gray-200">{inventory.type.toUpperCase()} Specification</TableHeadCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody className="divide-y">
+                                        {inventory.attributes &&
+                                            Object.entries(inventory.attributes).map(([key, value]) => (
+                                                <TableRow key={key} className="bg-white border-bottom border-gray-300 border-dashed">
+                                                    <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                                        {key.toUpperCase()}
+                                                    </TableCell>
+                                                    <TableCell>{value}</TableCell>
+                                                </TableRow>
+                                            ))
+                                        }
+                                    </TableBody>
+                                </Table>
                             </div>
-                        )}
-                    </div>
-
-
-                    {/* Notes */}
-                    <div className="mt-4">
-                        <span className="font-medium text-gray-900">Notes:</span>
-                        <p className="mt-1 text-gray-700">{inventory.notes}</p>
-                    </div>
-
-                    {/* Attributes */}
-                    <div className="mt-4">
-                        <span className="font-medium text-gray-900">Specification:</span>
-                        <div className="grid grid-cols-3 gap-4 mt-2 text-gray-700">
-                            {inventory.attributes &&
-                                Object.entries(inventory.attributes).map(([key, value]) => (
-                                    <div key={key}>
-                                        <span className="font-medium">{key.toUpperCase()}:</span> {value}
-                                    </div>
-                                ))}
                         </div>
                     </div>
                 </div>
             </div>
+
         </div>
     );
 }

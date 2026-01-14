@@ -113,7 +113,7 @@ export default function Customer() {
             <h1 className="font-bold mb-5 text-[24px]">Customers</h1>
 
             <div className="grid grid-cols-3 gap-10 mb-5">
-                <CardComponent title="Total Customers" count={customers.length} icon={UsersRound} />
+                <CardComponent title="Total Customers" count={customers.length} icon={UsersRound} color="bg-teal-100" iconColor="text-teal-600"/>
             </div>
 
             <div className="bg-white shadow rounded-lg border border-gray-200 overflow-auto">
@@ -146,7 +146,7 @@ export default function Customer() {
 
                         <button
                             onClick={handleExportCSV}
-                            className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-[#26599F] hover:bg-blue-900 hover:border-none hover:outline-none'
+                            className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-[#26599F] hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2 transition'
                         >
                             <Download className="w-5 h-5 mr-2" />
                             <span>Export</span>
@@ -162,14 +162,14 @@ export default function Customer() {
                             <label className="text-gray-700 font-medium">Name:</label>
 
                             <Dropdown label="Filter by Name" className="border border-gray-300 bg-white text-gray700 hover:bg-white" dismissOnClick={false}>
-                                <DropdownItem
+                                <DropdownItemft
                                     onClick={() => {
                                         setNameFilter("");
                                         setCurrentPage(1);
                                     }}
                                 >
                                     All
-                                </DropdownItem>
+                                </DropdownItemft>
                                 {Array.from(new Set(customers.map(r => r.contact_person))).map((name, idx) => (
                                     <DropdownItem
                                         key={idx}
@@ -242,8 +242,8 @@ export default function Customer() {
                                                 <TableCell>{customer.address}</TableCell>
 
                                                 <TableCell className="flex items-center space-x-3">
-                                                    <Pen className="text-[#26599F]" onClick={() => handleEdit(customer)} />
-                                                    <Trash2 className="text-red-500" onClick={() => handleDelete(customer.id)} />
+                                                    <Pen className="text-[#26599F] hover:text-blue-700" onClick={() => handleEdit(customer)} />
+                                                    <Trash2 className="text-red-500 hover:text-red-700 cursor-pointer" onClick={() => handleDelete(customer.id)} />
                                                 </TableCell>
                                             </TableRow>
                                         )

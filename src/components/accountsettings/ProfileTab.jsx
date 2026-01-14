@@ -20,19 +20,19 @@ export default function ProfileTab() {
 
             <div className="flex flex-col space-y-4">
                 <div className="flex flex-col space-y-2">
-                    <label htmlFor="" className="text-gray-700 font-bold" >Name</label>
+                    <label htmlFor="" className="text-gray-700 font-semibold" >Name</label>
                     <input
                         type="text"
                         id="name"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full px-3 py-3 border-2 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
+                        className="w-full px-3 py-3 border-1 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
                     />
                 </div>
 
                 <div className="flex flex-col space-y-2">
-                    <label htmlFor="" className="text-gray-700 font-bold" >Email</label>
-                    <input type="email" value={profile?.email || 'Email'} disabled className="w-full px-3 py-3 border-2 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500" />
+                    <label htmlFor="" className="text-gray-700 font-semibold" >Email</label>
+                    <input type="email" value={profile?.email || 'Email'} disabled className="w-full px-3 py-3 border-1 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500" />
                 </div>
 
 

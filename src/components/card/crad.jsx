@@ -1,7 +1,7 @@
 import { Card } from "flowbite-react";
 import { Home, Package, Layers } from "lucide-react";
 
-export default function CardComponent({ title, count, icon: Icon }) {
+export default function CardComponent({ title, count, icon: Icon , color = "bg-gray-100", iconColor = 'text-gray-700'}) {
   return (
     <Card href="#" className="group max-w-sm">
 
@@ -14,8 +14,8 @@ export default function CardComponent({ title, count, icon: Icon }) {
           <p className="font-bold text-3xl text-gray-700">{count}</p>
         </div>
 
-        <div className="p-3 rounded-full bg-gray-100 group-hover:bg-white flex-shrink-0">
-          <Icon className="w-6 h-6 text-gray-700 group-hover:text-[#26599F]" />
+        <div className={`p-3 rounded-full bg-gray-100 group-hover:bg-white flex-shrink-0 ${color}`} >
+          <Icon className={`w-6 h-6 ${iconColor}`} />
         </div>
       </div>
     </Card>

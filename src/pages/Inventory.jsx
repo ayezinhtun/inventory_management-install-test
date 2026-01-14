@@ -160,7 +160,7 @@ export default function Inventory() {
             <h1 className="font-bold mb-5 text-[24px]">Inventory</h1>
 
             <div className="grid grid-cols-3 gap-10 mb-5">
-                <CardComponent title="Total Inventory" count={inventorys.length} icon={Package} />
+                <CardComponent title="Total Inventory" count={inventorys.length} icon={Package} color="bg-blue-100" iconColor="text-blue-600" />
             </div>
 
             <div className="bg-white shadow rounded-lg border border-gray-200 overflow-auto">
@@ -192,7 +192,7 @@ export default function Inventory() {
 
                         <button
                             onClick={handleExportCSV}
-                            className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-[#26599F] hover:bg-blue-900 hover:border-none hover:outline-none'
+                            className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-[#26599F] hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2 transition'
                         >
                             <Download className="w-5 h-5 mr-2" />
                             <span>Export</span>
@@ -313,7 +313,7 @@ export default function Inventory() {
 
                         <button
                             onClick={() => { setNameFilter(""); setstatusFilter(""); setWarehouseFilter(""); setRackFilter(""); setCurrentPage(1); }}
-                            className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-[#26599F] hover:bg-blue-900 hover:border-none hover:outline-none'
+                            className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-[#26599F] hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2 transition'
                         >
                             <span>Reset Filters</span>
                         </button>
@@ -382,18 +382,17 @@ export default function Inventory() {
                                                         }
 
                                                     >
-                                                        <Pen className="text-[#26599F]" />
+                                                        <Pen className="text-[#26599F] hover:text-blue-700" />
                                                     </Link>
 
-                                                    {/* <Link to={`/edit-inventory/${inventory.id} `}><Pen className="text-[#26599F]" /></Link> */}
-                                                    <Link to={`/inventory-detail/${inventory.id}`}><Eye className="text-[#8B5CF6]" /></Link>
-                                                    <Trash2 className="text-red-500" onClick={() => handleDelete(inventory.id)} />
+                                                    <Link to={`/inventory-detail/${inventory.id}`}><Eye className="text-indigo-500 hover:text-indigo-600" /></Link>
+                                                    <Trash2 className="text-red-500 hover:text-red-500 cursor-pointer" onClick={() => handleDelete(inventory.id)} />
                                                     <button
                                                         onClick={() => {
                                                             setSelectedInventoryId(inventory.id)
                                                             setShowModal(true)
                                                         }}
-                                                        className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-[#26599F] hover:bg-blue-900 hover:border-none hover:outline-none'
+                                                        className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-[#26599F] hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2 transition'
                                                     >
                                                         <span>Sell To Customer</span>
                                                     </button>

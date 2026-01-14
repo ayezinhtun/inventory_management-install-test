@@ -4,24 +4,26 @@ import { ImagePlus, MoveLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "../../../supabase/supabase-client";
-import { useNavigate } from "react-router-dom";
-
+import { createInventoryRequest } from "../../context/InventoryReqeustContext";
+import { useUserProfiles } from "../../context/UserProfileContext";
 
 export default function RequestInventory() {
+    const [form, setForm] = useState({
+        item_name: "",
+        quantity: 1,
+        notes: ""
+    })
 
-    const navigate = useNavigate();
+    const { profile } = useUserProfiles();
 
     const [imagePreview, setImagePreview] = useState(null);
 
     const [imageFile, setImageFile] = useState(null);
-    
-    const [attributeFields, setAttributeFields] = useState([]);
-
-    const [error, setError] = useState(null);
 
     const [loading, setLoading] = useState(false);
 
     const handleImageChange = (e) => {
+
         const file = e.target.files[0];
         if (!file) return;
 
@@ -58,82 +60,64 @@ export default function RequestInventory() {
         setForm(prev => ({ ...prev, [name]: value }))
     }
 
-    const handleAttrChange = (e) => {
-        const { name, value } = e.target;
-        setForm(prev => ({
-            ...prev,
-            attributes: {
-                ...prev.attributes,
-                [name]: value
-            }
-        }))
-    };
+    // upload image to supabase storage
+    const uploadImage = async () => {
+        if (!imageFile) return null;
 
-    // Add custom Attribute dynamically
-    const addCustomAttribute = () => {
-        const attrName = prompt("Enter attribute name:");
-        if (!attrName) return;
-        setAttributeFields(prev => [...prev, attrName]);
-        setForm(prev => ({
-            ...prev,
-            attributes: { ...prev.attributes, [attrName]: "" }
-        }));
-    };
+        const fileExt = imageFile.name.split(".").pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const { data, error } = await supabase.storage
+            .from("inventory-images")
+            .upload(fileName, imageFile);
 
-    // default attribtutes by type
-    const typeAttributes = {
-        server: ["cpu", "ram", "storage"],
-        switch: ["ports", "speed"],
-        router: ["ip", "routing_protocol"]
+        if (error) throw error;
+
+        const { publicUrl, error: urlError } = supabase.storage
+            .from("inventory-images")
+            .getPublicUrl(fileName);
+
+        if (urlError) throw urlError;
+
+        return publicUrl;
     };
 
 
-    const renderAttributes = () => {
-        const typeKey = (form.type || "").toLowerCase();
-        const defaults = typeAttributes[typeKey] || [];
+    // submit form 
+    const handleSubmit = async (e) => {
+        e.preventDefault();
 
-        return (
-            <div className="flex flex-col gap-2"> {/* stack vertically with gap */}
-                {/* Add button always on top */}
-                <div className="grid grid-cols-3">
-                    <Button
-                        type="button"
-                        onClick={addCustomAttribute}
-                        className="bg-[#26599F] text-lg w-3xs mb-2"
-                    >
-                        + Add Custom Attribute
-                    </Button>
-                </div>
+        setLoading(true);
 
-                <div className="grid grid-cols-3 gap-4 w-full">
-                    {/* All attribute inputs below */}
-                    {[...defaults, ...attributeFields].map((attr) => (
-                        <div key={attr} className="mb-2">
-                            <label className="block text-sm font-medium mb-1">
-                                {attr.toUpperCase()}
-                            </label>
-                            <input
-                                type="text"
-                                name={attr}
-                                onChange={handleAttrChange}
-                                className="w-full p-2.5 border border-gray-300 rounded-lg"
-                            />
-                        </div>
-                    ))}
-                </div>
-            </div>
-        );
-    };
+        try {
+            const image_url = await uploadImage();
 
+            await createInventoryRequest({
+                requester_id: profile.id,
+                item_name: form.item_name,
+                quantity: parseInt(form.quantity),
+                notes: form.notes,
+                image_url: image_url || null,
+            });
 
-
+            alert("Request submitted successfully");
+            setForm({ item_name: "", quantity: 1, notes: "" });
+            setImageFile(null);
+            setImagePreview(null);
+        } catch (err) {
+            console.error(err);
+            alert("Error:" + err.message);
+        } finally {
+            setLoading(false);
+        }
+    }
 
 
     return (
         <div>
-            <form action="">
+            <form action="" onSubmit={handleSubmit}>
                 <div className="mb-5 flex items-center justify-between">
                     <div className="flex items-center">
+                        <Link to="/request/engineer" className="p-2 hover:bg-gray-100 rounded-sm flex items-center me-2"><MoveLeft /></Link>
                         <h1 className="font-bold text-[24px]">Request Inventory</h1>
                     </div>
                     <Button
@@ -199,10 +183,12 @@ export default function RequestInventory() {
                                 <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Device Name <span className="text-red-500">*</span></label>
                                 <input
                                     type="text"
-                                    name="name"
+                                    name="item_name"
+                                    value={form.item_name}
                                     onChange={handleChange}
                                     placeholder="Device01"
                                     className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
+                                    required
                                 />
                             </div>
 
@@ -211,8 +197,10 @@ export default function RequestInventory() {
                                 <input
                                     type="number"
                                     name="quantity"
+                                    value={form.quantity}
                                     onChange={handleChange}
-                                    placeholder="1"
+                                    min={1}
+                                    required
                                     className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
                                 />
                             </div>
@@ -229,6 +217,7 @@ export default function RequestInventory() {
                                         <textarea
                                             name="notes"
                                             placeholder="Notes"
+                                            value={form.notes}
                                             rows={3}
                                             className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] text-gray-500"
                                             onChange={handleChange}
@@ -237,19 +226,6 @@ export default function RequestInventory() {
                                 </div>
                             </div>
                         </div>
-
-                        {/* {form.type && (
-                            <div className="mt-2">
-                                <label className="block mb-2 text-gray-900 text-sm font-medium">
-                                    {form.type.toUpperCase()} Specification
-                                </label>
-                                <div className="border border-gray-200 px-2 py-4 rounded">
-                                    <div>
-                                        {renderAttributes()}
-                                    </div>
-                                </div>
-                            </div>
-                        )} */}
                     </div>
 
                 </div>

@@ -22,6 +22,8 @@ import CreatePart from "./components/Inventory/addPart"
 import EditPart from "./components/Inventory/editPart"
 import CustomerInventory from "./pages/CustomerInventory"
 import RequestInventory from "./components/Inventory/requestInventory"
+import EngineerRequests from "./pages/Engineer/EngineerRequest"
+import AdminInventoryRequest from "./pages/Admin/InventoryReuest"
 
 function App() {
   return (
@@ -48,10 +50,17 @@ function App() {
           <Route path="/audit" element={<Audit />} />
           <Route path="/inventory-detail/:id" element={<InventoryDetail />} />
           <Route path="/inventory/create-inventory" element={<CreateInventory />} />
-          <Route path="/request-inventory" element={<RequestInventory/>} />
+          <Route path="/request-inventory" element={<RequestInventory />} />
           <Route path="/edit-inventory/:id" element={<EditInventory />} />
           <Route path="/edit-part/:id" element={<EditPart />} />
           <Route path="/notification" element={<Notification />} />
+
+          // for engieer
+          <Route path="/request/engineer" element={<EngineerRequests />} />
+
+          // for admin
+          <Route path="/request/admin" element={<AdminInventoryRequest />} />
+
         </Route>
       </Route>
     </Routes>

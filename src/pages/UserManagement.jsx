@@ -224,7 +224,7 @@ export default function UserMangement() {
             <h1 className="font-bold mb-5 text-[24px]">User Management</h1>
 
             <div className="grid grid-cols-3 gap-10 mb-5">
-                <CardComponent title="Total Users" count={users.length} icon={User} />
+                <CardComponent title="Total Users" count={users.length} icon={User} color="bg-purple-100" iconColor="text-purple-600"/>
             </div>
 
             <div className="bg-white shadow rounded-lg border border-gray-200">
@@ -364,7 +364,7 @@ export default function UserMangement() {
                                         <TableCell className="flex items-center space-x-3">
                                             <button
                                                 onClick={() => saveUserChanges(user.id)}
-                                                className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-[#26599F] hover:bg-blue-900 hover:border-none hover:outline-none'
+                                                className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-[#26599F] hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2 transition'
                                             >
                                                 <span>Save</span>
                                             </button>

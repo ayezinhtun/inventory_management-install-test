@@ -237,7 +237,7 @@ export default function CreatePart() {
 
 
     return (
-        <div className="p-6">
+        <div>
             <form onSubmit={handleSubmit}>
                 <div className="mb-5 flex items-center justify-between">
                     <div className="flex items-center">

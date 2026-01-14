@@ -64,7 +64,7 @@ export default function Audit() {
                     <div className="flex space-x-5">
 
                         <div
-                            className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-[#26599F] hover:bg-blue-900 hover:border-none hover:outline-none'
+                            className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-[#26599F] hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2 transition'
                         >
                             <Download className="w-5 h-5 mr-2" />
                             <span>Export</span>
@@ -137,7 +137,7 @@ export default function Audit() {
                                         <TableCell>{new Date(audit.date).toLocaleString()}</TableCell>
 
                                         <TableCell className="flex items-center space-x-3">
-                                            <Trash2 className="text-red-500" />
+                                            <Trash2 className="text-red-500 hover:text-red-700 cursor-pointer" />
                                         </TableCell>
                                     </TableRow>
                                 )
