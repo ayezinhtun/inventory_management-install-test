@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { X, MoveLeft } from "lucide-react";
-import { Button } from "flowbite-react";
+import { Button, Spinner } from "flowbite-react";
 import { fetchInventoryById } from "../../context/InventoryContext";
 import { Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
 
@@ -12,6 +12,7 @@ export default function InventoryDetail() {
 
     useEffect(() => {
         const getInventory = async () => {
+            setLoading(true);
             try {
                 const data = await fetchInventoryById(id);
                 setInventory(data);
@@ -25,8 +26,20 @@ export default function InventoryDetail() {
         getInventory();
     }, [id]);
 
-    if (loading) return <p>Loading...</p>;
-    if (!inventory) return <p>Inventory not found</p>;
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-screen">
+                <Spinner size="xl" color="info" aria-label="Loading..." />
+            </div>
+        );
+    }
+
+
+    if (!inventory) {
+        return (
+            <p>Inventory not found</p>
+        )
+    }
 
     return (
         <div>
@@ -40,9 +53,20 @@ export default function InventoryDetail() {
                     </Link>
                     <h1 className="font-bold text-[24px]">Inventory Detail</h1>
                 </div>
-                <Button type="button" className="bg-[#26599F] text-lg">
-                    Edit Inventory
-                </Button>
+
+                <Link
+                    to={
+                        inventory.type === "ram" || inventory.type === "cpu" || inventory.type === "ssd"
+                            ? `/edit-part/${inventory.id}`
+                            : `/edit-inventory/${inventory.id} `
+                    }
+
+                >
+                    <Button type="button" className="bg-[#26599F] text-lg">
+                        Edit Inventory
+                    </Button>
+                </Link>
+
             </div>
 
             <div className="grid grid-cols-12 gap-8">

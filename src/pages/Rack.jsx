@@ -119,7 +119,7 @@ export default function Rack() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-4 items-start">
                 {loading ? (
                     <div className="col-span-3 flex justify-center items-center">
                         <Spinner size="xl" color="info" aria-label="Loading..." />

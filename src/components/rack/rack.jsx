@@ -76,7 +76,7 @@ export default function RackComponent({ rack, inventorys, onDelete, onEdit }) {
                                     key={u}
                                     className="flex border-b border-gray-300 cursor-pointer"
                                     style={{
-                                        height: `${deviceHere.height * 30}px`, // height per unit
+                                        height: `${deviceHere.height * 32}px`, // height per unit
                                         backgroundColor: deviceHere.color || "#3b82f6",
                                         color: "white",
                                     }}
@@ -87,7 +87,7 @@ export default function RackComponent({ rack, inventorys, onDelete, onEdit }) {
                                         {Array.from({ length: deviceHere.height }, (_, idx) => deviceHere.start_unit + idx)
                                             .reverse()
                                             .map((unitNum) => (
-                                                <div key={unitNum} className="py-0.5">{unitNum}</div>
+                                                <div key={unitNum} className="py-1">{unitNum}</div>
                                             ))}
                                     </div>
 
