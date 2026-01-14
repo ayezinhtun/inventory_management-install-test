@@ -34,7 +34,7 @@ export const UserProfileProvider = ({ children }) => {
             console.error("Error fetching users:", err.message);
             setUsers([]);
         } finally {
-            setLoading(false);
+            setLoading(false); 
         }
     }
 
@@ -192,17 +192,9 @@ export const UserProfileProvider = ({ children }) => {
     }
 
     useEffect(() => {
-        if (!user) {
-            setProfile(null);
-            setProfileLoading(false);
-            setUsers([]);
-            setLoading(false);
-            return;
-        }
-
+        fetchUsers();
         fetchProfile();
     }, [user]);
-
 
     return (
         <UserProfileContext.Provider value={{ profile, profileLoading, users, loading, fetchUsers, updateUserRole, deleteUser, updateProfileName, updatePassword }}>
