@@ -55,10 +55,10 @@ function App() {
           <Route path="/edit-part/:id" element={<EditPart />} />
           <Route path="/notification" element={<Notification />} />
 
-          // for engieer
+          {/* for engineer*/}
           <Route path="/request/engineer" element={<EngineerRequests />} />
 
-          // for admin
+          {/*for admin*/}
           <Route path="/request/admin" element={<AdminInventoryRequest />} />
 
         </Route>
