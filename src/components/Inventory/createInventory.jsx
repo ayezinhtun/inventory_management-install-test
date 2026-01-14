@@ -341,9 +341,7 @@ export default function CreateInventory() {
         } finally {
             setLoading(false);
         }
-
     };
-
 
 
     return (

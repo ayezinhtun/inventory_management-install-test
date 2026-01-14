@@ -24,6 +24,8 @@ import CustomerInventory from "./pages/CustomerInventory"
 import RequestInventory from "./components/Inventory/requestInventory"
 import EngineerRequests from "./pages/Engineer/EngineerRequest"
 import AdminInventoryRequest from "./pages/Admin/InventoryReuest"
+import editRequestInventory from "./components/Inventory/editrequestInventory"
+import EditRequestInventory from "./components/Inventory/editrequestInventory"
 
 function App() {
   return (
@@ -57,6 +59,7 @@ function App() {
 
           {/* for engineer*/}
           <Route path="/request/engineer" element={<EngineerRequests />} />
+          <Route path="/request/edit/:id" element={<EditRequestInventory />} />
 
           {/*for admin*/}
           <Route path="/request/admin" element={<AdminInventoryRequest />} />

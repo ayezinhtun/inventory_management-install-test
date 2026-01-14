@@ -311,7 +311,9 @@ export default function EditInventory() {
                         <Link to="/inventory" className="p-2 hover:bg-gray-100 rounded-sm flex items-center me-2"><MoveLeft /></Link>
                         <h1 className="font-bold text-[24px]">Edit Inventory</h1>
                     </div>
-                    <Button type="submit" className="bg-[#26599F] text-lg">Update Inventory</Button>
+                    <Button type="submit" className="bg-[#26599F] text-lg">
+                        Update Inventory
+                    </Button>
                 </div>
 
                 <div className="grid grid-cols-12 gap-8">

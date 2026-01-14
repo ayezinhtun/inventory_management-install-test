@@ -2,12 +2,13 @@ import { CircleX, Cross, Warehouse, X } from "lucide-react";
 import { FloatingLabel, Textarea, Button, Spinner } from "flowbite-react";
 import { ImagePlus, MoveLeft } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../../../supabase/supabase-client";
 import { createInventoryRequest } from "../../context/InventoryReqeustContext";
 import { useUserProfiles } from "../../context/UserProfileContext";
 
 export default function RequestInventory() {
+    const navigate = useNavigate();
     const [form, setForm] = useState({
         item_name: "",
         quantity: 1,
@@ -61,25 +62,29 @@ export default function RequestInventory() {
     }
 
     // upload image to supabase storage
-    const uploadImage = async () => {
-        if (!imageFile) return null;
+    // const uploadImage = async () => {
+    //     if (!imageFile) return null;
 
-        const fileExt = imageFile.name.split(".").pop();
-        const fileName = `${Math.random()}.${fileExt}`;
-        const { data, error } = await supabase.storage
-            .from("inventory-images")
-            .upload(fileName, imageFile);
+    //     const fileExt = imageFile.name.split(".").pop();
+    //     const fileName = `${crypto.randomUUID()}.${fileExt}`;
+    //     const path = `inventory/${fileName}`;
+    //     const { data, error } = await supabase.storage
+    //         .from("inventory-images")
+    //         .upload(path, imageFile, { upsert: true });
 
-        if (error) throw error;
+    //     if (error) {
+    //         alert(`Image upload failed: ${error.message}`);
+    //         return;
+    //     }
 
-        const { publicUrl, error: urlError } = supabase.storage
-            .from("inventory-images")
-            .getPublicUrl(fileName);
+    //     const { publicUrl, error: urlError } = supabase.storage
+    //         .from("inventory-images")
+    //         .getPublicUrl(fileName);
 
-        if (urlError) throw urlError;
+    //     if (urlError) throw urlError;
 
-        return publicUrl;
-    };
+    //     return publicUrl;
+    // };
 
 
     // submit form 
@@ -89,18 +94,34 @@ export default function RequestInventory() {
         setLoading(true);
 
         try {
-            const image_url = await uploadImage();
+            // Upload image if provided
+            let imageUrl = null;
+            if (imageFile) {
+                const ext = imageFile.name.split(".").pop();
+                const filename = `${crypto.randomUUID()}.${ext}`;
+                const path = `inventory-request/${filename}`;
+                const { data, error } = await supabase.storage
+                    .from("inventory-images")
+                    .upload(path, imageFile, { upsert: false });
+
+                if (error) {
+                    alert(`Image upload failed: ${error.message}`);
+                    return;
+                }
+                imageUrl = data.path;
+            }
 
             await createInventoryRequest({
                 requester_id: profile.id,
                 item_name: form.item_name,
                 quantity: parseInt(form.quantity),
                 notes: form.notes,
-                image_url: image_url || null,
+                image: imageUrl,
             });
 
             alert("Request submitted successfully");
-            setForm({ item_name: "", quantity: 1, notes: "" });
+            // setForm({ item_name: "", quantity: 1, notes: "" });
+            navigate('/request/engineer');
             setImageFile(null);
             setImagePreview(null);
         } catch (err) {
@@ -154,6 +175,7 @@ export default function RequestInventory() {
                                         accept="image/*"
                                         className="hidden"
                                         onChange={handleImageChange}
+
                                     />
                                 </label>
                             ) : (
