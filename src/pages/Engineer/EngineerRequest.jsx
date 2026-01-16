@@ -4,7 +4,7 @@ import { CheckCircle, CirclePlus, ClipboardList, Clock, Delete, Download, Edit, 
 import { Checkbox, Dropdown, DropdownItem, ModalBody, ModalHeader, Spinner, Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
 import { useNavigate } from "react-router-dom";
 import { useUserProfiles } from "../../context/UserProfileContext";
-import { fetchAllInventoryRequest, fetchInventoryRequestsbyUser } from "../../context/InventoryReqeustContext";
+import { fetchAllInventoryRequest, fetchInventoryRequestsbyUser } from "../../context/InventoryRequestContext";
 import { Modal, Button } from "flowbite-react";
 import Pagination from "../../components/pagination/pagination";
 import { exportToCSV } from "../../utils/exportUtils";

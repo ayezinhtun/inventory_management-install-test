@@ -26,6 +26,12 @@ import EngineerRequests from "./pages/Engineer/EngineerRequest"
 import AdminInventoryRequest from "./pages/Admin/InventoryReuest"
 import editRequestInventory from "./components/Inventory/editrequestInventory"
 import EditRequestInventory from "./components/Inventory/editrequestInventory"
+import EngineerInstallRequests from "./pages/Engineer/InstallRequest"
+import InventoryInstallRequest from "./pages/Engineer/InventoryInstall"
+import ComponentInstallRequest from "./pages/Engineer/ComponentInstall"
+import InstallRequestPM from "./pages/PM/InstallRequest"
+import InstallRequestAdmin from "./pages/Admin/InstallRequestAdmin"
+import PhysicalInstall from "./pages/Admin/PhysicallyRequest"
 
 function App() {
   return (
@@ -60,9 +66,18 @@ function App() {
           {/* for engineer*/}
           <Route path="/request/engineer" element={<EngineerRequests />} />
           <Route path="/request/edit/:id" element={<EditRequestInventory />} />
+          <Route path="/install-requests" element={<EngineerInstallRequests />} />
+          <Route path="/install-requests/inventory" element={<InventoryInstallRequest />} />
+          <Route path="install-requests/component" element={<ComponentInstallRequest />}></Route>
 
           {/*for admin*/}
           <Route path="/request/admin" element={<AdminInventoryRequest />} />
+          <Route path="/install-request/admin" element={<InstallRequestAdmin />} />
+          <Route path="/install-request/physical" element={<PhysicalInstall />} />
+
+
+          {/* for pm */}
+          <Route path="/install-request/pm" element={<InstallRequestPM />} />
 
         </Route>
       </Route>

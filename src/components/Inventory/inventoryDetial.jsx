@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { X, MoveLeft } from "lucide-react";
 import { Button, Spinner } from "flowbite-react";
-import { fetchInventoryById } from "../../context/InventoryContext";
+import { fetchInstalledComponents, fetchInventoryById } from "../../context/InventoryContext";
 import { Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
 
 export default function InventoryDetail() {
     const { id } = useParams();
     const [inventory, setInventory] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [installedComponents, setInstalledComponents] = useState([]);
 
     useEffect(() => {
         const getInventory = async () => {
@@ -26,6 +27,20 @@ export default function InventoryDetail() {
         getInventory();
     }, [id]);
 
+    useEffect(() => {
+        const getInstalled = async () => {
+            if (inventory?.type === "server") {
+                try {
+                    const data = await fetchInstalledComponents(inventory.id);
+                    setInstalledComponents(data);
+                } catch (err) {
+                    console.error("Error fetching installed components", err);
+                }
+            }
+        };
+        getInstalled();
+    }, [inventory]);
+
     if (loading) {
         return (
             <div className="flex items-center justify-center h-screen">
@@ -40,6 +55,8 @@ export default function InventoryDetail() {
             <p>Inventory not found</p>
         )
     }
+
+
 
     return (
         <div>
@@ -210,27 +227,59 @@ export default function InventoryDetail() {
                                 </div>
                             )}
 
-                            <div className="overflow-x-auto shadow-sm">
-                                <Table hoverable className="bg-gray-200 rounded-md">
-                                    <TableHead>
-                                        <TableRow>
-                                            <TableHeadCell className="bg-gray-200">{inventory.type.toUpperCase()} Specification</TableHeadCell>
-                                        </TableRow>
-                                    </TableHead>
-                                    <TableBody className="divide-y">
-                                        {inventory.attributes &&
-                                            Object.entries(inventory.attributes).map(([key, value]) => (
+                            {Object.keys(inventory.attributes || {}).length > 0 && (
+                                <div className="overflow-x-auto shadow-sm">
+                                    <Table hoverable className="bg-gray-200 rounded-md">
+                                        <TableHead>
+                                            <TableRow>
+                                                <TableHeadCell className="bg-gray-200">
+                                                    {inventory.type.toUpperCase()} Specification
+                                                </TableHeadCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody className="divide-y">
+                                            {Object.entries(inventory.attributes).map(([key, value]) => (
                                                 <TableRow key={key} className="bg-white border-bottom border-gray-300 border-dashed">
                                                     <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
                                                         {key.toUpperCase()}
                                                     </TableCell>
                                                     <TableCell>{value}</TableCell>
                                                 </TableRow>
-                                            ))
-                                        }
-                                    </TableBody>
-                                </Table>
-                            </div>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            )}
+
+
+
+                            {inventory.type === "server" && installedComponents.length > 0 && (
+                                <div className="mt-4 overflow-x-auto shadow-sm">
+                                    <h2 className="text-lg font-bold mb-2">Installed Components</h2>
+                                    <Table hoverable className="bg-gray-200 rounded-md">
+                                        <TableHead>
+                                            <TableRow>
+                                                <TableHeadCell className="bg-gray-200">Name</TableHeadCell>
+                                                <TableHeadCell className="bg-gray-200">Model</TableHeadCell>
+                                                <TableHeadCell className="bg-gray-200">Vendor</TableHeadCell>
+                                                <TableHeadCell className="bg-gray-200">Quantity</TableHeadCell>
+
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody className="divide-y">
+                                            {installedComponents.map((item) => (
+                                                <TableRow key={item.id} className="bg-white border-b border-gray-300 border-dashed">
+                                                    <TableCell>{item.component.name}</TableCell>
+                                                    <TableCell>{item.component.model}</TableCell>
+                                                    <TableCell>{item.component.vendor}</TableCell>
+                                                    <TableCell>{item.quantity}</TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            )}
+
                         </div>
                     </div>
                 </div>

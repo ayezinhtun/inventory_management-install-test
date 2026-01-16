@@ -11,6 +11,7 @@ export const InventoryCreate = async (inventorys) => {
     return data;
 }
 
+
 export const fetchInventory = async () => {
     const { data, error } = await supabase
         .from('inventorys')
@@ -103,3 +104,32 @@ export const deleteInventory = async (id) => {
 
     if (error) throw error;
 }
+
+
+export const fetchInstalledComponents = async (serverId) => {
+  const { data, error } = await supabase
+    .from("installations")
+    .select(`
+      id,
+      inventory_id, 
+      server_id, 
+      quantity,
+      attributes,
+      installed_by,
+      installed_at,
+      component:inventory_id (
+        id,
+        name,
+        type,
+        model,
+        vendor
+      )
+      
+    `)
+    .eq("server_id", serverId);
+
+  if (error) throw error;
+
+  // sort by type in frontend
+  return data.sort((a, b) => a.component.type.localeCompare(b.component.type));
+};

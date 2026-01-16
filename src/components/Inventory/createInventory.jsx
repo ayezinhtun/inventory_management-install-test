@@ -180,15 +180,24 @@ export default function CreateInventory() {
 
     // default attribtutes by type
     const typeAttributes = {
-        server: ["cpu", "ram", "storage"],
-        switch: ["ports", "speed"],
-        router: ["ip", "routing_protocol"]
+        server: {
+            max_ram_slots: { type: "number", required: true, min: 1 },
+            max_cpu_slots: { type: "number", required: true, min: 1 },
+            max_storage_slots: { type: "number", required: true, min: 1 },
+        },
+        switch: {
+            ports: { type: "number", required: true, min: 1 },
+            speed: { type: "number", required: true, min: 1 }, // can be Mbps/Gbps
+        },
+        router: {
+            ip: { type: "ip", required: true },
+            routing_protocol: { type: "text", required: true },
+        }
     };
-
 
     const renderAttributes = () => {
         const typeKey = (form.type || "").toLowerCase();
-        const defaults = typeAttributes[typeKey] || [];
+        const defaults = Object.keys(typeAttributes[typeKey] || {});
 
         return (
             <div className="flex flex-col gap-2"> {/* stack vertically with gap */}
@@ -233,6 +242,42 @@ export default function CreateInventory() {
         setLoading(true);
 
         try {
+
+            const typeKey = form.type.toLowerCase();
+            const validations = typeAttributes[typeKey] || {};
+
+            for (const [attr, rules] of Object.entries(validations)) {
+                const value = form.attributes[attr];
+
+                if (rules.required && (value === undefined || value === "")) {
+                    alert(`${attr.toUpperCase()} is required`);
+                    setLoading(false);
+                    return;
+                }
+
+                if (rules.type === "number" && isNaN(Number(value))) {
+                    alert(`${attr.toUpperCase()} must be a number`);
+                    setLoading(false);
+                    return;
+                }
+
+                if (rules.type === "number" && rules.min && Number(value) < rules.min) {
+                    alert(`${attr.toUpperCase()} must be at least ${rules.min}`);
+                    setLoading(false);
+                    return;
+                }
+
+                if (rules.type === "ip") {
+                    const ipRegex =
+                        /^(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)){3}$/;
+                    if (!ipRegex.test(value)) {
+                        alert(`${attr.toUpperCase()} is not a valid IP address`);
+                        setLoading(false);
+                        return;
+                    }
+                }
+
+            }
 
             // Upload image if provided
             let imageUrl = null;
@@ -435,7 +480,7 @@ export default function CreateInventory() {
                             </div>
 
                             <div>
-                                <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Warehouse <span className="text-red-500">*</span></label>
+                                <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Region <span className="text-red-500">*</span></label>
                                 <select name="region_id" id="" value={form.region_id} onChange={handleChange}
                                     className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
                                 >

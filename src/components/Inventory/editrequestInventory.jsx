@@ -4,7 +4,7 @@ import { ImagePlus, MoveLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../../../supabase/supabase-client";
-import { fetchInventoryRequestById, updateInventoryRequest } from "../../context/InventoryReqeustContext";
+import { fetchInventoryRequestById, updateInventoryRequest } from "../../context/InventoryRequestContext";
 import { useUserProfiles } from "../../context/UserProfileContext";
 
 export default function EditRequestInventory() {

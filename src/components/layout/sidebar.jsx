@@ -14,6 +14,8 @@ import {
     ClipboardList,
     Send,
     ListChecks,
+    Wrench,
+    PackagePlus,
 } from "lucide-react";
 import logo from "../../assets/logo.png";
 
@@ -48,8 +50,23 @@ export default function SidebarComponent() {
         },
         { id: 7, name: "Inventory Requests", path: "/request/admin", icon: <Send className="h-5 w-5 mr-2" /> },
         { id: 8, name: "My Requests", path: "/request/engineer", icon: <ListChecks className="h-5 w-5 mr-2" /> },
-        { id: 9, name: "Users", path: "/user", icon: <User className="h-5 w-5 mr-2" /> },
-        { id: 10, name: "Audit Log", path: "/audit", icon: <Clock className="h-5 w-5 mr-2" /> },
+
+        {
+            id: 9,
+            name: "My Install Requests",
+            path: "/install-requests",
+            icon: <PackagePlus className="h-5 w-5 mr-2" />,
+            subLinks: [
+                { id: "9-1", name: "Inventory Install", path: "/install-requests/inventory" },
+                { id: "9-2", name: "Component Install", path: "/install-requests/component" },
+            ],
+        },
+
+        { id: 10, name: "Install Request PM", path: "/install-request/pm", icon: <User className="h-5 w-5 mr-2" /> },
+        {id: 11, name: "Install Request Admin", path: '/install-request/admin', icon: <User className="h-5 w-5 mr-2"/>},
+        {id: 12, name: "Physical Install", path: '/install-request/physical' , icon: <User className="h-5 w-5 mr-2"/>},
+        { id: 13, name: "Users", path: "/user", icon: <User className="h-5 w-5 mr-2" /> },
+        { id: 14, name: "Audit Log", path: "/audit", icon: <Clock className="h-5 w-5 mr-2" /> },
     ];
 
     // Open the menu if current path starts with its path
