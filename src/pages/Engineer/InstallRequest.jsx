@@ -109,7 +109,7 @@ export default function InstallRequestAdmin() {
                                         </TableCell>
 
                                         <TableCell>{request.requester.name}</TableCell>
-                                        <TableCell>{request.server.name}</TableCell>
+                                        <TableCell>{request.server?.name || ''}</TableCell>
                                         <TableCell>{request.notes}</TableCell>
 
                                         

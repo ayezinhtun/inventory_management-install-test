@@ -37,7 +37,7 @@ export default function InstallRequestPM() {
             return;
         };
 
-        const isConfirmed = window.confirm(`Are you sure want to update this request to "${status}"`);
+        const isConfirmed = window.confirm(`Are you sure want to Approve`);
         if (!isConfirmed) return;
 
         try {
@@ -53,7 +53,7 @@ export default function InstallRequestPM() {
             ));
 
 
-            alert(`Request stuats updated to "${status}" successfully!`);
+            alert(`Request Approve successfully!`);
 
             // reload form server
             fetchRequests();
@@ -181,6 +181,9 @@ export default function InstallRequestPM() {
                                 <TableHeadCell>Status</TableHeadCell>
                                 <TableHeadCell>Requester</TableHeadCell>
                                 <TableHeadCell>Destination Server</TableHeadCell>
+                                <TableHeadCell>Destination Region</TableHeadCell>
+                                <TableHeadCell>Destination Warehouse</TableHeadCell>
+                                <TableHeadCell>Destination Rack</TableHeadCell>
                                 <TableHeadCell>Note</TableHeadCell>
 
                                 <TableHeadCell>
@@ -189,6 +192,7 @@ export default function InstallRequestPM() {
                             </TableRow>
                         </TableHead>
                         <TableBody className="divide-y divide-gray-200">
+                            
                             {requests.map((request => {
                                 return (
                                     <TableRow key={request.id} className="bg-white dark:border-gray-700 dark:bg-gray-800">
@@ -204,7 +208,11 @@ export default function InstallRequestPM() {
                                         </TableCell>
 
                                         <TableCell>{request.requester.name}</TableCell>
-                                        <TableCell>{request.server.name}</TableCell>
+                                        <TableCell>{request.server?.name || ''}</TableCell>
+                                        <TableCell>{request.region?.name || ''}</TableCell>
+                                        <TableCell>{request.warehouse?.name || ''}</TableCell>
+                                        <TableCell>{request.rack?.name || ''}</TableCell>
+
                                         <TableCell>{request.notes}</TableCell>
 
                                         <TableCell className="flex item-center space-x-3">
@@ -215,7 +223,7 @@ export default function InstallRequestPM() {
                                                 }}
                                                 className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-offset-2 transition'
                                             >
-                                                <span>Send to Admin pprove</span>
+                                                <span>Approve</span>
                                             </button>
 
                                             <button

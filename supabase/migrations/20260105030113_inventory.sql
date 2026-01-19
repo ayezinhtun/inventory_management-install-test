@@ -67,3 +67,7 @@ to authenticated
 using (true);
 
 -- name is change into unique
+
+
+-- do this in the sql editor 
+

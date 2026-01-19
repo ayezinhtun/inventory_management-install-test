@@ -2,25 +2,25 @@ import { supabase } from '../../supabase/supabase-client';
 
 // Create a new install request
 export const createInstallRequest = async (payload) => {
-    // add initial status for PM approval
-    const newPayload = {
-        ...payload,
-        status: 'pm_approve_pending'
-    };
+  // add initial status for PM approval
+  const newPayload = {
+    ...payload,
+    status: 'pm_approve_pending'
+  };
 
-    const { data, error } = await supabase
-        .from('installation_requests')
-        .insert([newPayload])
-        .select();
-    if (error) throw error;
-    return data;
+  const { data, error } = await supabase
+    .from('installation_requests')
+    .insert([newPayload])
+    .select();
+  if (error) throw error;
+  return data;
 }
 
 // Get all requests (can filter by status or user)
 export const getInstallRequests = async (status) => {
-    let query = supabase
-        .from('installation_requests')
-        .select(`
+  let query = supabase
+    .from('installation_requests')
+    .select(`
             id, 
             inventory_id, 
             server_id,
@@ -28,6 +28,11 @@ export const getInstallRequests = async (status) => {
             notes, 
             requested_by, 
             status, 
+            destination_region_id, 
+            destination_warehouse_id, 
+            destination_rack_id, 
+            destination_start_unit, 
+            destination_height, 
             component:inventory_id (
                 id,
                 name,
@@ -44,6 +49,18 @@ export const getInstallRequests = async (status) => {
                 start_unit,
                 height
             ) , 
+            region:destination_region_id (
+              id, 
+              name
+            ), 
+            warehouse:destination_warehouse_id (
+              id, 
+              name
+            ), 
+            rack:destination_rack_id (
+              id, 
+              name
+            ), 
             requester:requested_by(
                 id, 
                 name
@@ -51,14 +68,13 @@ export const getInstallRequests = async (status) => {
 
         `);
 
-    if (status) query = query.eq('status', status);
+  if (status) query = query.eq('status', status);
 
-    const { data, error } = await query.order('created_at', { ascending: false });
-    if (error) throw error;
-    return data;
+  const { data, error } = await query.order('created_at', { ascending: false });
+  if (error) throw error;
+  return data;
 }
 
-// Update request status (approve, reject)
 // Update request status (approve, reject, complete)
 export const updateInstallRequestStatus = async (id, status, userId) => {
   if (!id) throw new Error("Request ID is required");
@@ -90,62 +106,85 @@ export const updateInstallRequestStatus = async (id, status, userId) => {
   if (status === "complete") {
     if (!userId) throw new Error("Installer must be logged in");
 
-    const { inventory_id, server_id, quantity, attributes } = request;
+    const {
+      inventory_id, server_id, quantity, attributes,
+      destination_warehouse_id, destination_rack_id,
+      destination_start_unit, destination_height, destination_region_id
+    } = request;
 
-    // 🔹 Check if component already installed on this server
-    const { data: existing, error: existingError } = await supabase
-      .from("installations")
-      .select("id, quantity, attributes")
-      .eq("server_id", server_id)
-      .eq("inventory_id", inventory_id)
-      .maybeSingle();
+    if (server_id) {
+      // 🔹 Check if component already installed on this server
+      const { data: existing, error: existingError } = await supabase
+        .from("installations")
+        .select("id, quantity, attributes")
+        .eq("server_id", server_id)
+        .eq("inventory_id", inventory_id)
+        .maybeSingle();
 
-    if (existingError && existingError.code !== "PGRST116") throw existingError;
+      if (existingError && existingError.code !== "PGRST116") throw existingError;
 
-    if (existing) {
-      // ✅ Update existing installation quantity
-      const updatedAttributes = { ...existing.attributes, ...attributes };
+      if (existing) {
+        // ✅ Update existing installation quantity
+        const updatedAttributes = { ...existing.attributes, ...attributes };
+        const { error: updateError } = await supabase
+          .from("installations")
+          .update({
+            quantity: existing.quantity + quantity,
+            attributes: updatedAttributes,
+            installed_at: new Date().toISOString(),
+            installed_by: userId,
+          })
+          .eq("id", existing.id);
+        if (updateError) throw updateError;
+      } else {
+        // ✅ Insert new installation record
+        const { error: installError } = await supabase
+          .from("installations")
+          .insert({
+            inventory_id,
+            server_id,
+            quantity,
+            installed_by: userId,
+            attributes: attributes || {},
+          });
+        if (installError) throw installError;
+      }
+
+      // 5️⃣ Reduce inventory quantity
+      const { data: invData, error: invError } = await supabase
+        .from("inventorys")
+        .select("quantity")
+        .eq("id", inventory_id)
+        .maybeSingle();
+      if (invError) throw invError;
+
+      const newQuantity = invData.quantity - quantity;
+      if (newQuantity < 0) throw new Error("Not enough inventory quantity");
+
+      const { error: updateInvError } = await supabase
+        .from("inventorys")
+        .update({ quantity: newQuantity })
+        .eq("id", inventory_id);
+      if (updateInvError) throw updateInvError;
+    }
+    else {
+      //update the inventory location fields
       const { error: updateError } = await supabase
-        .from("installations")
+        .from('inventorys')
         .update({
-          quantity: existing.quantity + quantity,
-          attributes: updatedAttributes,
-          installed_at: new Date().toISOString(),
-          installed_by: userId,
+          warehouse_id: destination_warehouse_id,
+          rack_id: destination_rack_id,
+          start_unit: destination_start_unit,
+          height: destination_height,
+          region_id: destination_region_id
         })
-        .eq("id", existing.id);
+        .eq("id", inventory_id);
+
       if (updateError) throw updateError;
-    } else {
-      // ✅ Insert new installation record
-      const { error: installError } = await supabase
-        .from("installations")
-        .insert({
-          inventory_id,
-          server_id,
-          quantity,
-          installed_by: userId,
-          attributes: attributes || {},
-        });
-      if (installError) throw installError;
     }
 
-    // 5️⃣ Reduce inventory quantity
-    const { data: invData, error: invError } = await supabase
-      .from("inventorys")
-      .select("quantity")
-      .eq("id", inventory_id)
-      .maybeSingle();
-    if (invError) throw invError;
-
-    const newQuantity = invData.quantity - quantity;
-    if (newQuantity < 0) throw new Error("Not enough inventory quantity");
-
-    const { error: updateInvError } = await supabase
-      .from("inventorys")
-      .update({ quantity: newQuantity })
-      .eq("id", inventory_id);
-    if (updateInvError) throw updateInvError;
   }
+
 
   // 6️⃣ Update installation request status
   const { data, error } = await supabase
@@ -164,20 +203,22 @@ export const updateInstallRequestStatus = async (id, status, userId) => {
 
 // Get all components (RAM, CPU, Storage)
 export const getComponents = async () => {
-    const { data, error } = await supabase
-        .from('inventorys')
-        .select('*')
-        .in('type', ['ram', 'cpu', 'storage']);
-    if (error) throw error;
-    return data;
+  const { data, error } = await supabase
+    .from('inventorys')
+    .select('*')
+    .in('type', ['ram', 'cpu', 'storage']);
+  if (error) throw error;
+  return data;
 }
 
 // Get all servers
 export const getServers = async () => {
-    const { data, error } = await supabase
-        .from('inventorys')
-        .select('*')
-        .eq('type', 'server');
-    if (error) throw error;
-    return data;
+  const { data, error } = await supabase
+    .from('inventorys')
+    .select('*')
+    .eq('type', 'server');
+  if (error) throw error;
+  return data;
 }
+
+

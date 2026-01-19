@@ -52,6 +52,8 @@ export default function EditInventory() {
 
             if (error) return console.error(error);
 
+            const attrKeys = Object.keys(data.attributes || {});
+
             setForm(prev => ({
                 ...prev,
                 name: data.name,
@@ -71,6 +73,7 @@ export default function EditInventory() {
                 image: data.image || null,
             }));
 
+            setAttributeFields(attrKeys);
 
 
             if (data.image) {
@@ -150,15 +153,9 @@ export default function EditInventory() {
     };
 
     // Default attributes by type
-    const typeAttributes = {
-        server: ["cpu", "ram", "storage"],
-        switch: ["ports", "speed"],
-        router: ["ip", "routing_protocol"]
-    };
+    
 
     const renderAttributes = () => {
-        const typeKey = (form.type || "").toLowerCase();
-        const defaults = typeAttributes[typeKey] || [];
 
         return (
             <div className="flex flex-col gap-2">
@@ -167,7 +164,7 @@ export default function EditInventory() {
                 </Button>
 
                 <div className="grid grid-cols-3 gap-4 w-full">
-                    {[...defaults, ...attributeFields].map(attr => (
+                    {attributeFields.map(attr => (
                         <div key={attr} className="mb-2">
                             <label className="block text-sm font-medium mb-1">{attr.toUpperCase()}</label>
                             <input

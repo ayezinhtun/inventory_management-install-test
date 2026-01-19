@@ -37,7 +37,7 @@ export default function InstallRequestAdmin() {
             return;
         };
 
-        const isConfirmed = window.confirm(`Are you sure want to update this request to "${status}"`);
+        const isConfirmed = window.confirm('Are you sure want to Approve');
         if (!isConfirmed) return;
 
         try {
@@ -53,7 +53,7 @@ export default function InstallRequestAdmin() {
             ));
 
 
-            alert(`Request stuats updated to "${status}" successfully!`);
+            alert(`Request Approve successfully!`);
 
             // reload form server
             fetchRequests();
@@ -181,6 +181,9 @@ export default function InstallRequestAdmin() {
                                 <TableHeadCell>Status</TableHeadCell>
                                 <TableHeadCell>Requester</TableHeadCell>
                                 <TableHeadCell>Destination Server</TableHeadCell>
+                                <TableHeadCell>Destination Region</TableHeadCell>
+                                <TableHeadCell>Destination Warehouse</TableHeadCell>
+                                <TableHeadCell>Destination Rack</TableHeadCell>
                                 <TableHeadCell>Note</TableHeadCell>
 
                                 <TableHeadCell>
@@ -204,7 +207,10 @@ export default function InstallRequestAdmin() {
                                         </TableCell>
 
                                         <TableCell>{request.requester.name}</TableCell>
-                                        <TableCell>{request.server.name}</TableCell>
+                                        <TableCell>{request.server?.name || ''}</TableCell>
+                                        <TableCell>{request.region?.name || ''}</TableCell>
+                                        <TableCell>{request.warehouse?.name || ''}</TableCell>
+                                        <TableCell>{request.rack?.name || ''}</TableCell>
                                         <TableCell>{request.notes}</TableCell>
 
                                         <TableCell className="flex item-center space-x-3">
