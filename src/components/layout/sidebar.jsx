@@ -63,15 +63,15 @@ export default function SidebarComponent() {
             ],
         },
 
-        {
-            id: 10,
-            name: "My Relocation Requests",
-            path: "",
-            icon: <PackagePlus className="h-5 w-5 mr-2" />,
-            subLinks: [
-                { id: "10-1", name: "Component Relocation", path: "/relocation-requests/component" },
-            ],
-        },
+        // {
+        //     id: 10,
+        //     name: "My Relocation Requests",
+        //     path: "",
+        //     icon: <PackagePlus className="h-5 w-5 mr-2" />,
+        //     subLinks: [
+        //         { id: "10-1", name: "Component Relocation", path: "/relocation-requests/component" },
+        //     ],
+        // },
 
         { id: 11, name: "Install Request PM", path: "/install-request/pm", icon: <ClipboardCheck className="h-5 w-5 mr-2" /> },
         {id: 12, name: "Install Request Admin", path: '/install-request/admin', icon: <ClipboardCheck className="h-5 w-5 mr-2"/>},

@@ -16,11 +16,13 @@ export default function PhysicalInstall() {
 
     const [loading, setLoading] = useState(false);
 
+    const comStatus = ['admin_approved', 'complete']
+
     const fetchRequests = async () => {
         setLoading(true);
 
         try {
-            const data = await getInstallRequests('admin_approved');
+            const data = await getInstallRequests(comStatus);
             setRequests(data);
         } catch (error) {
             console.error('Error fetching requests:', error);
@@ -61,7 +63,7 @@ export default function PhysicalInstall() {
                 type: "error",
                 message: "Failed to complete installation!"
             })
-			
+
         }
     };
 
@@ -190,7 +192,7 @@ export default function PhysicalInstall() {
                                 <TableHeadCell>Note</TableHeadCell>
 
                                 <TableHeadCell>
-                                    <span>Action</span>
+                                    {requests.some(r => r.status === 'admin_approved') ? 'Action' : ''}
                                 </TableHeadCell>
                             </TableRow>
                         </TableHead>
@@ -216,14 +218,19 @@ export default function PhysicalInstall() {
                                         <TableCell>{request.rack?.name || ''}</TableCell>
                                         <TableCell>{request.notes}</TableCell>
 
-                                        <TableCell className="flex item-center space-x-3">
-                                            <button
-                                                onClick={() => handleComplete(request.id)}
-                                                className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-offset-2 transition'
-                                            >
-                                                <span>Complete</span>
-                                            </button>
-                                        </TableCell>
+                                        {request.status === 'admin_approved' && (
+                                            <>
+                                                <TableCell className="flex item-center space-x-3">
+                                                    <button
+                                                        onClick={() => handleComplete(request.id)}
+                                                        className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-offset-2 transition'
+                                                    >
+                                                        <span>Complete</span>
+                                                    </button>
+                                                </TableCell>
+                                            </>
+                                        )}
+
                                     </TableRow>
                                 )
                             }))}

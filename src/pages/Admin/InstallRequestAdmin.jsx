@@ -17,11 +17,14 @@ export default function InstallRequestAdmin() {
 
     const [loading, setLoading] = useState(false);
 
+
+    const adminStatuses = ['admin_approved', 'pm_approved', 'rejected', 'complete'];
+
     const fetchRequests = async () => {
         setLoading(true);
 
         try {
-            const data = await getInstallRequests('pm_approved');
+            const data = await getInstallRequests(adminStatuses);
             setRequests(data);
         } catch (error) {
             console.error('Error fetching requests:', error);
@@ -43,7 +46,7 @@ export default function InstallRequestAdmin() {
             return;
         };
 
-        const isConfirmed = window.confirm('Are you sure want to Approve');
+        const isConfirmed = window.confirm(`Are you sure want to ${status}`);
         if (!isConfirmed) return;
 
         try {
@@ -199,7 +202,7 @@ export default function InstallRequestAdmin() {
                                 <TableHeadCell>Note</TableHeadCell>
 
                                 <TableHeadCell>
-                                    <span>Action</span>
+                                    {requests.some(r => r.status === 'pm_approved') ? 'Action' : ''}
                                 </TableHeadCell>
                             </TableRow>
                         </TableHead>
@@ -225,30 +228,35 @@ export default function InstallRequestAdmin() {
                                         <TableCell>{request.rack?.name || ''}</TableCell>
                                         <TableCell>{request.notes}</TableCell>
 
-                                        <TableCell className="flex item-center space-x-3">
-                                            <button
-                                                onClick={() => {
-                                                    if (!profile?.id)
-                                                        return
-                                                    setToast({
-                                                        type: "error",
-                                                        message: "Admin Not logged in yet!"
-                                                    })
-                                                    handleStatusChange(request.id, "admin_approved")
-                                                }}
-                                                className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-offset-2 transition'
-                                            >
-                                                <span>Apporve</span>
-                                            </button>
+                                        {request.status === 'pm_approved' && (
+                                            <>
+                                                <TableCell className="flex item-center space-x-3">
+                                                    <button
+                                                        onClick={() => {
+                                                            if (!profile?.id)
+                                                                return
+                                                            setToast({
+                                                                type: "error",
+                                                                message: "Admin Not logged in yet!"
+                                                            })
+                                                            handleStatusChange(request.id, "admin_approved")
+                                                        }}
+                                                        className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-offset-2 transition'
+                                                    >
+                                                        <span>Apporve</span>
+                                                    </button>
 
-                                            <button
-                                                onClick={() => handleStatusChange(request.id, "rejected")}
-                                                className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-rose-500 hover:bg-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-300 focus:ring-offset-2 transition'
-                                            >
-                                                <span>Reject</span>
-                                            </button>
+                                                    <button
+                                                        onClick={() => handleStatusChange(request.id, "rejected")}
+                                                        className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-rose-500 hover:bg-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-300 focus:ring-offset-2 transition'
+                                                    >
+                                                        <span>Reject</span>
+                                                    </button>
 
-                                        </TableCell>
+                                                </TableCell>
+                                            </>
+                                        )}
+
                                     </TableRow>
                                 )
                             }))}

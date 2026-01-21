@@ -18,7 +18,7 @@ export default function InstallRequestAdmin() {
         setLoading(true);
 
         try {
-            const data = await getInstallRequests();
+            const data = await getInstallRequests(null, profile.id);
             setRequests(data);
         } catch (error) {
             console.error('Error fetching requests:', error);

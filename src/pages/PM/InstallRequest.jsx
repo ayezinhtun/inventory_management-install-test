@@ -16,11 +16,13 @@ export default function InstallRequestPM() {
 
     const [loading, setLoading] = useState(false);
 
+    const pmStatuses = ['pm_approve_pending', 'pm_approved', 'rejected', 'admin_approved', 'complete'];
+
     const fetchRequests = async () => {
         setLoading(true);
 
         try {
-            const data = await getInstallRequests('pm_approve_pending');
+            const data = await getInstallRequests(pmStatuses);
             setRequests(data);
         } catch (error) {
             console.error('Error fetching requests:', error);
@@ -42,7 +44,7 @@ export default function InstallRequestPM() {
             return;
         };
 
-        const isConfirmed = window.confirm(`Are you sure want to Approve`);
+        const isConfirmed = window.confirm(`Are you sure want to ${status}`);
         if (!isConfirmed) return;
 
         try {
@@ -58,7 +60,7 @@ export default function InstallRequestPM() {
             ));
 
             setToast({
-                type: "error",
+                type: "success",
                 message: "Request Approve successfully!"
             })
 
@@ -196,9 +198,11 @@ export default function InstallRequestPM() {
                                 <TableHeadCell>Destination Rack</TableHeadCell>
                                 <TableHeadCell>Note</TableHeadCell>
 
+
                                 <TableHeadCell>
-                                    <span>Action</span>
+                                    {requests.some(r => r.status === 'pm_approve_pending') ? 'Action' : ''}
                                 </TableHeadCell>
+
                             </TableRow>
                         </TableHead>
                         <TableBody className="divide-y divide-gray-200">
@@ -226,28 +230,31 @@ export default function InstallRequestPM() {
                                         <TableCell>{request.notes}</TableCell>
 
                                         <TableCell className="flex item-center space-x-3">
-                                            <button
-                                                onClick={() => {
-                                                    if (!profile?.id)
-                                                        return setToast({
-                                                            type: "error",
-                                                            message: "PM Not Logged in yet!"
-                                                        })
+                                            {request.status === 'pm_approve_pending' && (
+                                                <>
+                                                    <button
+                                                        onClick={() => {
+                                                            if (!profile?.id)
+                                                                return setToast({
+                                                                    type: "error",
+                                                                    message: "PM Not Logged in yet!"
+                                                                })
 
-                                                    handleStatusChange(request.id, "pm_approved")
-                                                }}
-                                                className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-offset-2 transition'
-                                            >
-                                                <span>Approve</span>
-                                            </button>
+                                                            handleStatusChange(request.id, "pm_approved")
+                                                        }}
+                                                        className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-offset-2 transition'
+                                                    >
+                                                        <span>Approve</span>
+                                                    </button>
 
-                                            <button
-                                                onClick={() => handleStatusChange(request.id, "rejected")}
-                                                className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-rose-500 hover:bg-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-300 focus:ring-offset-2 transition'
-                                            >
-                                                <span>Reject</span>
-                                            </button>
-
+                                                    <button
+                                                        onClick={() => handleStatusChange(request.id, "rejected")}
+                                                        className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-rose-500 hover:bg-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-300 focus:ring-offset-2 transition'
+                                                    >
+                                                        <span>Reject</span>
+                                                    </button>
+                                                </>
+                                            )}
                                         </TableCell>
                                     </TableRow>
                                 )

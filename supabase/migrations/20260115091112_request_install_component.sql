@@ -57,3 +57,11 @@ ADD COLUMN attributes jsonb DEFAULT '{}'::jsonb;
 -- ALTER TABLE installation_requests
 -- ADD CONSTRAINT installation_requests_rack_id_fkey
 -- FOREIGN KEY (destination_rack_id) REFERENCES racks(id);
+
+
+-- ALTER TABLE public.installation_requests
+-- ADD COLUMN rejected_at timestamp with time zone null;
+
+
+-- ALTER TABLE public.installation_requests
+-- ADD COLUMN rejected_by uuid NULL REFERENCES user_profile(id);

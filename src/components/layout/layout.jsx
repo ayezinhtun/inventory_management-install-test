@@ -9,7 +9,7 @@ export default function Layout() {
         <div className="flex h-screen bg-white">
             <SidebarComponent/>
 
-            <div className="flex-1 ml-72 flex flex-col min-w-0">
+            <div className="flex-1 ml-64 flex flex-col min-w-0">
                 <Header/>
 
                 <main className="p-6 flex-1 overflow-x-auto overflow-y-auto min-w-0">
