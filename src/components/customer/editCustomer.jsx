@@ -3,7 +3,7 @@ import { FloatingLabel, Textarea, Button } from "flowbite-react";
 import { useState } from "react";
 import { updateCustomer } from "../../context/CustomerContext";
 
-export default function EditCustomer({ onClose, customer, onUpdate }) {
+export default function EditCustomer({ onClose, customer, onUpdate, setToast }) {
 
     const [form, setForm] = useState({
         company_name: customer.company_name || '',
@@ -24,12 +24,18 @@ export default function EditCustomer({ onClose, customer, onUpdate }) {
 
         try{
             await updateCustomer(customer.id, form);
-            alert('Customer Updated Success!');
+            setToast({
+                type: "success",
+                message: "Customer Updated Success!"
+            })
             onUpdate();
             onClose();
         }catch (error) {
             console.error('Error update customer', error);
-            alert('Failed to update Customer');
+            setToast({
+                type: "error",
+                message: "Failed to update customer!"
+            })
         }
     }
 
@@ -45,7 +51,7 @@ export default function EditCustomer({ onClose, customer, onUpdate }) {
                 </div>
                 <form className="p-6" onSubmit={handleSubmit}>
                     <div className="mb-4">
-                        <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Company Name <span className="text-red-500">*</span></label>
+                        <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Company Name</label>
                         <input
                             type="text"
                             name="company_name"
@@ -58,7 +64,7 @@ export default function EditCustomer({ onClose, customer, onUpdate }) {
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="mb-4">
-                            <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Contact Person <span className="text-red-500">*</span></label>
+                            <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Contact Person </label>
                             <input
                                 type="text"
                                 name="contact_person"
@@ -69,7 +75,7 @@ export default function EditCustomer({ onClose, customer, onUpdate }) {
                         </div>
 
                         <div className="mb-4">
-                            <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Contact Email <span className="text-red-500">*</span></label>
+                            <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Contact Email</label>
                             <input
                                 type="text"
                                 name="contact_email"
@@ -82,7 +88,7 @@ export default function EditCustomer({ onClose, customer, onUpdate }) {
                     </div>
 
                     <div className="mb-4">
-                        <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Contact Number <span className="text-red-500">*</span></label>
+                        <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Contact Number </label>
                         <input
                             type="text"
                             name="contact_number"
@@ -94,7 +100,7 @@ export default function EditCustomer({ onClose, customer, onUpdate }) {
                     </div>
 
                     <div className="mb-4">
-                        <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Address <span className="text-red-500">*</span></label>
+                        <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Address </label>
                         <textarea
                             name="address"
                             value={form.address}

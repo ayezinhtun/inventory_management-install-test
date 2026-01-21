@@ -109,55 +109,55 @@ export default function InventoryDetail() {
                                 </TableHead>
                                 <TableBody className="divide-y">
                                     <TableRow className="bg-white border-bottom border-gray-300  border-dashed">
-                                        <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                        <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                             Device Name
                                         </TableCell>
                                         <TableCell>{inventory.name}</TableCell>
                                     </TableRow>
                                     <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
-                                        <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                        <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                             Region
                                         </TableCell>
                                         <TableCell>{inventory.regions.name}</TableCell>
                                     </TableRow>
                                     <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
-                                        <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                        <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                             Warehouse
                                         </TableCell>
                                         <TableCell>{inventory.warehouses.name}</TableCell>
                                     </TableRow>
                                     <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
-                                        <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                        <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                             Status
                                         </TableCell>
                                         <TableCell>{inventory.status}</TableCell>
                                     </TableRow>
                                     <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
-                                        <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                        <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                             Serial No
                                         </TableCell>
                                         <TableCell>{inventory.serial_no}</TableCell>
                                     </TableRow>
                                     <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
-                                        <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                        <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                             Type
                                         </TableCell>
                                         <TableCell>{inventory.type}</TableCell>
                                     </TableRow>
                                     <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
-                                        <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                        <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                             Model
                                         </TableCell>
                                         <TableCell>{inventory.model}</TableCell>
                                     </TableRow>
                                     <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
-                                        <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                        <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                             Vendor
                                         </TableCell>
                                         <TableCell>{inventory.vendor}</TableCell>
                                     </TableRow>
                                     <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
-                                        <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                        <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                             Color
                                         </TableCell>
                                         <TableCell>
@@ -168,7 +168,7 @@ export default function InventoryDetail() {
 
                                     {inventory.quantity > 1 && (
                                         <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
-                                            <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                            <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                                 Quantity
                                             </TableCell>
                                             <TableCell>{inventory.quantity}</TableCell>
@@ -176,7 +176,7 @@ export default function InventoryDetail() {
                                     )}
 
                                     <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
-                                        <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                        <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                             Notes
                                         </TableCell>
                                         <TableCell>{inventory.notes || ''}</TableCell>
@@ -197,7 +197,7 @@ export default function InventoryDetail() {
                                         <TableBody className="divide-y">
                                             {inventory.racks && (
                                                 <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
-                                                    <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                                    <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                                         Rack
                                                     </TableCell>
                                                     <TableCell>{inventory.racks.name}</TableCell>
@@ -206,7 +206,7 @@ export default function InventoryDetail() {
 
                                             {inventory.start_unit && (
                                                 <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
-                                                    <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                                    <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                                         Start Unit
                                                     </TableCell>
                                                     <TableCell>{inventory.start_unit}</TableCell>
@@ -215,7 +215,7 @@ export default function InventoryDetail() {
 
                                             {inventory.height && (
                                                 <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
-                                                    <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                                    <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                                         Height
                                                     </TableCell>
                                                     <TableCell>{inventory.height}</TableCell>
@@ -240,7 +240,7 @@ export default function InventoryDetail() {
                                         <TableBody className="divide-y">
                                             {Object.entries(inventory.attributes).map(([key, value]) => (
                                                 <TableRow key={key} className="bg-white border-bottom border-gray-300 border-dashed">
-                                                    <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                                    <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                                         {key.toUpperCase()}
                                                     </TableCell>
                                                     <TableCell>{value}</TableCell>

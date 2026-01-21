@@ -11,8 +11,10 @@ import { getWarehouse } from "../context/WarehouseContext";
 import { fetchRack } from "../context/RackContext";
 import { exportToCSV } from "../utils/exportUtils";
 import AddCustomer from "../components/Inventory/addCustomer";
+import AppToast from "../components/toast/Toast";
 
 export default function Inventory() {
+    const [toast, setToast] = useState(null);
 
     const [inventorys, setInventorys] = useState([]);
 
@@ -33,8 +35,6 @@ export default function Inventory() {
     const [rackFilter, setRackFilter] = useState("");
 
 
-    //for show edit form modal
-    const [showEditModal, setShowEditModal] = useState(false);
 
     const [loading, setLoading] = useState(false);
 
@@ -91,7 +91,10 @@ export default function Inventory() {
             await deleteInventory(id);
             InventoryData();
         } catch (error) {
-            alert('Failed to delete Inventory');
+            setToast({
+                type: "error",
+                message: "Failed to delete Inventory!"
+            })
         }
     }
 
@@ -362,11 +365,11 @@ export default function Inventory() {
 
                                     currentInventorys.map((inventory, id) => {
                                         return (
-                                            <TableRow key={inventory.id} className="bg-white dark:border-gray-700 dark:bg-gray-800">
+                                            <TableRow key={inventory.id} className="bg-white">
                                                 <TableCell className="p-4">
                                                     <Checkbox />
                                                 </TableCell>
-                                                <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                                <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                                     {inventory.name}
                                                 </TableCell>
                                                 <TableCell>{inventory.serial_no}</TableCell>
@@ -418,12 +421,18 @@ export default function Inventory() {
 
 
             {showModal &&
-                <AddCustomer onClose={() => setShowModal(false)} inventoryId={selectedInventoryId} onAdd={InventoryData} />
+                <AddCustomer onClose={() => setShowModal(false)} inventoryId={selectedInventoryId} onAdd={InventoryData} setToast={setToast}/>
             }
 
-            {showEditModal &&
-                <EditRegionModal onClose={() => setShowEditModal(false)} />
-            }
+            {toast && (
+                <div className="fixed top-5 right-5 z-50">
+                    <AppToast
+                        type={toast.type}
+                        message={toast.message}
+                        onClose={() => setToast(null)}
+                    />
+                </div>
+            )}
         </div>
     )
 }

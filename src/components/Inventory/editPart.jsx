@@ -4,8 +4,11 @@ import { Button, Spinner } from "flowbite-react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../../../supabase/supabase-client";
 import { getRegion } from "../../context/RegionContext";
+import AppToast from "../toast/Toast";
 
 export default function EditPart() {
+    const [toast, setToast] = useState(null);
+
     const { id } = useParams();
     const navigate = useNavigate();
 
@@ -140,11 +143,17 @@ export default function EditPart() {
 
         const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
         if (!allowedTypes.includes(file.type)) {
-            alert("File type not allowed");
+            setToast({
+                type: "error",
+                message: "File extention is not allowed!"
+            })
             return;
         }
         if (file.size > 5 * 1024 * 1024) {
-            alert("File size exceeds 5MB");
+            setToast({
+                type: "error",
+                message: "File size exceeds 5MB!"
+            })
             return;
         }
 
@@ -212,12 +221,17 @@ export default function EditPart() {
                 .eq("id", id);
 
             if (error) throw error;
-
-            alert("Component updated successfully");
+            setToast({
+                type: "success",
+                message: "Component updated successfully!"
+            })
             navigate("/inventory");
         } catch (err) {
             console.error(err);
-            alert(err.message);
+            setToast({
+                type: "error",
+                message: err.message || "Failed to update Component"
+            })
         } finally {
             setLoading(false);
         }
@@ -369,6 +383,16 @@ export default function EditPart() {
                     </div>
                 </div>
             </form>
+
+            {toast && (
+                <div className="fixed top-5 right-5 z-50">
+                    <AppToast
+                        type={toast.type}
+                        message={toast.message}
+                        onClose={() => setToast(null)}
+                    />
+                </div>
+            )}
         </div>
     );
 }

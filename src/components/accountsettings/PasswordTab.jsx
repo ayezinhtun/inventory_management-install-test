@@ -1,8 +1,11 @@
 import { Eye, EyeOff } from "lucide-react"
 import { useState } from "react"
 import { useUserProfiles } from "../../context/UserProfileContext";
+import AppToast from "../toast/Toast";
 
 export default function PasswordTab() {
+    const [toast, setToast] = useState(null);
+
     const { updatePassword } = useUserProfiles();
 
     const [showPassword, setShowPassword] = useState(false);
@@ -16,7 +19,10 @@ export default function PasswordTab() {
     const handleUpdatePassword = async () => {
         const result = await updatePassword(currentPassword, newPassword, confirmPassword);
 
-        alert(result.message);
+        setToast({
+            type: "error",
+            message: result.message
+        })
 
         if (result.success) {
             setCurrentPassword("");
@@ -98,6 +104,16 @@ export default function PasswordTab() {
                     </button>
                 </div>
             </div>
+
+            {toast && (
+                <div className="fixed top-5 right-5 z-50">
+                    <AppToast
+                        type={toast.type}
+                        message={toast.message}
+                        onClose={() => setToast(null)}
+                    />
+                </div>
+            )}
         </div>
     )
 }

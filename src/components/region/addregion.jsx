@@ -3,13 +3,16 @@ import { FloatingLabel, Textarea, Button } from "flowbite-react";
 import { createRegion } from "../../context/RegionContext";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Toast } from "flowbite-react";
+import AppToast from "../toast/Toast";
 
-export default function AddRegion({ onClose , onAdd }) {
+export default function AddRegion({ onClose , onAdd, setToast }) {
 
     const [form, setForm] = useState({
         name: '',
         description: ''
     })
+
 
     const handleChange = (e) => {
         const {name, value} = e.target;
@@ -22,15 +25,21 @@ export default function AddRegion({ onClose , onAdd }) {
         try{
             await createRegion(form);
             setForm({name: '', description: ''});
-            alert('Region Added success!');
+            setToast({
+                type: "success", 
+                message: "Region added successfully!"
+            })
             onAdd();
             onClose();
         }catch (error) {
             console.error('Error adding region', error)
-            alert('Failed to add Region');
+            setToast({
+                type: "error", 
+                message: "Failed to add region!", 
+            })
         }
     }
-
+    
 
     return (
         <div className="fixed inset-0 flex items-center justify-center z-50">
@@ -44,14 +53,14 @@ export default function AddRegion({ onClose , onAdd }) {
                 </div>
                 <form className="p-6" onSubmit={handleSubmit}>
                     <div className="mb-4">
-                        <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Region Name</label>
+                        <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Region Name<span className="text-red-500">*</span></label>
                         <input
                             type="text"
                             name="name"
                             value={form.name}
                             onChange={handleChange}
                             placeholder="YGN"
-                            className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
+                            className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-700"
                             required
                         />
                     </div>
@@ -64,7 +73,7 @@ export default function AddRegion({ onClose , onAdd }) {
                             onChange={handleChange}
                             placeholder="Description"
                             rows={3}
-                            className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
+                            className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-700"
                         />
                     </div>
 
@@ -77,6 +86,10 @@ export default function AddRegion({ onClose , onAdd }) {
                 </form>
             </div>
 
+           
+
         </div>
+
+        
     )
 }

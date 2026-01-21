@@ -5,8 +5,10 @@ import CardComponent from "../../components/card/crad";
 import { data } from "react-router-dom";
 import { getInstallRequests, updateInstallRequestStatus } from "../../context/InstallRequest";
 import { useUserProfiles } from '../../context/UserProfileContext';
+import AppToast from "../../components/toast/Toast";
 
 export default function InstallRequestPM() {
+    const [toast, setToast] = useState(null);
 
     const { profile } = useUserProfiles();
 
@@ -33,7 +35,10 @@ export default function InstallRequestPM() {
 
     const handleStatusChange = async (id, status) => {
         if (!profile?.id) {
-            alert("PM not logged in!");
+            setToast({
+                type: "error",
+                message: "PM not logged in!"
+            })
             return;
         };
 
@@ -52,14 +57,19 @@ export default function InstallRequestPM() {
                 req.id === id ? { ...req, status } : req
             ));
 
-
-            alert(`Request Approve successfully!`);
+            setToast({
+                type: "error",
+                message: "Request Approve successfully!"
+            })
 
             // reload form server
             fetchRequests();
         } catch (err) {
             console.error('Failed to update status', err);
-            alert("Failed to update request status. Please try again");
+            setToast({
+                type: "error",
+                message: "Failed to update request status. Please try again!"
+            })
         }
     }
 
@@ -192,14 +202,14 @@ export default function InstallRequestPM() {
                             </TableRow>
                         </TableHead>
                         <TableBody className="divide-y divide-gray-200">
-                            
+
                             {requests.map((request => {
                                 return (
-                                    <TableRow key={request.id} className="bg-white dark:border-gray-700 dark:bg-gray-800">
+                                    <TableRow key={request.id} className="bg-white">
                                         <TableCell className="p-4">
                                             <Checkbox />
                                         </TableCell>
-                                        <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                        <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                             {request.component.name}
                                         </TableCell>
                                         <TableCell>{request.quantity}</TableCell>
@@ -218,7 +228,12 @@ export default function InstallRequestPM() {
                                         <TableCell className="flex item-center space-x-3">
                                             <button
                                                 onClick={() => {
-                                                    if (!profile?.id) return alert("PM Not Logged in yet!")
+                                                    if (!profile?.id)
+                                                        return setToast({
+                                                            type: "error",
+                                                            message: "PM Not Logged in yet!"
+                                                        })
+
                                                     handleStatusChange(request.id, "pm_approved")
                                                 }}
                                                 className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-offset-2 transition'
@@ -245,6 +260,15 @@ export default function InstallRequestPM() {
 
             </div>
 
+            {toast && (
+                <div className="fixed top-5 right-5 z-50">
+                    <AppToast
+                        type={toast.type}
+                        message={toast.message}
+                        onClose={() => setToast(null)}
+                    />
+                </div>
+            )}
 
         </div>
     )

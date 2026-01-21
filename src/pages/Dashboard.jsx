@@ -71,7 +71,7 @@ export default function Dashboard() {
 
                 <div className="md:col-span-8 shadow rounded-lg border border-gray-200 h-[350px] overflow-y-auto">
                     <div className="flex items-center justify-between py-3 border-b border-[#EAECF0] px-5 space-x-4">
-                        <h5 className="text-xl py-5 font-bold leading-none text-gray-900 dark:text-white">Recent Inventory</h5>
+                        <h5 className="text-xl py-5 font-bold leading-none text-gray-900">Recent Inventory</h5>
                         <Link to="/inventory" className="text-sm font-medium text-[#26599F] hover:underline">
                             View all
                         </Link>
@@ -96,9 +96,9 @@ export default function Dashboard() {
                                 inventorys.map((inventory) => (
                                     <TableRow
                                         key={inventory.id}
-                                        className="bg-white dark:border-gray-700 dark:bg-gray-800"
+                                        className="bg-white"
                                     >
-                                        <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                        <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                             {inventory.name}
                                         </TableCell>
                                         <TableCell>{inventory.serial_no}</TableCell>

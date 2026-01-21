@@ -4,7 +4,7 @@ import { useState } from "react";
 import { updateRack } from "../../context/RackContext";
 import { supabase } from "../../../supabase/supabase-client";
 
-export default function EditRack({ onClose, rack, warehouse, onUpdate }) {
+export default function EditRack({ onClose, rack, warehouse, onUpdate, setTost }) {
 
     const [form, setForm] = useState({
         name: rack.name || '',
@@ -37,19 +37,26 @@ export default function EditRack({ onClose, rack, warehouse, onUpdate }) {
                 : 0;
 
             if (form.size_u < highestUsedUnit) {
-                alert(
-                    `Cannot reduce rack size. The highest occupied unit is ${highestUsedUnit}U.`
-                );
+                setToast({
+                    type: "error",
+                    message: `Cannot reduce rack size. The highest occupied unit is ${highestUsedUnit}U.`
+                })
                 return;
             }
 
             await updateRack(rack.id, form);
-            alert('Rack Updated Success!');
+            setToast({
+                type: "success",
+                message: "Rack updated successfully!"
+            })
             onUpdate();
             onClose();
         } catch (error) {
             console.log('Error in update rack', error);
-            alert('Failed to update rack')
+            setToast({
+                type: "error",
+                message: "Failed to udpate rack!"
+            })
         }
     }
 

@@ -6,9 +6,12 @@ import CardComponent from "../../components/card/crad";
 import { fetchAllInventoryRequest, updateRequestStatus } from "../../context/InventoryRequestContext";
 import Pagination from "../../components/pagination/pagination";
 import { exportToCSV } from "../../utils/exportUtils";
+import AppToast from "../../components/toast/Toast";
 
 
 export default function AdminInventoryRequest() {
+    const [toast, setToast] = useState(null);
+
     const navigate = useNavigate();
 
     const [requests, setRequests] = useState([]);
@@ -51,12 +54,20 @@ export default function AdminInventoryRequest() {
 
             setRequests(prev => prev.map(req => req.id === id ? { ...req, status } : req));
 
-            alert(`Request status updated to "${status}" successfully!`);
+
+            setToast({
+                type: "success",
+                message: "Request status updated successfully!"
+            })
 
             loadRequests();
         } catch (err) {
             console.error("Failed to update status", err);
-            alert("Failed to update request status. Please try again.");
+
+            setToast({
+                type: "error",
+                message: "Failed to update request status!"
+            })
         }
     }
 
@@ -86,17 +97,17 @@ export default function AdminInventoryRequest() {
 
     const handleExportCSV = () => {
         const data = requests.map(r => ({
-            Name: r.item_name, 
-            Requester: r.requester?.name, 
-            Quantity: r.quantity, 
-            Notes: r.notes, 
+            Name: r.item_name,
+            Requester: r.requester?.name,
+            Quantity: r.quantity,
+            Notes: r.notes,
             Status: r.status
         }));
 
         const headers = ['Name', 'Requester', 'Quantity', 'Notes', 'Status'];
         exportToCSV(data, `inventory-requests-${new Date().toISOString().slice(0, 10)}.csv`, headers);
     }
-    
+
     return (
         <div>
             <h1 className="font-bold mb-5 text-[24px]">Engineer's Requests</h1>
@@ -245,7 +256,7 @@ export default function AdminInventoryRequest() {
                                     </TableRow>
                                 ) : (
                                     filteredRequests.map((r) => (
-                                        <TableRow key={r.id} className="bg-white dark:border-gray-700 dark:bg-gray-800">
+                                        <TableRow key={r.id} className="bg-white">
                                             <TableCell className="p-4">
                                                 <Checkbox />
                                             </TableCell>
@@ -266,7 +277,7 @@ export default function AdminInventoryRequest() {
                                                     </div>
                                                 )}
                                             </TableCell>
-                                            <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                            <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                                 {r.item_name}
                                             </TableCell>
                                             <TableCell>{r.quantity}</TableCell>
@@ -348,6 +359,17 @@ export default function AdminInventoryRequest() {
                     />
                 </ModalBody>
             </Modal>
+
+            {toast && (
+                <div className="fixed top-5 right-5 z-50">
+                    <AppToast
+                        type={toast.type}
+                        message={toast.message}
+                        onClose={() => setToast(null)}
+                    />
+                </div>
+            )}
+
         </div>
     )
 }

@@ -7,9 +7,12 @@ import Pagination from "../components/pagination/pagination";
 import EditCustomerInventory from "../components/Inventory/editCustomerInventory";
 import { Dropdown, DropdownItem } from "flowbite-react";
 import { exportToCSV } from "../utils/exportUtils";
+import AppToast from "../components/toast/Toast";
 
 
 export default function CustomerInventory() {
+
+    const [toast, setToast] = useState(null);
 
     const [customerInventory, setCustomerInventory] = useState([]);
 
@@ -64,10 +67,16 @@ export default function CustomerInventory() {
 
         try {
             await restoreSale(sale.id, sale.inventory_id, sale.quantity);
-            alert("Inventory restored successfully");
+            setToast({
+                type: "success",
+                message: "Inventory restored successfully!"
+            })
             fetchInventorys();
         } catch (error) {
-            alert("Failed to restore Inventory:" + error.message);
+             setToast({
+                type: "error",
+                message: "Failed to restore Inventory!"
+            })
         } finally {
             setRestoreLoading(false);
         }
@@ -80,12 +89,12 @@ export default function CustomerInventory() {
 
     const handleExportCSV = () => {
         const data = customerInventory.map(i => ({
-            'Customer Name': i.customers?.contact_person, 
-            'Company Name': i.customers?.company_name, 
-            'Inventory Name': i.inventorys?.name, 
-            'Serial No': i.inventorys.serial_no, 
-            'Inventory Type': i.inventorys?.type, 
-            'Quantity': i.quantity, 
+            'Customer Name': i.customers?.contact_person,
+            'Company Name': i.customers?.company_name,
+            'Inventory Name': i.inventorys?.name,
+            'Serial No': i.inventorys.serial_no,
+            'Inventory Type': i.inventorys?.type,
+            'Quantity': i.quantity,
             'Notes': i.notes
         }));
 
@@ -102,7 +111,7 @@ export default function CustomerInventory() {
             <h1 className="font-bold mb-5 text-[24px]">Inventorys</h1>
 
             <div className="grid grid-cols-3 gap-10 mb-5">
-                <CardComponent title="Total Inventory" count={customerInventory.length} icon={Package} color="bg-blue-100" iconColor="text-blue-600"/>
+                <CardComponent title="Total Inventory" count={customerInventory.length} icon={Package} color="bg-blue-100" iconColor="text-blue-600" />
             </div>
 
             <div className="bg-white shadow rounded-lg border border-gray-200 overflow-auto">
@@ -222,11 +231,11 @@ export default function CustomerInventory() {
                                 ) : (
                                     currentInventorys.map((i) => {
                                         return (
-                                            <TableRow key={i.id} className="bg-white dark:border-gray-700 dark:bg-gray-800">
+                                            <TableRow key={i.id} className="bg-white">
                                                 <TableCell className="p-4">
                                                     <Checkbox />
                                                 </TableCell>
-                                                <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                                <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                                     {i.customers?.contact_person}
                                                 </TableCell>
                                                 <TableCell>{i.customers?.company_name}</TableCell>
@@ -277,10 +286,21 @@ export default function CustomerInventory() {
                         customerinventory={selectedCustomerInventory}
                         onClose={() => setShowEditModal(false)}
                         onUpdate={fetchInventorys}
+                        setToast={setToast}
                     />
                 )}
 
             </div>
+
+            {toast && (
+                <div className="fixed top-5 right-5 z-50">
+                    <AppToast
+                        type={toast.type}
+                        message={toast.message}
+                        onClose={() => setToast(null)}
+                    />
+                </div>
+            )}
 
         </div >
     )

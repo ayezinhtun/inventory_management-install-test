@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { getCustomer } from "../../context/CustomerContext";
 import { supabase } from "../../../supabase/supabase-client";
 
-export default function EditCustomerInventory({ onClose, customerinventory, onUpdate }) {
+export default function EditCustomerInventory({ onClose, customerinventory, onUpdate, setToast }) {
 
     const [customers, setCustomers] = useState([]);
     const [selectedCustomerId, setSelectedCustomerId] = useState(
@@ -73,72 +73,87 @@ export default function EditCustomerInventory({ onClose, customerinventory, onUp
 
         setLoading(true);
 
-        try{
+        try {
             const inventoryId = customerinventory.inventory_id;
             const oldQty = customerinventory.quantity;
             const newQty = soldQuantity;
             const diff = newQty - oldQty;
 
-            if(newQty < 1) {
-                alert("Quantity must be at least 1");
+            if (newQty < 1) {
+                setToast({
+                    type: "error",
+                    message: "Quantity must be at least 1"
+                })
                 return;
             }
 
             //fetch inventory
-            const {data: inventory, error: invErr} = await supabase
+            const { data: inventory, error: invErr } = await supabase
                 .from("inventorys")
                 .select("quantity, status")
                 .eq("id", inventoryId)
                 .single();
 
-            if(invErr || !inventory) {
-                alert("Inventory not found");
+            if (invErr || !inventory) {
+                setToast({
+                    type: "error",
+                    message: "Inventory not found"
+                })
                 return;
             }
 
-            if(inventory.quantity - diff < 0) {
-                alert(
-                    `Not enough stock . Available: ${inventory.quantity + oldQty}`
-                );
-
+            if (inventory.quantity - diff < 0) {
+                setToast({
+                    type: "error",
+                    message: `Not enough stock . Available: ${inventory.quantity + oldQty}`
+                })
                 return;
             }
 
             // update inventory (difference only)
             await supabase
-            .from('inventorys')
-            .update({
-                quantity: inventory.quantity - diff, 
-                status: 
-                    inventory.quantity - diff <=0 
-                        ? "Out of Stock"
-                        : "Active",
-            })
-            .eq("id", inventoryId);
+                .from('inventorys')
+                .update({
+                    quantity: inventory.quantity - diff,
+                    status:
+                        inventory.quantity - diff <= 0
+                            ? "Out of Stock"
+                            : "Active",
+                })
+                .eq("id", inventoryId);
 
             // udpate customer sale
             await supabase
                 .from("customer_sales")
                 .update({
-                    customer_id: selectedCustomerId, 
-                    quantity: newQty, 
-                    notes: notes, 
+                    customer_id: selectedCustomerId,
+                    quantity: newQty,
+                    notes: notes,
                 })
                 .eq('id', customerinventory.id);
 
-                alert("Sale updated Successfully");
-                onUpdate();
-                onClose();
-        }catch(error){
-            console.error(error); 
-            alert("Something went wrong");
-        }finally {
+
+            setToast({
+                type: "success",
+                message: "Sale updated Successfully"
+            })
+
+            onUpdate();
+            onClose();
+        } catch (error) {
+            console.error(error);
+            setToast({
+                type: "error",
+                message: "Something went wrong"
+            })
+
+        } finally {
             setLoading(false);
         }
     };
 
 
-   
+
 
     return (
         <div className="fixed inset-0 flex items-center justify-center z-50">

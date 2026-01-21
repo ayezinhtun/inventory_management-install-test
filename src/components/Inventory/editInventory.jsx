@@ -6,8 +6,11 @@ import { supabase } from "../../../supabase/supabase-client";
 import { getWarehouse } from "../../context/WarehouseContext";
 import { getRegion } from "../../context/RegionContext";
 import { Spinner } from "flowbite-react";
+import AppToast from "../toast/Toast";
 
 export default function EditInventory() {
+    const [toast, setToast] = useState(null);
+
     const { id } = useParams(); // inventory id
     const navigate = useNavigate();
 
@@ -153,7 +156,7 @@ export default function EditInventory() {
     };
 
     // Default attributes by type
-    
+
 
     const renderAttributes = () => {
 
@@ -188,12 +191,18 @@ export default function EditInventory() {
 
         const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
         if (!allowedTypes.includes(file.type)) {
-            alert("File type not allowed");
+            setToast({
+                type: "error",
+                message: "File extention is not allowed!"
+            })
             return;
         }
 
         if (file.size > 5 * 1024 * 1024) {
-            alert("File size exceeds 5MB");
+            setToast({
+                type: "error",
+                message: "File size exceeds 5MB"
+            })
             return;
         }
 
@@ -210,13 +219,19 @@ export default function EditInventory() {
         const maxU = rackInfo?.size_u || 42;
 
         if (form.start_unit < 1 || form.height < 1) {
-            alert("Start unit and height must be at least 1");
+            setToast({
+                type: "error",
+                message: "Start unit and height must be at least 1"
+            })
             return false;
         }
 
         const newEnd = form.start_unit + form.height - 1;
         if (newEnd > maxU) {
-            alert(`Height exceeds rack max units (${maxU})`);
+            setToast({
+                type: "error",
+                message: `Height exceeds rack max units (${maxU})`
+            })
             return false;
         }
 
@@ -236,7 +251,10 @@ export default function EditInventory() {
                 (form.start_unit <= deviceStart && newEnd >= deviceEnd);
 
             if (overlap) {
-                alert(`This device overlaps with units ${deviceStart}-${deviceEnd}`);
+                setToast({
+                    type: "error",
+                    message: `This device overlaps with units ${deviceStart}-${deviceEnd}`
+                })
                 return false;
             }
         }
@@ -280,11 +298,17 @@ export default function EditInventory() {
 
             if (error) throw error;
 
-            alert("Inventory updated successfully");
+            setToast({
+                type: "error",
+                message: "Inventory updated successfully!"
+            })
             navigate("/inventory");
         } catch (err) {
             console.error(err);
-            alert(err.message);
+            setToast({
+                type: "error",
+                message: err.message || "Failed to update Inventory!"
+            })
         }
     };
 
@@ -457,6 +481,16 @@ export default function EditInventory() {
                     </div>
                 </div>
             </form>
+
+            {toast && (
+                <div className="fixed top-5 right-5 z-50">
+                    <AppToast
+                        type={toast.type}
+                        message={toast.message}
+                        onClose={() => setToast(null)}
+                    />
+                </div>
+            )}
         </div>
     );
 }

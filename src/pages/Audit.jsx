@@ -125,11 +125,11 @@ export default function Audit() {
                         <TableBody className="divide-y divide-gray-200">
                             {currentAudits.map((audit, index) => {
                                 return (
-                                    <TableRow key={index} className="bg-white dark:border-gray-700 dark:bg-gray-800">
+                                    <TableRow key={index} className="bg-white">
                                         <TableCell className="p-4">
                                             <Checkbox />
                                         </TableCell>
-                                        <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                        <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                             {audit.name}
                                         </TableCell>
                                         <TableCell>{audit.email}</TableCell>

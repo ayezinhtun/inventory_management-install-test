@@ -246,7 +246,7 @@ export default function EngineerRequests() {
                                     </TableRow>
                                 ) : (
                                     filteredRequests.map(r => (
-                                        <TableRow key={r.id} className="bg-white dark:border-gray-700 dark:bg-gray-800">
+                                        <TableRow key={r.id} className="bg-white">
                                             <TableCell className="p-4">
                                                 <Checkbox />
                                             </TableCell>
@@ -270,7 +270,7 @@ export default function EngineerRequests() {
                                             </TableCell>
 
 
-                                            <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                            <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                                 {r.item_name}
                                             </TableCell>
                                             <TableCell>{r.quantity}</TableCell>

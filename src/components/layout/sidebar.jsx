@@ -16,6 +16,7 @@ import {
     ListChecks,
     Wrench,
     PackagePlus,
+    ClipboardCheck,
 } from "lucide-react";
 import logo from "../../assets/logo.png";
 
@@ -62,9 +63,9 @@ export default function SidebarComponent() {
             ],
         },
 
-        { id: 10, name: "Install Request PM", path: "/install-request/pm", icon: <User className="h-5 w-5 mr-2" /> },
-        {id: 11, name: "Install Request Admin", path: '/install-request/admin', icon: <User className="h-5 w-5 mr-2"/>},
-        {id: 12, name: "Physical Install", path: '/install-request/physical' , icon: <User className="h-5 w-5 mr-2"/>},
+        { id: 10, name: "Install Request PM", path: "/install-request/pm", icon: <ClipboardCheck className="h-5 w-5 mr-2" /> },
+        {id: 11, name: "Install Request Admin", path: '/install-request/admin', icon: <ClipboardCheck className="h-5 w-5 mr-2"/>},
+        {id: 12, name: "Physical Install", path: '/install-request/physical' , icon: <ClipboardCheck className="h-5 w-5 mr-2"/>},
         { id: 13, name: "Users", path: "/user", icon: <User className="h-5 w-5 mr-2" /> },
         { id: 14, name: "Audit Log", path: "/audit", icon: <Clock className="h-5 w-5 mr-2" /> },
     ];
@@ -105,7 +106,7 @@ export default function SidebarComponent() {
                             <div key={link.id}>
                                 <div
                                     onClick={() => navigate(link.path)}
-                                    className={`cursor-pointer flex items-center justify-between px-3 py-3 rounded-xl border-none font-bold hover:bg-[#F9F5FF] hover:text-[#26599F] transition ${isActive ? "bg-[#F9F5FF] text-[#26599F]" : ""
+                                    className={`cursor-pointer flex items-center justify-between px-3 py-3 rounded-xl border-none font-semibold hover:bg-[#F9F5FF] hover:text-[#26599F] transition ${isActive ? "bg-[#F9F5FF] text-[#26599F]" : ""
                                         }`}
                                 >
                                     <div className="flex items-center">
@@ -144,7 +145,7 @@ export default function SidebarComponent() {
                         <Link
                             key={link.id}
                             to={link.path}
-                            className={`flex items-center px-3 py-3 rounded-xl border-none font-bold hover:bg-[#F9F5FF] hover:text-[#26599F] transition ${isActive ? "bg-[#F9F5FF] text-[#26599F]" : ""
+                            className={`flex items-center px-3 py-3 rounded-xl border-none font-semibold hover:bg-[#F9F5FF] hover:text-[#26599F] transition ${isActive ? "bg-[#F9F5FF] text-[#26599F]" : ""
                                 }`}
                         >
                             {link.icon}

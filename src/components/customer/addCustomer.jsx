@@ -3,33 +3,39 @@ import { FloatingLabel, Textarea, Button } from "flowbite-react";
 import { useState } from "react";
 import { createCustomer } from "../../context/CustomerContext";
 
-export default function AddCustomer({ onClose, onAdd }) {
+export default function AddCustomer({ onClose, onAdd, setToast }) {
 
     const [form, setForm] = useState({
         company_name: '',
         contact_person: '',
         contact_email: '',
-        contact_number: '', 
+        contact_number: '',
         address: ''
     })
 
     const handleChange = (e) => {
-        const {name, value} = e.target;
-        setForm({...form, [name]: value})
+        const { name, value } = e.target;
+        setForm({ ...form, [name]: value })
     }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        try{
+        try {
             await createCustomer(form);
-            setForm({company_name: '', contact_person: '', contact_email: '', contact_number: '', address: ''})
-            alert('Customer Added Success!');
+            setForm({ company_name: '', contact_person: '', contact_email: '', contact_number: '', address: '' })
+            setToast({
+                type: "success",
+                message: "Customer Added Successfully!"
+            })
             await onAdd();
             onClose();
-        }catch(error) {
+        } catch (error) {
             console.error('Error adding in Customer', error);
-            alert('Failed to add Customer');
+            setToast({
+                type: "error",
+                message: "Failed to add Customer!"
+            })
         }
     }
 
@@ -52,7 +58,8 @@ export default function AddCustomer({ onClose, onAdd }) {
                             value={form.company_name}
                             onChange={handleChange}
                             placeholder="OneCloud"
-                            className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
+                            required
+                            className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-700"
                         />
                     </div>
 
@@ -64,7 +71,8 @@ export default function AddCustomer({ onClose, onAdd }) {
                                 name="contact_person"
                                 value={form.contact_person}
                                 onChange={handleChange}
-                                className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
+                                required
+                                className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-700"
                             />
                         </div>
 
@@ -76,7 +84,8 @@ export default function AddCustomer({ onClose, onAdd }) {
                                 value={form.contact_email}
                                 onChange={handleChange}
                                 placeholder="example@gmail.com"
-                                className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
+                                required
+                                className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-700"
                             />
                         </div>
                     </div>
@@ -89,7 +98,8 @@ export default function AddCustomer({ onClose, onAdd }) {
                             value={form.contact_number}
                             onChange={handleChange}
                             placeholder="09 123-456-789"
-                            className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
+                            required
+                            className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-700"
                         />
                     </div>
 
@@ -100,7 +110,7 @@ export default function AddCustomer({ onClose, onAdd }) {
                             value={form.address}
                             onChange={handleChange}
                             placeholder="Yangon"
-                            className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
+                            className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-700"
                         />
                     </div>
 

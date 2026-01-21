@@ -3,7 +3,7 @@ import { FloatingLabel, Textarea, Button } from "flowbite-react";
 import { useEffect, useState } from "react";
 import { createRack } from "../../context/RackContext";
 
-export default function AddRack({ onClose, onAdd, warehouse}) {
+export default function AddRack({ onClose, onAdd, warehouse, setToast }) {
 
     const [form, setForm] = useState({
         name: '',
@@ -16,21 +16,27 @@ export default function AddRack({ onClose, onAdd, warehouse}) {
     })
 
     const handleChange = (e) => {
-        const {name, value} = e.target;
-        setForm({...form, [name]: value})
+        const { name, value } = e.target;
+        setForm({ ...form, [name]: value })
     }
 
-    const handleSubmit = async(e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        try{
+        try {
             await createRack(form);
-            setForm({name: '', size_u: '', type: '', status: '', color: '', notes: '', warehouse_id: ''})
-            alert('Rack Added Success');
+            setForm({ name: '', size_u: '', type: '', status: '', color: '', notes: '', warehouse_id: '' })
+            setToast({
+                type: "success",
+                message: "Rack Add successfully!"
+            })
             onAdd();
             onClose();
-        }catch(error) {
+        } catch (error) {
             console.log('Error Adding racks', error);
-            alert('Failed to add Rack')
+            setToast({
+                type: "error", 
+                message: "Failed to delete Rack!"
+            })
         }
     }
 
@@ -47,21 +53,22 @@ export default function AddRack({ onClose, onAdd, warehouse}) {
                 <form className="p-6" onSubmit={handleSubmit}>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="mb-4">
-                            <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Rack Name <span className="text-red-500">*</span></label>
+                            <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Rack Name <span className="text-red-500">*</span> </label>
                             <input
                                 type="text"
                                 name="name"
                                 value={form.name}
                                 onChange={handleChange}
                                 placeholder="Rack01"
-                                className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
+                                required
+                                className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-700"
                             />
                         </div>
 
                         <div className="mb-4">
                             <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Warehouse <span className="text-red-500">*</span></label>
                             <select name="warehouse_id" value={form.warehouse_id} onChange={handleChange} id=""
-                                className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
+                                className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-700"
                             >
                                 <option value="">Select Warehouse</option>
                                 {warehouse.map((w) => (
@@ -77,7 +84,7 @@ export default function AddRack({ onClose, onAdd, warehouse}) {
                         <div className="mb-4">
                             <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Size (U) <span className="text-red-500">*</span></label>
                             <select name="size_u" value={form.size_u} onChange={handleChange} id=""
-                                className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
+                                className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-700"
                             >
                                 <option value="22">22U</option>
                                 <option value="42">42U</option>
@@ -87,7 +94,7 @@ export default function AddRack({ onClose, onAdd, warehouse}) {
                         <div className="mb-4">
                             <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Type <span className="text-red-500">*</span></label>
                             <select name="type" value={form.type} onChange={handleChange} id=""
-                                className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
+                                className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-700"
                             >
                                 <option value="mixed">Mixed</option>
                                 <option value="network">Network</option>
@@ -99,7 +106,7 @@ export default function AddRack({ onClose, onAdd, warehouse}) {
                         <div className="mb-4">
                             <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Status <span className="text-red-500">*</span></label>
                             <select name="status" value={form.status} onChange={handleChange} id=""
-                                className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
+                                className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-700"
                             >
                                 <option value="active">Active</option>
                                 <option value="inactive">Inactive</option>
@@ -113,7 +120,7 @@ export default function AddRack({ onClose, onAdd, warehouse}) {
                                 value={form.color}
                                 onChange={handleChange}
                                 type="color"
-                                className="p-2 h-11.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
+                                className="p-2 h-11.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-700"
                             />
                         </div>
                     </div>
@@ -127,7 +134,7 @@ export default function AddRack({ onClose, onAdd, warehouse}) {
                             onChange={handleChange}
                             placeholder="Description"
                             rows={3}
-                            className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
+                            className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-700"
                         />
                     </div>
 

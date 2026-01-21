@@ -8,8 +8,10 @@ import { getWarehouse } from "../context/WarehouseContext";
 import { exportToCSV } from "../utils/exportUtils";
 import { fetchInventory } from '../context/InventoryContext';
 import { Spinner } from "flowbite-react";
+import AppToast from "../components/toast/Toast";
 
 export default function Rack() {
+    const [toast, setToast] = useState(null);
 
     const [showAddModal, setShowAddModal] = useState(false);
 
@@ -64,7 +66,10 @@ export default function Rack() {
             await deleteRack(id);
             rackData();
         } catch (error) {
-            alert('Failed to delete rack');
+            setToast({
+                type: "error",
+                message: "Failed to delete Rack!"
+            })
         }
     }
 
@@ -140,13 +145,23 @@ export default function Rack() {
             </div>
 
             {showAddModal &&
-                <AddRack onClose={() => setShowAddModal(false)} warehouse={warehouses} onAdd={rackData} />
+                <AddRack onClose={() => setShowAddModal(false)} warehouse={warehouses} onAdd={rackData} setToast={setToast} />
             }
 
             {showEditModal && selectedRack && (
-                <EditRack rack={selectedRack} warehouse={warehouses} onClose={() => setShowEditModal(false)} onUpdate={rackData} />
+                <EditRack rack={selectedRack} warehouse={warehouses} onClose={() => setShowEditModal(false)} onUpdate={rackData} setToast={setToast} />
             )
             }
+
+            {toast && (
+                <div className="fixed top-5 right-5 z-50">
+                    <AppToast
+                        type={toast.type}
+                        message={toast.message}
+                        onClose={() => setToast(null)}
+                    />
+                </div>
+            )}
 
         </div>
     )

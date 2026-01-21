@@ -8,8 +8,10 @@ import { InventoryCreate } from "../../context/InventoryContext";
 import { useNavigate } from "react-router-dom";
 import { getWarehouse } from "../../context/WarehouseContext";
 import { getRegion } from "../../context/RegionContext";
+import AppToast from "../toast/Toast";
 
 export default function CreateInventory() {
+    const [toast, setToast] = useState(null);
 
     const navigate = useNavigate();
 
@@ -123,7 +125,10 @@ export default function CreateInventory() {
         const validateType = ["image/jpeg", "image/png", "image/jpg"];
 
         if (!validateType.includes(file.type)) {
-            alert("File extention is not allowed!");
+            setToast({
+                type: "error",
+                message: "File extention is not allowed!"
+            })
             setImagePreview(null);
             e.target.value(null);
             setImageFile(null);
@@ -135,7 +140,10 @@ export default function CreateInventory() {
         const validateFilesize = 5 * 1024 * 1024;
 
         if (file.size > validateFilesize) {
-            alert("Only under 5MB are allowed!");
+            setToast({
+                type: "error",
+                message: "Only under 5MB are allowed!"
+            })
             setImagePreview(null);
             e.target.value(null);
             setImageFile(null);
@@ -250,19 +258,28 @@ export default function CreateInventory() {
                 const value = form.attributes[attr];
 
                 if (rules.required && (value === undefined || value === "")) {
-                    alert(`${attr.toUpperCase()} is required`);
+                    setToast({
+                        type: "error",
+                        message: `${attr.toUpperCase()} is required`
+                    })
                     setLoading(false);
                     return;
                 }
 
                 if (rules.type === "number" && isNaN(Number(value))) {
-                    alert(`${attr.toUpperCase()} must be a number`);
+                    setToast({
+                        type: "error",
+                        message: `${attr.toUpperCase()} must be a number`
+                    })
                     setLoading(false);
                     return;
                 }
 
                 if (rules.type === "number" && rules.min && Number(value) < rules.min) {
-                    alert(`${attr.toUpperCase()} must be at least ${rules.min}`);
+                    setToast({
+                        type: "error",
+                        message: `${attr.toUpperCase()} must be at least ${rules.min} `
+                    })
                     setLoading(false);
                     return;
                 }
@@ -271,7 +288,10 @@ export default function CreateInventory() {
                     const ipRegex =
                         /^(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)){3}$/;
                     if (!ipRegex.test(value)) {
-                        alert(`${attr.toUpperCase()} is not a valid IP address`);
+                        setToast({
+                            type: "error",
+                            message: `${attr.toUpperCase()} is not a valid IP address`
+                        })
                         setLoading(false);
                         return;
                     }
@@ -289,7 +309,10 @@ export default function CreateInventory() {
                     .from("inventory-images")
                     .upload(path, imageFile, { upsert: false });
                 if (error) {
-                    alert(`Image upload failed: ${error.message}`);
+                    setToast({
+                        type: "error",
+                        message: `Image upload failed: ${error.message}`
+                    })
                     return;
                 }
                 imageUrl = data.path;
@@ -305,7 +328,10 @@ export default function CreateInventory() {
 
             if (existing) {
                 // Name already exists
-                alert("This inventory name already exists. Please choose a different name.");
+                setToast({
+                    type: "error",
+                    message: "This inventory name already exists. Please choose a different name."
+                })
                 return;
             }
 
@@ -315,13 +341,19 @@ export default function CreateInventory() {
                 const maxU = rackInfo?.size_u || 42;
 
                 if (form.start_unit < 1 || form.height < 1) {
-                    alert("Start unit and height must be at least 1.");
+                    setToast({
+                        type: "error",
+                        message: "Start unit and height must be at least 1!"
+                    })
                     return;
                 }
 
                 const newEnd = form.start_unit + form.height - 1;
                 if (newEnd > maxU) {
-                    alert(`The device height exceeds rack capacity. Max unit in this rack is ${maxU}.`);
+                    setToast({
+                        type: "error",
+                        message: `The device height exceeds rack capacity. Max unit in this rack is ${maxU}`
+                    })
                     return;
                 }
 
@@ -341,9 +373,11 @@ export default function CreateInventory() {
                         (form.start_unit <= deviceStart && newEnd >= deviceEnd);
 
                     if (overlap) {
-                        alert(
-                            `This device overlaps with an existing device at units ${deviceStart}-${deviceEnd}.`
-                        );
+                        setToast({
+                            type: "error",
+                            message: `This device overlaps with an existing device at units ${deviceStart}-${deviceEnd}.`
+                        })
+
                         return;
                     }
                 }
@@ -360,7 +394,10 @@ export default function CreateInventory() {
                 notes: form.notes || null,
                 image: imageUrl,
             });
-            alert("Inventory added successfully");
+            setToast({
+                type: "success",
+                message: "Inventory added successfully!"
+            })
             setForm({
                 name: "",
                 region_id: "",
@@ -670,6 +707,17 @@ export default function CreateInventory() {
 
                 </div>
             </form>
+
+
+            {toast && (
+                <div className="fixed top-5 right-5 z-50">
+                    <AppToast
+                        type={toast.type}
+                        message={toast.message}
+                        onClose={() => setToast(null)}
+                    />
+                </div>
+            )}
         </div>
     )
 }

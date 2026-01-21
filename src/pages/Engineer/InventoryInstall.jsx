@@ -8,9 +8,11 @@ import { getRegion } from "../../context/RegionContext";
 import { getWarehouse } from "../../context/WarehouseContext";
 import { fetchRack } from "../../context/RackContext";
 import { createInstallRequest } from "../../context/InstallRequest";
-
+import AppToast from '../../components/toast/Toast'
 
 export default function InventoryInstallRequest() {
+    const [toast, setToast] = useState(null);
+
     const { profile } = useUserProfiles();
     const [devices, setDevices] = useState([]);
     const [selectedDevice, setSelectedDevice] = useState(null);
@@ -85,19 +87,28 @@ export default function InventoryInstallRequest() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!form.inventory_id) return alert("Please select a device");
+        if (!form.inventory_id)
+            return setToast({
+                type: "error",
+                message: "Please select a device"
+            })
 
-        if(
+
+        if (
             form.destination_rack_id &&
-            form.destination_start_unit && 
+            form.destination_start_unit &&
             form.destination_height
         ) {
-            const start = Number(form.destination_start_unit) ;
+            const start = Number(form.destination_start_unit);
             const height = Number(form.destination_height);
-            const end = start + height -1;
+            const end = start + height - 1;
 
-            if(start <1 || height <1) {
-                alert("Start unit and height must be at least 1");
+            if (start < 1 || height < 1) {
+
+                setToast({
+                    type: "error",
+                    message: "Start unit and heigth must be at least 1"
+                })
                 setLoading(false);
                 return;
             }
@@ -106,31 +117,35 @@ export default function InventoryInstallRequest() {
             const rackInfo = racks.find(r => r.id === form.destination_rack_id);
             const maxU = rackInfo?.size_u || 42;
 
-            if(end > maxU) {
-                alert(`Exceeds rack capacity (Max ${maxU}U)`);
+            if (end > maxU) {
+                setToast({
+                    type: "error",
+                    message: `Exceeds rack capacity (Max ${maxU}U)`
+                })
                 setLoading(false);
                 return;
             }
 
             // fetch overlapping units 
-            const {data: occupied} = await supabase
+            const { data: occupied } = await supabase
                 .from('inventorys')
                 .select('start_unit, height')
                 .eq('rack_id', form.destination_rack_id);
 
-            for(let device of occupied || []) {
-                const deviceStart = device.start_unit; 
-                const deviceEnd = device.start_unit + device.height -1; 
+            for (let device of occupied || []) {
+                const deviceStart = device.start_unit;
+                const deviceEnd = device.start_unit + device.height - 1;
 
-                const overlap = 
+                const overlap =
                     (form.destination_start_unit >= deviceStart && form.destination_start_unit <= deviceEnd) ||
-                    (end >= deviceStart && end <= deviceEnd) || 
+                    (end >= deviceStart && end <= deviceEnd) ||
                     (form.destination_start_unit <= deviceStart && end >= deviceEnd);
 
-                if(overlap) {
-                    alert(
-                        `This device overlaps with an existing device at units ${deviceStart}-${deviceEnd}.`
-                    );
+                if (overlap) {
+                    setToast({
+                        type: "error",
+                        message: `This device overlaps with an existing device at units ${deviceStart}-${deviceEnd}.`
+                    })
                     setLoading(false);
                     return;
                 }
@@ -140,19 +155,21 @@ export default function InventoryInstallRequest() {
 
         try {
             await createInstallRequest({
-                    inventory_id: form.inventory_id,
-                    quantity: 1,
-                    requested_by: profile.id,
-                    notes: form.notes,
-                    destination_region_id: form.destination_region_id,
-                    destination_warehouse_id: form.destination_warehouse_id,
-                    destination_rack_id: form.destination_rack_id,
-                    destination_start_unit: form.destination_start_unit || null,
-                    destination_height: form.destination_height || null
-                });
+                inventory_id: form.inventory_id,
+                quantity: 1,
+                requested_by: profile.id,
+                notes: form.notes,
+                destination_region_id: form.destination_region_id,
+                destination_warehouse_id: form.destination_warehouse_id,
+                destination_rack_id: form.destination_rack_id,
+                destination_start_unit: form.destination_start_unit || null,
+                destination_height: form.destination_height || null
+            });
 
-
-            alert("Installation request submitted! Waiting for approval");
+            setToast({
+                type: "error",
+                message: "Installation request submitted! Waiting for approval"
+            })
 
 
             setForm({
@@ -167,7 +184,10 @@ export default function InventoryInstallRequest() {
 
             setSelectedDevice(null);
         } catch (err) {
-            alert("Error:" + err.message)
+            setToast({
+                type: "error",
+                message: err.message
+            })
         }
 
         setLoading(false);
@@ -312,37 +332,37 @@ export default function InventoryInstallRequest() {
                                     {selectedDevice ? (
                                         <>
                                             <TableRow className="bg-white border-bottom border-gray-300  border-dashed">
-                                                <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                                <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                                     Device Name
                                                 </TableCell>
                                                 <TableCell>{selectedDevice.name}</TableCell>
                                             </TableRow>
                                             <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
-                                                <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                                <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                                     Serial No
                                                 </TableCell>
                                                 <TableCell>{selectedDevice.serial_no}</TableCell>
                                             </TableRow>
                                             <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
-                                                <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                                <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                                     Type
                                                 </TableCell>
                                                 <TableCell>{selectedDevice.type}</TableCell>
                                             </TableRow>
                                             <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
-                                                <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                                <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                                     Model
                                                 </TableCell>
                                                 <TableCell>{selectedDevice.model}</TableCell>
                                             </TableRow>
                                             <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
-                                                <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                                <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                                     Vendor
                                                 </TableCell>
                                                 <TableCell>{selectedDevice.vendor}</TableCell>
                                             </TableRow>
                                             <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
-                                                <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                                <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                                     Color
                                                 </TableCell>
                                                 <TableCell>
@@ -365,6 +385,17 @@ export default function InventoryInstallRequest() {
 
                 </div>
             </form>
+
+            {toast && (
+                <div className="fixed top-5 right-5 z-50">
+                    <AppToast
+                        type={toast.type}
+                        message={toast.message}
+                        onClose={() => setToast(null)}
+                    />
+                </div>
+            )}
+
         </div>
     )
 }

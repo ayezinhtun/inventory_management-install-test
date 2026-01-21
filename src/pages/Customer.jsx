@@ -8,9 +8,11 @@ import AddCustomer from "../components/customer/addCustomer";
 import EditCustomer from "../components/customer/editCustomer";
 import { deleteCustomer, getCustomer } from "../context/CustomerContext";
 import { exportToCSV } from "../utils/exportUtils";
+import AppToast from "../components/toast/Toast";
 
 
 export default function Customer() {
+    const [toast, setToast] = useState(null);
 
     // for search in the input search
     const [searchItem, setSearchItem] = useState("");
@@ -60,7 +62,10 @@ export default function Customer() {
             fetchCustomer();
         } catch (error) {
             console.error(error);
-            alert('Failed to delete customer');
+            setToast({
+                type: "error",
+                message: "Failed to delete Customer!"
+            })
         }
     }
 
@@ -113,7 +118,7 @@ export default function Customer() {
             <h1 className="font-bold mb-5 text-[24px]">Customers</h1>
 
             <div className="grid grid-cols-3 gap-10 mb-5">
-                <CardComponent title="Total Customers" count={customers.length} icon={UsersRound} color="bg-teal-100" iconColor="text-teal-600"/>
+                <CardComponent title="Total Customers" count={customers.length} icon={UsersRound} color="bg-teal-100" iconColor="text-teal-600" />
             </div>
 
             <div className="bg-white shadow rounded-lg border border-gray-200 overflow-auto">
@@ -229,11 +234,11 @@ export default function Customer() {
                                 ) : (
                                     currentCustomers.map((customer, index) => {
                                         return (
-                                            <TableRow key={index} className="bg-white dark:border-gray-700 dark:bg-gray-800">
+                                            <TableRow key={index} className="bg-white">
                                                 <TableCell className="p-4">
                                                     <Checkbox />
                                                 </TableCell>
-                                                <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                                <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                                     {customer.contact_person}
                                                 </TableCell>
                                                 <TableCell>{customer.company_name}</TableCell>
@@ -264,13 +269,23 @@ export default function Customer() {
             </div>
 
             {showModal &&
-                <AddCustomer onClose={() => setShowModal(false)} onAdd={fetchCustomer} />
+                <AddCustomer onClose={() => setShowModal(false)} onAdd={fetchCustomer} setToast={setToast}/>
             }
 
             {showEditModal && selectedCustomer && (
-                <EditCustomer customer={selectedCustomer} onClose={() => setShowEditModal(false)} onUpdate={fetchCustomer} />
+                <EditCustomer customer={selectedCustomer} onClose={() => setShowEditModal(false)} onUpdate={fetchCustomer} setToast={setToast}/>
             )
             }
+
+            {toast && (
+                <div className="fixed top-5 right-5 z-50">
+                    <AppToast
+                        type={toast.type}
+                        message={toast.message}
+                        onClose={() => setToast(null)}
+                    />
+                </div>
+            )}
         </div>
     )
 }

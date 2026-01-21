@@ -8,8 +8,10 @@ import { useUserProfiles } from "../context/UserProfileContext";
 import { getWarehouse } from "../context/WarehouseContext";
 import { getRegion } from "../context/RegionContext";
 import { supabase } from "../../supabase/supabase-client";
+import AppToast from "../components/toast/Toast";
 
 export default function UserMangement() {
+    const [toast, setToast] = useState(null);
 
     const { users, updateUserRole, deleteUser } = useUserProfiles();
 
@@ -194,10 +196,17 @@ export default function UserMangement() {
                 await supabase.from("user_warehouses").insert(insertWarehouseData);
             }
 
-            alert("User Updated Successfully!");
+            setToast({
+                type: "error",
+                message: "User Updated Successfully!"
+            })
+
         } catch (error) {
             console.error(error);
-            alert("Error updating user.")
+            setToast({
+                type: "error",
+                message: "Error updating User!"
+            })
         }
     }
 
@@ -224,7 +233,7 @@ export default function UserMangement() {
             <h1 className="font-bold mb-5 text-[24px]">User Management</h1>
 
             <div className="grid grid-cols-3 gap-10 mb-5">
-                <CardComponent title="Total Users" count={users.length} icon={User} color="bg-purple-100" iconColor="text-purple-600"/>
+                <CardComponent title="Total Users" count={users.length} icon={User} color="bg-purple-100" iconColor="text-purple-600" />
             </div>
 
             <div className="bg-white shadow rounded-lg border border-gray-200">
@@ -310,11 +319,11 @@ export default function UserMangement() {
                                 </TableRow>
                             ) : (
                                 currentUsers.map((user, index) => (
-                                    <TableRow key={index} className="bg-white dark:border-gray-700 dark:bg-gray-800">
+                                    <TableRow key={index} className="bg-white">
                                         <TableCell className="p-4">
                                             <Checkbox />
                                         </TableCell>
-                                        <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                        <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                             {user.name}
                                         </TableCell>
                                         <TableCell>{user.email}</TableCell>
@@ -388,6 +397,16 @@ export default function UserMangement() {
                 />
 
             </div>
+
+            {toast && (
+                <div className="fixed top-5 right-5 z-50">
+                    <AppToast
+                        type={toast.type}
+                        message={toast.message}
+                        onClose={() => setToast(null)}
+                    />
+                </div>
+            )}
 
         </div>
     )

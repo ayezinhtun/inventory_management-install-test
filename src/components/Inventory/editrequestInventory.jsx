@@ -6,8 +6,11 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../../../supabase/supabase-client";
 import { fetchInventoryRequestById, updateInventoryRequest } from "../../context/InventoryRequestContext";
 import { useUserProfiles } from "../../context/UserProfileContext";
+import AppToast from "../toast/Toast";
 
 export default function EditRequestInventory() {
+    const [toast, setToast] = useState(null);
+
     const { id } = useParams();
     const navigate = useNavigate();
     const { profile } = useUserProfiles();
@@ -40,7 +43,10 @@ export default function EditRequestInventory() {
                 }
             } catch (err) {
                 console.error(err);
-                alert("Failed to load request data");
+                setToast({
+                    type: "error",
+                    message: "Failed to load request data!"
+                })
             }
         };
         loadRequest();
@@ -52,7 +58,10 @@ export default function EditRequestInventory() {
 
         const validateType = ["image/jpeg", "image/png", "image/jpg"];
         if (!validateType.includes(file.type)) {
-            alert("File extension is not allowed!");
+            setToast({
+                type: "error",
+                message: "File extension is not allowed!"
+            })
             setImagePreview(null);
             e.target.value = null;
             setImageFile(null);
@@ -61,7 +70,10 @@ export default function EditRequestInventory() {
 
         const validateFilesize = 5 * 1024 * 1024;
         if (file.size > validateFilesize) {
-            alert("Only under 5MB are allowed!");
+            setToast({
+                type: "error",
+                message: "Only under 5MB are allowed!"
+            })
             setImagePreview(null);
             e.target.value = null;
             setImageFile(null);
@@ -93,7 +105,10 @@ export default function EditRequestInventory() {
                     .upload(path, imageFile, { upsert: false });
 
                 if (error) {
-                    alert(`Image upload failed: ${error.message}`);
+                    setToast({
+                        type: "error",
+                        message: `Image upload failed: ${error.message}`
+                    })
                     return;
                 }
 
@@ -108,11 +123,17 @@ export default function EditRequestInventory() {
                 image: imageUrl
             });
 
-            alert("Request updated successfully");
+            setToast({
+                type: "success",
+                message: "Request updated successfully!"
+            })
             navigate("/request/engineer");
         } catch (err) {
             console.error(err);
-            alert("Error: " + err.message);
+            setToast({
+                type: "error",
+                message: err.message || "Failed to Update Request!"
+            })
         } finally {
             setLoading(false);
         }
@@ -186,6 +207,17 @@ export default function EditRequestInventory() {
                     </div>
                 </div>
             </form>
+
+            {toast && (
+                <div className="fixed top-5 right-5 z-50">
+                    <AppToast
+                        type={toast.type}
+                        message={toast.message}
+                        onClose={() => setToast(null)}
+                    />
+                </div>
+            )}
+
         </div>
     );
 }

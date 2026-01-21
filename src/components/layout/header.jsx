@@ -61,7 +61,7 @@ export default function Header() {
                             size={28}
                         />
                         <span className="sr-only">Notifications</span>
-                        <div className="absolute inline-flex items-center justify-center w-6 h-6 text-sm font-black text-white bg-red-500 rounded-full rounded-full -top-4 -end-1">20</div>
+                        <div className="absolute inline-flex items-center justify-center w-6 h-6 text-xs font-semibold text-white bg-red-500 rounded-full rounded-full -top-4 -end-1">20</div>
                     </button>
 
                 </Link>

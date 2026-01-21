@@ -6,8 +6,11 @@ import { getWarehouse } from "../../context/WarehouseContext";
 import { getRegion } from "../../context/RegionContext";
 import { supabase } from "../../../supabase/supabase-client";
 import { InventoryCreate } from "../../context/InventoryContext";
+import AppToast from "../toast/Toast";
 
 export default function CreatePart() {
+    const [toast, setToast] = useState(null);
+
     const [imagePreview, setImagePreview] = useState(null);
 
     const [imageFile, setImageFile] = useState(null);
@@ -80,7 +83,10 @@ export default function CreatePart() {
         const validateType = ["image/jpeg", "image/png", "image/jpg"];
 
         if (!validateType.includes(file.type)) {
-            alert("File extention is not allowed!");
+            setToast({
+                type: "error",
+                message: "File extention is not allowed!"
+            })
             setImagePreview(null);
             e.target.value(null);
             setImageFile(null);
@@ -92,7 +98,10 @@ export default function CreatePart() {
         const validateFilesize = 5 * 1024 * 1024;
 
         if (file.size > validateFilesize) {
-            alert("Only under 5MB are allowed!");
+            setToast({
+                type: "error",
+                message: "Only under 5MB are allowed!"
+            })
             setImagePreview(null);
             e.target.value(null);
             setImageFile(null);
@@ -151,7 +160,10 @@ export default function CreatePart() {
                     .from("inventory-images")
                     .upload(path, imageFile, { upsert: false });
                 if (error) {
-                    alert(`Image upload failed: ${error.message}`);
+                    setToast({
+                        type: "error",
+                        message: `Image upload failed: ${error.message}`
+                    })
                     return;
                 }
                 imageUrl = data.path;
@@ -165,7 +177,10 @@ export default function CreatePart() {
                 .single();
 
             if (existing) {
-                alert("This inventory name already exists. Please choose a different name.");
+                setToast({
+                    type: "error",
+                    message: "This inventory name already exists. Please choose a different name."
+                })
                 return;
             }
 
@@ -177,7 +192,10 @@ export default function CreatePart() {
                 image: imageUrl
             });
 
-            alert("Inventory added successfully");
+            setToast({
+                type: "error",
+                message: "Inventory added successfully"
+            })
 
             setForm({
                 name: "",
@@ -436,6 +454,16 @@ export default function CreatePart() {
                     </div>
                 </div>
             </form>
+
+            {toast && (
+                <div className="fixed top-5 right-5 z-50">
+                    <AppToast
+                        type={toast.type}
+                        message={toast.message}
+                        onClose={() => setToast(null)}
+                    />
+                </div>
+            )}
         </div>
     );
 }

@@ -3,7 +3,7 @@ import { FloatingLabel, Textarea, Button } from "flowbite-react";
 import { useState } from "react";
 import { updateWarehouse } from "../../context/WarehouseContext";
 
-export default function EditWarehouse({ onClose, warehouse, onUpdate, region }) {
+export default function EditWarehouse({ onClose, warehouse, onUpdate, region, setToast }) {
 
     const [form, setForm] = useState({
         name: warehouse.name || '',
@@ -22,12 +22,18 @@ export default function EditWarehouse({ onClose, warehouse, onUpdate, region }) 
 
         try{
             await updateWarehouse(warehouse.id, form);
-            alert('Warehouse Updated Success!');
+            setToast({
+                type: "success", 
+                message: "Warehouse updated successfully!"
+            })
             onUpdate();
             onClose();
         }catch(error){
             console.log('Error update warehouse', error);
-            alert('Failed to update warehouse')
+            setToast({
+                type: "error", 
+                message: "Failed to update region!"
+            })
         }
     }
 

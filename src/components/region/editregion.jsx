@@ -3,7 +3,7 @@ import { FloatingLabel, Textarea, Button } from "flowbite-react";
 import { useState } from "react";
 import { updateRegion } from "../../context/RegionContext";
 
-export default function EditRegionModal({ onClose, region, onUpdate }) {
+export default function EditRegionModal({ onClose, region, onUpdate, setToast }) {
 
     const [form, setForm] = useState({
         name: region?.name || '',
@@ -20,12 +20,18 @@ export default function EditRegionModal({ onClose, region, onUpdate }) {
 
         try {
             await updateRegion(region.id, form);
-            alert('Region Updated success!');
+             setToast({
+                type: "success", 
+                message: "Region updated successfully!"
+            })
             onUpdate();
             onClose();
         } catch (error) {
             console.error('Error update region', error);
-            alert('Failed to udpate Region');
+             setToast({
+                type: "error", 
+                message: "Failed to update region!"
+            })
         }
     }
     return (

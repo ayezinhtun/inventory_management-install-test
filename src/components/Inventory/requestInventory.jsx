@@ -6,8 +6,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../../../supabase/supabase-client";
 import { createInventoryRequest } from "../../context/InventoryRequestContext";
 import { useUserProfiles } from "../../context/UserProfileContext";
+import AppToast from "../toast/Toast";
 
 export default function RequestInventory() {
+    const [toast, setToast] = useState(null);
+
     const navigate = useNavigate();
     const [form, setForm] = useState({
         item_name: "",
@@ -32,7 +35,10 @@ export default function RequestInventory() {
         const validateType = ["image/jpeg", "image/png", "image/jpg"];
 
         if (!validateType.includes(file.type)) {
-            alert("File extention is not allowed!");
+            setToast({
+                type: "error",
+                message: "File extention is not allowed!"
+            })
             setImagePreview(null);
             e.target.value(null);
             setImageFile(null);
@@ -44,7 +50,10 @@ export default function RequestInventory() {
         const validateFilesize = 5 * 1024 * 1024;
 
         if (file.size > validateFilesize) {
-            alert("Only under 5MB are allowed!");
+            setToast({
+                type: "error",
+                message: "Only under 5MB are allowed!"
+            })
             setImagePreview(null);
             e.target.value(null);
             setImageFile(null);
@@ -105,7 +114,10 @@ export default function RequestInventory() {
                     .upload(path, imageFile, { upsert: false });
 
                 if (error) {
-                    alert(`Image upload failed: ${error.message}`);
+                    setToast({
+                        type: "error",
+                        message: `Image upload failed: ${error.message}`
+                    })
                     return;
                 }
                 imageUrl = data.path;
@@ -119,14 +131,20 @@ export default function RequestInventory() {
                 image: imageUrl,
             });
 
-            alert("Request submitted successfully");
+            setToast({
+                type: "success",
+                message: "Request submitted successfully!"
+            })
             // setForm({ item_name: "", quantity: 1, notes: "" });
             navigate('/request/engineer');
             setImageFile(null);
             setImagePreview(null);
         } catch (err) {
             console.error(err);
-            alert("Error:" + err.message);
+            setToast({
+                type: "error",
+                message: err.message || "Failed to Request!"
+            })
         } finally {
             setLoading(false);
         }
@@ -252,6 +270,16 @@ export default function RequestInventory() {
 
                 </div>
             </form>
+
+            {toast && (
+                <div className="fixed top-5 right-5 z-50">
+                    <AppToast
+                        type={toast.type}
+                        message={toast.message}
+                        onClose={() => setToast(null)}
+                    />
+                </div>
+            )}
         </div>
     )
 }

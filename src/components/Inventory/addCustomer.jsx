@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { getCustomer } from "../../context/CustomerContext";
 import { supabase } from "../../../supabase/supabase-client";
 
-export default function AddCustomer({ onClose, inventoryId, onAdd }) {
+export default function AddCustomer({ onClose, inventoryId, onAdd, setToast }) {
     const [customers, setCustomers] = useState([]);
     const [selectedCustomerId, setSelectedCustomerId] = useState("");
     const [soldQuantity, setSoldQuantity] = useState(1);
@@ -60,12 +60,19 @@ export default function AddCustomer({ onClose, inventoryId, onAdd }) {
         setLoading(true);
 
         if (!selectedCustomerId) {
-            alert("Please select a customer");
+            setToast({
+                type: "error",
+                message: "Please select a customer!"
+            })
+
             return;
         }
 
         if (soldQuantity < 1) {
-            alert("Quantity must be at least 1");
+            setToast({
+                type: "error",
+                message: "Quantity must be at least 1"
+            })
             return;
         }
 
@@ -78,12 +85,20 @@ export default function AddCustomer({ onClose, inventoryId, onAdd }) {
                 .single();
 
             if (fetchError || !inventoryData) {
-                alert("Errorr fetching inventory: " + (fetchError?.message || "Not found"));
+                setToast({
+                    type: "error",
+                    message: "Errorr fetching inventory!"
+                })
+
                 return;
             }
 
             if (inventoryData.quantity < soldQuantity) {
-                alert(`Not enough stock! Available: ${inventoryData.quantity}`);
+                setToast({
+                    type: "error",
+                    message: `Not enough stock! Available: ${inventoryData.quantity}`
+                })
+
                 return;
             }
 
@@ -102,7 +117,11 @@ export default function AddCustomer({ onClose, inventoryId, onAdd }) {
                 .single();
 
             if (updateError) {
-                alert("Error updating Inventory: " + updateError.message);
+                setToast({
+                    type: "error",
+                    message: "Failed updating Inventory!"
+                })
+
                 return;
             }
 
@@ -117,16 +136,28 @@ export default function AddCustomer({ onClose, inventoryId, onAdd }) {
                 });
 
             if (saleError) {
-                alert("Error recording sale:" + saleError.message);
+                setToast({
+                    type: "error",
+                    message: "Error recording sale!"
+                })
+
                 return;
             }
 
-            alert("Inventory sold successfully");
+            setToast({
+                type: "error",
+                message: "Inventory sold successfully!"
+            })
+
             onAdd();
             onClose();
         } catch (err) {
             console.log(err);
-            alert("Something went wrong?")
+            setToast({
+                type: "error",
+                message: "Something went wrong?!"
+            })
+
         } finally {
             setLoading(false)
         }

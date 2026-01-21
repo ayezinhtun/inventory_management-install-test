@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { createWarehouse, getWarehouse } from "../../context/WarehouseContext";
 import { getRegion } from "../../context/RegionContext";
 
-export default function AddWarehouse({ onClose, region, onAdd }) {
+export default function AddWarehouse({ onClose, region, onAdd, setToast }) {
 
     const [form, setForm] = useState({
         name: '',
@@ -23,12 +23,18 @@ export default function AddWarehouse({ onClose, region, onAdd }) {
         try{
             await createWarehouse(form);
             setForm({name: '', region_id: '', description: ''});
-            alert('Warehouse Added Success')
+            setToast({
+                type: "success", 
+                message: "Warehouse Add successfully!"
+            })
             onAdd();
             onClose();
         }catch(error) {
             console.error('Error Adding Warehouse', error);
-            alert('Failed to add Warehouse')
+            setToast({
+                type: "error", 
+                message: "Failed to delete Warehouse!"
+            })
         }
     }
 
@@ -44,20 +50,21 @@ export default function AddWarehouse({ onClose, region, onAdd }) {
                 </div>
                 <form className="p-6" onSubmit={handleSubmit}>
                     <div className="mb-4">
-                        <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Name</label>
+                        <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Warehouse Name <span className="text-red-500">*</span></label>
                         <input
                             type="text"
                             name="name"
                             value={form.name}
                             onChange={handleChange}
                             placeholder="YGN"
-                            className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
+                            className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-700"
+                            required
                         />
                     </div>
 
                     <div className="mb-4">
-                        <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Region</label>
-                        <select name="region_id" value={form.region_id} onChange={handleChange} id="" className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500">
+                        <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Region<span className="text-red-500">*</span></label>
+                        <select name="region_id" value={form.region_id} onChange={handleChange} id="" className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-700" required>
                             <option value="">
                                 Select Region
                             </option>
@@ -79,7 +86,7 @@ export default function AddWarehouse({ onClose, region, onAdd }) {
                             onChange={handleChange}
                             placeholder="Description"
                             rows={3}
-                            className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
+                            className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-700"
                         />
                     </div>
 
