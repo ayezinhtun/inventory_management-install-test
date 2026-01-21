@@ -63,11 +63,21 @@ export default function SidebarComponent() {
             ],
         },
 
-        { id: 10, name: "Install Request PM", path: "/install-request/pm", icon: <ClipboardCheck className="h-5 w-5 mr-2" /> },
-        {id: 11, name: "Install Request Admin", path: '/install-request/admin', icon: <ClipboardCheck className="h-5 w-5 mr-2"/>},
-        {id: 12, name: "Physical Install", path: '/install-request/physical' , icon: <ClipboardCheck className="h-5 w-5 mr-2"/>},
-        { id: 13, name: "Users", path: "/user", icon: <User className="h-5 w-5 mr-2" /> },
-        { id: 14, name: "Audit Log", path: "/audit", icon: <Clock className="h-5 w-5 mr-2" /> },
+        {
+            id: 10,
+            name: "My Relocation Requests",
+            path: "",
+            icon: <PackagePlus className="h-5 w-5 mr-2" />,
+            subLinks: [
+                { id: "10-1", name: "Component Relocation", path: "/relocation-requests/component" },
+            ],
+        },
+
+        { id: 11, name: "Install Request PM", path: "/install-request/pm", icon: <ClipboardCheck className="h-5 w-5 mr-2" /> },
+        {id: 12, name: "Install Request Admin", path: '/install-request/admin', icon: <ClipboardCheck className="h-5 w-5 mr-2"/>},
+        {id: 13, name: "Physical Install", path: '/install-request/physical' , icon: <ClipboardCheck className="h-5 w-5 mr-2"/>},
+        { id: 14, name: "Users", path: "/user", icon: <User className="h-5 w-5 mr-2" /> },
+        { id: 15, name: "Audit Log", path: "/audit", icon: <Clock className="h-5 w-5 mr-2" /> },
     ];
 
     // Open the menu if current path starts with its path
@@ -86,7 +96,7 @@ export default function SidebarComponent() {
     };
 
     return (
-        <div className="w-64 bg-white shadow-xl h-full fixed left-0 top-0 z-40 flex flex-col">
+        <div className="bg-white shadow-xl h-full fixed left-0 top-0 z-40 flex flex-col">
             {/* Logo */}
             <Link to="/" className="p-4 flex flex-col items-center space-x-3">
                 <img src={logo} alt="logo" className="h-15 mb-1" />

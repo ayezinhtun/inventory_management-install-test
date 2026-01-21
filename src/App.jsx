@@ -32,6 +32,7 @@ import ComponentInstallRequest from "./pages/Engineer/ComponentInstall"
 import InstallRequestPM from "./pages/PM/InstallRequest"
 import InstallRequestAdmin from "./pages/Admin/InstallRequestAdmin"
 import PhysicalInstall from "./pages/Admin/PhysicallyRequest"
+import ComponentRelocationRequest from "./pages/Engineer/relocation/relocationrequest"
 
 function App() {
   return (
@@ -69,6 +70,9 @@ function App() {
           <Route path="/install-requests" element={<EngineerInstallRequests />} />
           <Route path="/install-requests/inventory" element={<InventoryInstallRequest />} />
           <Route path="install-requests/component" element={<ComponentInstallRequest />}></Route>
+
+          <Route path="/relocation-requests/component" element={<ComponentRelocationRequest />} />
+
 
           {/*for admin*/}
           <Route path="/request/admin" element={<AdminInventoryRequest />} />
