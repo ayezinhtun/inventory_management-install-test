@@ -12,6 +12,7 @@ CREATE TABLE relocation_requests (
     pm_approved_at timestamptz,
     admin_approved_by uuid REFERENCES profiles(id),
     admin_approved_at timestamptz,
+    completed_by uuid REFERENCES profiles(id), 
     completed_at timestamptz,
     created_at timestamptz DEFAULT now()
 );

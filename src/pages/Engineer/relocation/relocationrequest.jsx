@@ -1,80 +1,175 @@
-import { Button, Table, TableHead, TableBody, TableRow, TableCell, TableHeadCell } from 'flowbite-react';
-import { MoveLeft } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from "react";
+import { Spinner } from "flowbite-react";
+import { useRelocation } from "../../../context/RelocationContext";
+import { useUserProfiles } from "../../../context/UserProfileContext";
 
-export default function ComponentRelocationRequest() {
-    return (
-        <div>
-            <form>
-                <div className="mb-5 flex items-center justify-between">
-                    <div className="flex items-center">
-                        <Link to="/inventory" className="p-2 hover:bg-gray-100 rounded-sm flex items-center me-2"><MoveLeft /></Link>
-                        <h1 className="font-bold text-[24px]">Create Relocation Request</h1>
-                    </div>
-                    <Button type="submit" className="bg-[#26599F]">Create Request</Button>
-                </div>
+const ComponentRelocationRequest = () => {
+  const {
+    installComponents,
+    loading,
+    fetchInstalledComponents,
+    createRelocation,
+  } = useRelocation();
 
-                <div className="grid grid-cols-12 gap-8">
-                    <div className="col-span-8">
-                        <div className="grid grid-cols-2 gap-2">
-                            <div>
-                                <label className="block mb-2">Component Name *</label>
-                                <select name="inventory_id" required className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] text-gray-500">
-                                    <option value="">Select Component</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block mb-2">Destination Device *</label>
-                                <select name="server_id" required className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] text-gray-500">
-                                    <option value="">Select Server</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block mb-2">Quantity</label>
-                                <input name="quantity" type="number" min={1} className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] text-gray-500" />
-                            </div>
-                        </div>
+  const { profile } = useUserProfiles();
 
-                        <div className="mt-2">
-                            <label className="block mb-2">Note</label>
-                            <textarea name="notes" rows={3} className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] text-gray-500"></textarea>
-                        </div>
-                    </div>
+  const [type, setType] = useState("ram");
+  const [selectedInstall, setSelectedInstall] = useState(null);
 
-                    <div className="col-span-4">
-                        <Table hoverable>
-                            <TableHead>
-                                <TableRow>
-                                    <TableHeadCell colSpan={2}>Current Component Information</TableHeadCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                <TableRow>
-                                    <TableCell>Name</TableCell>
-                                    <TableCell></TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell>Type</TableCell>
-                                    <TableCell></TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell>Quantity</TableCell>
-                                    <TableCell></TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell>Attributes</TableCell>
-                                    <TableCell>
-                                        
-                                    </TableCell>
-                                </TableRow>
+  const [form, setForm] = useState({
+    to_server_id: "",
+    to_warehouse_id: "",
+  });
 
-                            </TableBody>
-                        </Table>
-                    </div>
-                </div>
-            </form>
+  // fetch installed components (RAM / CPU / Storage)
+  useEffect(() => {
+    fetchInstalledComponents(type);
+  }, [type]);
 
+  const handleSelectInstallation = (installationId) => {
+    const found = installComponents.find(i => i.id === installationId);
+    setSelectedInstall(found || null);
+  };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!profile?.id) {
+      alert("User profile not loaded");
+      return;
+    }
+
+    if (!selectedInstall) {
+      alert("Please select installed component");
+      return;
+    }
+
+    if (!form.to_server_id && !form.to_warehouse_id) {
+      alert("Please select destination server or warehouse");
+      return;
+    }
+
+    try {
+      await createRelocation({
+        installation_id: selectedInstall.id,
+        inventory_id: selectedInstall.inventory_id,
+
+        from_server_id: selectedInstall.server_id,
+        to_server_id: form.to_server_id || null,
+        to_warehouse_id: form.to_warehouse_id || null,
+
+        quantity: selectedInstall.quantity,
+        request_type: type,
+
+        status: "pm_approve_pending", // ✅ FIRST STATUS
+        requested_by: profile.id,     // ✅ FROM PROFILE
+      });
+
+      alert("Relocation request submitted and waiting for PM approval");
+
+      // reset
+      setSelectedInstall(null);
+      setForm({
+        to_server_id: "",
+        to_warehouse_id: "",
+      });
+
+    } catch (err) {
+      console.error(err);
+      alert("Failed to submit relocation request");
+    }
+  };
+
+  return (
+    <div className="max-w-3xl mx-auto bg-white p-6 rounded shadow">
+      <h2 className="text-xl font-semibold mb-4">
+        Create Relocation Request
+      </h2>
+
+      {/* Component Type */}
+      <div className="mb-4">
+        <label className="block font-medium mb-1">Component Type</label>
+        <select
+          className="w-full border rounded px-3 py-2"
+          value={type}
+          onChange={(e) => setType(e.target.value)}
+        >
+          <option value="ram">RAM</option>
+          <option value="cpu">CPU</option>
+          <option value="storage">Storage</option>
+        </select>
+      </div>
+
+      {/* Installed Components */}
+      <div className="mb-4">
+        <label className="block font-medium mb-1">
+          Installed {type.toUpperCase()}
+        </label>
+
+        {loading ? (
+          <Spinner />
+        ) : (
+          <select
+            className="w-full border rounded px-3 py-2"
+            defaultValue=""
+            onChange={(e) => handleSelectInstallation(e.target.value)}
+          >
+            <option value="" disabled>
+              Select installed component
+            </option>
+
+            {installComponents.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.inventorys?.name} | Server {item.server_id} | Qty {item.quantity}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+
+      {/* Current Info */}
+      {selectedInstall && (
+        <div className="mb-4 bg-gray-50 p-3 rounded text-sm">
+          <p><b>Current Server:</b> {selectedInstall.server_id}</p>
+          <p><b>Quantity:</b> {selectedInstall.quantity}</p>
+          <p><b>Attributes:</b> {JSON.stringify(selectedInstall.attributes)}</p>
         </div>
-    );
-}
+      )}
+
+      {/* Destination */}
+      <div className="mb-4">
+        <label className="block font-medium mb-1">Destination Server ID</label>
+        <input
+          className="w-full border rounded px-3 py-2"
+          value={form.to_server_id}
+          onChange={(e) =>
+            setForm({ ...form, to_server_id: e.target.value })
+          }
+          placeholder="Optional"
+        />
+      </div>
+
+      <div className="mb-4">
+        <label className="block font-medium mb-1">Destination Warehouse ID</label>
+        <input
+          className="w-full border rounded px-3 py-2"
+          value={form.to_warehouse_id}
+          onChange={(e) =>
+            setForm({ ...form, to_warehouse_id: e.target.value })
+          }
+          placeholder="Optional"
+        />
+      </div>
+
+      {/* Submit */}
+      <button
+        onClick={handleSubmit}
+        className="bg-[#26599F] text-white px-4 py-2 rounded hover:bg-blue-700"
+      >
+        Submit Relocation Request
+      </button>
+    </div>
+  );
+};
+
+export default ComponentRelocationRequest;

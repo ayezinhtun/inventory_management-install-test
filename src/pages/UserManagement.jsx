@@ -197,7 +197,7 @@ export default function UserMangement() {
             }
 
             setToast({
-                type: "error",
+                type: "success",
                 message: "User Updated Successfully!"
             })
 
