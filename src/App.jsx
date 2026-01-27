@@ -33,6 +33,12 @@ import InstallRequestPM from "./pages/PM/InstallRequest"
 import InstallRequestAdmin from "./pages/Admin/InstallRequestAdmin"
 import PhysicalInstall from "./pages/Admin/PhysicallyRequest"
 import ComponentRelocationRequest from "./pages/Engineer/relocation/relocationrequest"
+import EngineerRelocationRequests from "./pages/Engineer/relocation/myrelocationrequest"
+import PMRelocationRequests from "./pages/PM/pmrelocationrequest"
+import AdminRelocationRequests from "./pages/Admin/adminrelocationrequest"
+import PhysicalRelocationRequests from "./pages/Admin/physicalrelocationrequest"
+import { useState } from "react"
+import ReservedStock from "./pages/ReservedStock"
 
 function App() {
   return (
@@ -53,9 +59,9 @@ function App() {
           <Route path="/inventory/add-part" element={<CreatePart />} />
           <Route path="/customer" element={<Customer />} />
           <Route path="/customer/inventory" element={<CustomerInventory />} />
-          <Route element={<AdminRoute />}>
-            <Route path="/user" element={<UserMangement />} />
-          </Route>
+
+          <Route path="/user" element={<UserMangement />} />
+
           <Route path="/audit" element={<Audit />} />
           <Route path="/inventory-detail/:id" element={<InventoryDetail />} />
           <Route path="/inventory/create-inventory" element={<CreateInventory />} />
@@ -72,6 +78,7 @@ function App() {
           <Route path="install-requests/component" element={<ComponentInstallRequest />}></Route>
 
           <Route path="/relocation-requests/component" element={<ComponentRelocationRequest />} />
+          <Route path="/relocation-requests/myrelocationrequest" element={<EngineerRelocationRequests />} />
 
 
           {/*for admin*/}
@@ -79,9 +86,17 @@ function App() {
           <Route path="/install-request/admin" element={<InstallRequestAdmin />} />
           <Route path="/install-request/physical" element={<PhysicalInstall />} />
 
+          <Route path="/relocation-requests/adminrelocationrequest" element={<AdminRelocationRequests />} />
+          <Route path="/relocation-requests/physicalrelocationrequest" element={<PhysicalRelocationRequests />} />
+
+          <Route path="/reserved-stocks" element={<ReservedStock />} />
+
 
           {/* for pm */}
           <Route path="/install-request/pm" element={<InstallRequestPM />} />
+
+          <Route path="/relocation-requests/pmrelocationrequest" element={<PMRelocationRequests />} />
+
 
         </Route>
       </Route>

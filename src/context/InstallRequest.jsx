@@ -212,7 +212,8 @@ export const getComponents = async () => {
   const { data, error } = await supabase
     .from('inventorys')
     .select('*')
-    .in('type', ['ram', 'cpu', 'storage']);
+    .in('type', ['ram', 'cpu', 'ssd'])
+    .eq('status', 'active');
   if (error) throw error;
   return data;
 }

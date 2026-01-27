@@ -59,6 +59,12 @@ export default function Customer() {
 
         try {
             await deleteCustomer(id);
+
+            setToast({
+                type: "success",
+                message: "Customer deleted success!"
+            })
+
             fetchCustomer();
         } catch (error) {
             console.error(error);
@@ -269,11 +275,11 @@ export default function Customer() {
             </div>
 
             {showModal &&
-                <AddCustomer onClose={() => setShowModal(false)} onAdd={fetchCustomer} setToast={setToast}/>
+                <AddCustomer onClose={() => setShowModal(false)} onAdd={fetchCustomer} setToast={setToast} />
             }
 
             {showEditModal && selectedCustomer && (
-                <EditCustomer customer={selectedCustomer} onClose={() => setShowEditModal(false)} onUpdate={fetchCustomer} setToast={setToast}/>
+                <EditCustomer customer={selectedCustomer} onClose={() => setShowEditModal(false)} onUpdate={fetchCustomer} setToast={setToast} />
             )
             }
 

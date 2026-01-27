@@ -19,7 +19,7 @@ export default function ProtectedRoute() {
             </div>
         )
     }
-    
+
 
     if (!user) {
         return <Navigate to="/login" replace />
@@ -35,7 +35,17 @@ export default function ProtectedRoute() {
     }
 
     // PM, PC, Engineer need at least 1 region and 1 warehouse
-    if ((role === "engineer" || role === "PM" || role === "PC") && (regionsCount === 0 || warehousesCount === 0)) {
+    // if ((role === "engineer" || role === "pm" || role === "pc") && (warehousesCount === 0)) {
+    //     return <Navigate to="/pending" replace />;
+    // }
+
+    // PM: must have at least 1 region
+    if ((role === "PM" || role === "PC") && regionsCount === 0) {
+        return <Navigate to="/pending" replace />;
+    }
+
+    // Engineer: must have at least 1 warehouse
+    if (role === "engineer" && warehousesCount === 0) {
         return <Navigate to="/pending" replace />;
     }
 

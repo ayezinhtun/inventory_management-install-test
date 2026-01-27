@@ -4,6 +4,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useUserProfiles } from '../../context/UserProfileContext';
 import { Spinner } from 'flowbite-react';
+import { supabase } from '../../../supabase/supabase-client';
+import { getAuditRowsForUI } from '../../context/AuditContext';
 
 export default function Header() {
     const { profile } = useUserProfiles();
@@ -46,6 +48,90 @@ export default function Header() {
         }
     }
 
+
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    const loadUnreadCount = async () => {
+        try {
+            // 1) Get recent audit events for install + relocation (IDs only)
+            const [install, relocation] = await Promise.all([
+                getAuditRowsForUI({ limit: 150, table: "installation_requests" }),
+                getAuditRowsForUI({ limit: 150, table: "relocation_requests" }),
+            ]);
+            const all = [...(install || []), ...(relocation || [])];
+            const allIds = all.map(r => r.id);
+            if (!profile?.id) {
+                setUnreadCount(allIds.length);
+                return;
+            }
+
+            // 2) Reads by this user
+            let readIds = new Set();
+            if (allIds.length > 0) {
+                const { data: reads, error } = await supabase
+                    .from("notification_reads")
+                    .select("audit_id")
+                    .eq("user_id", profile.id)
+                    .in("audit_id", allIds);
+                if (!error && Array.isArray(reads)) {
+                    readIds = new Set(reads.map(r => r.audit_id));
+                }
+            }
+
+            // 3) Compute unread
+            const unread = allIds.filter(id => !readIds.has(id)).length;
+            setUnreadCount(unread);
+        } catch (e) {
+            console.error("Failed to load unread count", e);
+        }
+    };
+
+    // Initial load + reload when profile resolves
+    useEffect(() => {
+        loadUnreadCount();
+    }, [profile?.id]);
+
+    
+
+    // Realtime: update when a new audit row is inserted (new notification)
+    useEffect(() => {
+        const channel = supabase
+            .channel("badge-audit-realtime")
+            .on(
+                "postgres_changes",
+                { event: "INSERT", schema: "public", table: "audit_logs" },
+                (payload) => {
+                    const t = (payload?.new?.table_name || "").toLowerCase();
+                    if (t === "installation_requests" || t === "relocation_requests") {
+                        loadUnreadCount();
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => { supabase.removeChannel(channel); };
+    }, []);
+
+    // Realtime: update when this user marks as read
+    useEffect(() => {
+        if (!profile?.id) return;
+        const channel = supabase
+            .channel("badge-reads-realtime")
+            .on(
+                "postgres_changes",
+                { event: "INSERT", schema: "public", table: "notification_reads" },
+                (payload) => {
+                    // only care about current user's reads
+                    if (payload?.new?.user_id === profile.id) {
+                        loadUnreadCount();
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => { supabase.removeChannel(channel); };
+    }, [profile?.id]);
+
     return (
         <header className="bg-white shadow px-6 py-5 flex items-center justify-end sticky top-0 z-30">
             {loggingOut && (
@@ -61,8 +147,17 @@ export default function Header() {
                             size={28}
                         />
                         <span className="sr-only">Notifications</span>
-                        <div className="absolute inline-flex items-center justify-center w-6 h-6 text-xs font-semibold text-white bg-red-500 rounded-full rounded-full -top-4 -end-1">20</div>
+                        {unreadCount > 0 && (
+                            <span
+                                className="absolute -top-3 -right-1 inline-flex items-center justify-center
+                 rounded-full bg-red-600 text-white text-xs min-w-[18px] h-[18px] px-1"
+                            >
+                                {unreadCount > 99 ? "99+" : unreadCount}
+                            </span>
+                        )}
                     </button>
+
+
 
                 </Link>
 

@@ -21,7 +21,7 @@ export default function EditInventory() {
         region_id: "",
         warehouse_id: "",
         rack_id: "",
-        status: "inactive",
+        status: "active",
         serial_no: "",
         type: "",
         model: "",
@@ -148,6 +148,9 @@ export default function EditInventory() {
     const addCustomAttribute = () => {
         const attrName = prompt("Enter attribute name:");
         if (!attrName) return;
+        
+        if (attributeFields.includes(attrName)) return;
+
         setAttributeFields(prev => [...prev, attrName]);
         setForm(prev => ({
             ...prev,
@@ -262,6 +265,8 @@ export default function EditInventory() {
         return true;
     };
 
+
+    
     // Handle form submit
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -299,7 +304,7 @@ export default function EditInventory() {
             if (error) throw error;
 
             setToast({
-                type: "error",
+                type: "success",
                 message: "Inventory updated successfully!"
             })
             navigate("/inventory");
@@ -420,7 +425,6 @@ export default function EditInventory() {
                                 <select name="status" value={form.status} onChange={handleChange} className="w-full p-2.5 border border-gray-300 rounded-lg">
                                     <option value="active">Active</option>
                                     <option value="inactive">Inactive</option>
-                                    <option value="sold">Sold</option>
                                 </select>
                             </div>
 

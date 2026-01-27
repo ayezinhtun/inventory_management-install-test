@@ -53,6 +53,9 @@ export default function EditPart() {
                 return;
             }
 
+            const attrKeys = Object.keys(data.attributes || {});
+
+
             setForm(prev => ({
                 ...prev,
                 name: data.name,
@@ -65,8 +68,11 @@ export default function EditPart() {
                 vendor: data.vendor,
                 quantity: data.quantity || 1,
                 notes: data.notes || "",
-                attributes: data.attributes || {}
+                attributes: data.attributes || {},
+                image: data.image || null
             }));
+
+            setAttributeFields(attrKeys);
 
             if (data.image) {
                 const { data: { publicUrl } } = supabase.storage
@@ -130,12 +136,16 @@ export default function EditPart() {
     const addCustomAttribute = () => {
         const attrName = prompt("Enter attribute name:");
         if (!attrName) return;
+
+        if (attributeFields.includes(attrName)) return; 
+
         setAttributeFields(prev => [...prev, attrName]);
         setForm(prev => ({
             ...prev,
             attributes: { ...prev.attributes, [attrName]: "" }
         }));
     };
+
 
     const handleImageChange = e => {
         const file = e.target.files[0];
@@ -162,8 +172,6 @@ export default function EditPart() {
     };
 
     const renderAttributes = () => {
-        const typeKey = (form.type || "").toLowerCase();
-        const defaults = typeAttributes[typeKey] || [];
         return (
             <div className="flex flex-col gap-2">
                 <Button
@@ -173,8 +181,9 @@ export default function EditPart() {
                 >
                     + Add Custom Attribute
                 </Button>
+
                 <div className="grid grid-cols-3 gap-4 w-full">
-                    {[...defaults, ...attributeFields].map(attr => (
+                    {attributeFields.map(attr => (
                         <div key={attr}>
                             <label className="block text-sm font-medium mb-1">{attr.toUpperCase()}</label>
                             <input

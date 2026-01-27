@@ -29,7 +29,7 @@ export default function CreatePart() {
         name: "",
         region_id: "",
         warehouse_id: "",
-        status: "inactive",
+        status: "active",
         serial_no: "",
         type: "",
         model: "",
@@ -193,7 +193,7 @@ export default function CreatePart() {
             });
 
             setToast({
-                type: "error",
+                type: "success",
                 message: "Inventory added successfully"
             })
 
@@ -201,7 +201,7 @@ export default function CreatePart() {
                 name: "",
                 region_id: "",
                 warehouse_id: "",
-                status: "inactive",
+                status: "active",
                 serial_no: "",
                 type: "",
                 model: "",
@@ -319,11 +319,12 @@ export default function CreatePart() {
                     {/* Form Fields */}
                     <div className="col-span-9 grid grid-cols-3 gap-4">
                         <div>
-                            <label className="block text-sm font-medium mb-1">Type *</label>
+                            <label className="block text-sm font-medium mb-1">Type <span className="text-red-500">*</span></label>
                             <select
                                 name="type"
                                 value={form.type}
                                 onChange={handleChange}
+                                required
                                 className="w-full p-2.5 border border-gray-300 rounded-lg"
                             >
                                 <option value="">Select Type</option>
@@ -334,12 +335,13 @@ export default function CreatePart() {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium mb-1">Name *</label>
+                            <label className="block text-sm font-medium mb-1">Name <span className="text-red-500">*</span></label>
                             <input
                                 type="text"
                                 name="name"
                                 value={form.name}
                                 onChange={handleChange}
+                                required
                                 className="w-full p-2.5 border border-gray-300 rounded-lg"
                             />
                         </div>
@@ -357,7 +359,7 @@ export default function CreatePart() {
 
                         <div>
                             <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Region <span className="text-red-500">*</span></label>
-                            <select name="region_id" id="" value={form.region_id} onChange={handleChange}
+                            <select name="region_id" id="" value={form.region_id} onChange={handleChange} required
                                 className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
                             >
                                 <option value="">
@@ -373,7 +375,7 @@ export default function CreatePart() {
 
                         <div>
                             <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Warehouse <span className="text-red-500">*</span></label>
-                            <select name="warehouse_id" id="" value={form.warehouse_id} onChange={handleChange}
+                            <select name="warehouse_id" id="" value={form.warehouse_id} onChange={handleChange} required
                                 className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
                             >
                                 <option value="">
@@ -394,40 +396,42 @@ export default function CreatePart() {
                             >
                                 <option value="active">Active</option>
                                 <option value="inactive">Inactive</option>
-                                <option value="sold">Sold</option>
                             </select>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium mb-1">Model *</label>
+                            <label className="block text-sm font-medium mb-1">Model <span className="text-red-500">*</span></label>
                             <input
                                 type="text"
                                 name="model"
                                 value={form.model}
                                 onChange={handleChange}
+                                required
                                 className="w-full p-2.5 border border-gray-300 rounded-lg"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium mb-1">Vendor *</label>
+                            <label className="block text-sm font-medium mb-1">Vendor <span className="text-red-500">*</span></label>
                             <input
                                 type="text"
                                 name="vendor"
                                 value={form.vendor}
                                 onChange={handleChange}
+                                required
                                 className="w-full p-2.5 border border-gray-300 rounded-lg"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium mb-1">Quantity *</label>
+                            <label className="block text-sm font-medium mb-1">Quantity <span className="text-red-500">*</span></label>
                             <input
                                 type="number"
                                 min={1}
                                 name="quantity"
                                 value={form.quantity}
                                 onChange={handleChange}
+                                required
                                 className="w-full p-2.5 border border-gray-300 rounded-lg"
                             />
                         </div>

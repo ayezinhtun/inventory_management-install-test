@@ -31,7 +31,7 @@ export default function InstallRequestAdmin() {
         fetchRequests();
     }, []);
 
-   
+
 
     const totalCount = requests.length;
     const PendingCount = requests.filter(r => r.status === 'pm_approve_pending').length;
@@ -74,7 +74,6 @@ export default function InstallRequestAdmin() {
 
                 </div>
 
-              
 
                 <div className="overflow-x-auto rounded-lg">
                     <Table hoverable>
@@ -90,32 +89,58 @@ export default function InstallRequestAdmin() {
                                 <TableHeadCell>Destination Server</TableHeadCell>
                                 <TableHeadCell>Note</TableHeadCell>
 
-                                
+
                             </TableRow>
                         </TableHead>
                         <TableBody className="divide-y divide-gray-200">
-                            {requests.map((request => {
-                                return (
-                                    <TableRow key={request.id} className="bg-white">
-                                        <TableCell className="p-4">
-                                            <Checkbox />
+                            {loading ? (
+                                <TableRow>
+                                    <TableCell colSpan={6} className="text-center py-5">
+                                        <div>
+                                            <Spinner size="xl" color="info" aria-label="Loading..." />
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                requests.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell
+                                            colSpan={6}
+                                            className="text-center"
+                                        >
+                                            No Request found
                                         </TableCell>
-                                        <TableCell className="whitespace-nowrap font-medium text-gray-900">
-                                            {request.component.name}
-                                        </TableCell>
-                                        <TableCell>{request.quantity}</TableCell>
-                                        <TableCell>
-                                            {request.status}
-                                        </TableCell>
-
-                                        <TableCell>{request.requester.name}</TableCell>
-                                        <TableCell>{request.server?.name || ''}</TableCell>
-                                        <TableCell>{request.notes}</TableCell>
-
-                                        
                                     </TableRow>
-                                )
-                            }))}
+                                ) : (
+
+                                    requests.map((request) => {
+                                        return (
+                                            <TableRow key={request.id} className="bg-white">
+                                                <TableCell className="p-4">
+                                                    <Checkbox />
+                                                </TableCell>
+                                                <TableCell className="whitespace-nowrap font-medium text-gray-900">
+                                                    {request.component.name}
+                                                </TableCell>
+                                                <TableCell>{request.quantity}</TableCell>
+                                                <TableCell>
+                                                    {request.status}
+                                                </TableCell>
+
+                                                <TableCell>{request.requester.name}</TableCell>
+                                                <TableCell>{request.server?.name || ''}</TableCell>
+                                                <TableCell>{request.notes}</TableCell>
+
+
+                                            </TableRow>
+                                        )
+                                    }
+                                    
+                                    )
+
+
+
+                                ))}
 
 
                         </TableBody>

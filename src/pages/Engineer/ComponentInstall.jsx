@@ -62,6 +62,7 @@ export default function ComponentInstallRequest() {
         return data
             .filter(i => i.inventorys.type === type)
             .reduce((sum, i) => sum + i.quantity, 0)
+            
     }
 
     const handleSubmit = async (e) => {
@@ -82,7 +83,7 @@ export default function ComponentInstallRequest() {
             const maxSlotsMap = {
                 ram: Number(selectedServer.attributes?.max_ram_slots || 0),
                 cpu: Number(selectedServer.attributes?.max_cpu_slots || 0),
-                storage: Number(selectedServer.attributes?.max_storage_slots || 0),
+                ssd: Number(selectedServer.attributes?.max_storage_slots || 0),
             };
 
             const maxSlots = maxSlotsMap[componentType];
@@ -155,10 +156,14 @@ export default function ComponentInstallRequest() {
         try {
             await createInstallRequest(payload);
 
+
+
             setToast({
-                type: "error",
+                type: "success",
                 message: "Request created! Waiting for approval!"
             })
+
+
 
             setForm({
                 inventory_id: '',
@@ -243,9 +248,12 @@ export default function ComponentInstallRequest() {
                                         <TableRow>
                                             <TableCell>Attributes</TableCell>
                                             <TableCell>
-                                                {Object.entries(selectedComponent.attributes || {})
-                                                    .map(([k, v]) => `${k}: ${v}`)
-                                                    .join(", ")}
+                                                {Object.entries(selectedComponent.attributes || {}).map(([key, value], index) => (
+                                                    <span key={key}>
+                                                        {key.charAt(0).toUpperCase() + key.slice(1)}: {value}
+                                                        <br />
+                                                    </span>
+                                                ))}
                                             </TableCell>
                                         </TableRow>
                                     </>

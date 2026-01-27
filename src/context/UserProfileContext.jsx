@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../../supabase/supabase-client";
 
 import { useAuth } from "./AuthContext";
+import AppToast from "../components/toast/Toast";
 
 const UserProfileContext = createContext();
 
@@ -14,6 +15,8 @@ export const UserProfileProvider = ({ children }) => {
     const [users, setUsers] = useState([]);
 
     const [loading, setLoading] = useState(true);
+
+    const [toast, setToast] = useState(null);
 
     const [profileLoading, setProfileLoading] = useState(true);
 
@@ -34,7 +37,7 @@ export const UserProfileProvider = ({ children }) => {
             console.error("Error fetching users:", err.message);
             setUsers([]);
         } finally {
-            setLoading(false); 
+            setLoading(false);
         }
     }
 
@@ -53,10 +56,17 @@ export const UserProfileProvider = ({ children }) => {
         if (error) {
             // rollback if faild, meaning when failed to place in the user with the old current role
             setUsers(prev => prev.map(u => u.id === id ? { ...u, role: currentRole } : u));
-            alert("Failed to update role:" + error.message);
+            setToast({
+                type: "error",
+                message: "Failed to udpate role:" + error.message,
+            })
             return false;
         }
-        alert("Role updated successfully");
+
+        setToast({
+            type: "success",
+            message: "Role updated successfully"
+        })
 
         return true;
     }
@@ -197,10 +207,25 @@ export const UserProfileProvider = ({ children }) => {
     }, [user]);
 
     return (
-        <UserProfileContext.Provider value={{ profile, profileLoading, users, loading, fetchUsers, updateUserRole, deleteUser, updateProfileName, updatePassword }}>
+        <UserProfileContext.Provider value={{ profile, profileLoading, users, loading, fetchUsers, updateUserRole, deleteUser, updateProfileName, updatePassword, toast, setToast }}>
             {children}
+
+            {toast && (
+                <div className="fixed top-5 right-5 z-50">
+                    <AppToast
+                        type={toast.type}          
+                        message={toast.message}   
+                        onClose={() => setToast(null)}  
+                    />
+                </div>
+            )}
         </UserProfileContext.Provider>
+
+
     )
+
+
+
 
 }
 

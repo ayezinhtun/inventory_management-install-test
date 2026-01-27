@@ -7,9 +7,13 @@ import { fetchAllInventoryRequest, updateRequestStatus } from "../../context/Inv
 import Pagination from "../../components/pagination/pagination";
 import { exportToCSV } from "../../utils/exportUtils";
 import AppToast from "../../components/toast/Toast";
+import { useUserProfiles } from "../../context/UserProfileContext";
 
 
 export default function AdminInventoryRequest() {
+    const { profile } = useUserProfiles();
+    const isAdmin = profile?.role === "admin";
+
     const [toast, setToast] = useState(null);
 
     const navigate = useNavigate();
@@ -26,6 +30,8 @@ export default function AdminInventoryRequest() {
     const [showFilter, setShowFilter] = useState(false);
     const [nameFilter, setNameFilter] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
+
+
 
     // load requests
     useEffect(() => {
@@ -230,9 +236,12 @@ export default function AdminInventoryRequest() {
                                 <TableHeadCell>Requester</TableHeadCell>
                                 <TableHeadCell>Note</TableHeadCell>
 
-                                <TableHeadCell>
-                                    <span>Action</span>
-                                </TableHeadCell>
+                                {isAdmin && (
+                                    <TableHeadCell>
+                                        <span>Action</span>
+                                    </TableHeadCell>
+                                )}
+
                             </TableRow>
                         </TableHead>
                         <TableBody className="divide-y divide-gray-200">
@@ -263,11 +272,11 @@ export default function AdminInventoryRequest() {
                                             <TableCell>
                                                 {r.image ? (
                                                     <img
-                                                        src={`https://frbzprbrsihovjypoftc.supabase.co/storage/v1/object/public/inventory-images/${r.image}`}
+                                                        src={`https://mlozugcajyiygdgtzbnk.supabase.co/storage/v1/object/public/inventory-images/${r.image}`}
                                                         alt={r.item_name}
                                                         className="w-16 h-12 object-cover rounded-md"
                                                         onClick={() => {
-                                                            setSelectedImage(`https://frbzprbrsihovjypoftc.supabase.co/storage/v1/object/public/inventory-images/${r.image}`);
+                                                            setSelectedImage(`https://mlozugcajyiygdgtzbnk.supabase.co/storage/v1/object/public/inventory-images/${r.image}`);
                                                             setShowModal(true);
                                                         }}
                                                     />
@@ -298,35 +307,37 @@ export default function AdminInventoryRequest() {
                                             <TableCell>{r.requester?.name}</TableCell>
                                             <TableCell>{r.notes}</TableCell>
 
-                                            <TableCell className="flex item-center space-x-3">
-                                                <button
-                                                    onClick={() => handleStatusChagne(r.id, "pending")}
-                                                    className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-offset-2 transition'
-                                                >
-                                                    <span>Pending</span>
-                                                </button>
+                                            {isAdmin && (
+                                                <TableCell className="flex item-center space-x-3">
+                                                    <button
+                                                        onClick={() => handleStatusChagne(r.id, "pending")}
+                                                        className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-offset-2 transition'
+                                                    >
+                                                        <span>Pending</span>
+                                                    </button>
 
-                                                <button
-                                                    onClick={() => handleStatusChagne(r.id, "purchase")}
-                                                    className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-emerald-500 hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2 transition'
-                                                >
-                                                    <span>Purchase</span>
-                                                </button>
+                                                    <button
+                                                        onClick={() => handleStatusChagne(r.id, "purchase")}
+                                                        className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-emerald-500 hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2 transition'
+                                                    >
+                                                        <span>Purchase</span>
+                                                    </button>
 
-                                                <button
-                                                    onClick={() => handleStatusChagne(r.id, "rejected")}
-                                                    className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-rose-500 hover:bg-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-300 focus:ring-offset-2 transition'
-                                                >
-                                                    <span>Reject</span>
-                                                </button>
+                                                    <button
+                                                        onClick={() => handleStatusChagne(r.id, "rejected")}
+                                                        className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-rose-500 hover:bg-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-300 focus:ring-offset-2 transition'
+                                                    >
+                                                        <span>Reject</span>
+                                                    </button>
 
-                                                <button
-                                                    onClick={() => handleStatusChagne(r.id, "available")}
-                                                    className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 transition'
-                                                >
-                                                    <span>Available</span>
-                                                </button>
-                                            </TableCell>
+                                                    <button
+                                                        onClick={() => handleStatusChagne(r.id, "available")}
+                                                        className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 transition'
+                                                    >
+                                                        <span>Available</span>
+                                                    </button>
+                                                </TableCell>
+                                            )}
                                         </TableRow>
                                     ))
                                 )

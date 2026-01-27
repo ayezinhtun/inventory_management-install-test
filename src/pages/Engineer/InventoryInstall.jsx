@@ -5,10 +5,11 @@ import { useUserProfiles } from "../../context/UserProfileContext";
 import { useEffect, useState } from "react";
 import { supabase } from "../../../supabase/supabase-client";
 import { getRegion } from "../../context/RegionContext";
-import { getWarehouse } from "../../context/WarehouseContext";
-import { fetchRack } from "../../context/RackContext";
+import { getWarehouse, getWarehousebyRegion } from "../../context/WarehouseContext";
+import { fetchRack, fetchRackbyWarehouse } from "../../context/RackContext";
 import { createInstallRequest } from "../../context/InstallRequest";
 import AppToast from '../../components/toast/Toast'
+import { fetchInventory } from "../../context/InventoryContext";
 
 export default function InventoryInstallRequest() {
     const [toast, setToast] = useState(null);
@@ -44,12 +45,23 @@ export default function InventoryInstallRequest() {
 
     useEffect(() => {
         const fetchDevices = async () => {
-            const { data, error } = await supabase
-                .from('inventorys')
-                .select('*')
-                .in('type', ['server', 'switch', 'router']);
+            try {
+                const data = await fetchInventory();
 
-            if (!error) setDevices(data);
+                const filtered = data.filter(d =>
+                    ['server', 'switch', 'router'].includes(d.type) && d.status === 'active'
+                );
+
+                setDevices(filtered || []);
+            } catch (error) {
+                console.error('Failed to fetch inventory:', error.message);
+            }
+            // const { data, error } = await supabase
+            //     .from('inventorys')
+            //     .select('*')
+            //     .in('type', ['server', 'switch', 'router']);
+
+            // if (!error) setDevices(data);
         };
 
         fetchDevices();
@@ -69,7 +81,7 @@ export default function InventoryInstallRequest() {
             setForm(prev => ({ ...prev, destination_warehouse_id: '', destination_rack_id: '' }));
             setRacks([]);
 
-            const data = await getWarehouse(value);
+            const data = await getWarehousebyRegion(value);
             setWarehouses(data || []);
         }
 
@@ -77,7 +89,7 @@ export default function InventoryInstallRequest() {
         if (name === 'destination_warehouse_id') {
             setForm(prev => ({ ...prev, destination_rack_id: '' }));
 
-            const data = await fetchRack(value);
+            const data = await fetchRackbyWarehouse(value);
             setRacks(data || []);
         }
 
@@ -161,13 +173,13 @@ export default function InventoryInstallRequest() {
                 notes: form.notes,
                 destination_region_id: form.destination_region_id,
                 destination_warehouse_id: form.destination_warehouse_id,
-                destination_rack_id: form.destination_rack_id,
+                destination_rack_id: form.destination_rack_id || null,
                 destination_start_unit: form.destination_start_unit || null,
                 destination_height: form.destination_height || null
             });
 
             setToast({
-                type: "error",
+                type: "success",
                 message: "Installation request submitted! Waiting for approval"
             })
 
@@ -214,7 +226,7 @@ export default function InventoryInstallRequest() {
                     <div className="col-span-8">
                         <div className="grid grid-cols-2 gap-2 gap-y-2">
                             <div>
-                                <label className="block mb-2">Device Name *</label>
+                                <label className="block mb-2">Device Name <span className="text-red-500">*</span></label>
                                 <select name="inventory_id" value={form.inventory_id} onChange={handleChange} required className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] text-gray-500">
                                     <option value="">Select Device</option>
                                     {devices.map(d => (
@@ -227,7 +239,7 @@ export default function InventoryInstallRequest() {
 
                             <div>
                                 <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Destination Region <span className="text-red-500">*</span></label>
-                                <select name="destination_region_id" value={form.destination_region_id} onChange={handleChange} id=""
+                                <select name="destination_region_id" value={form.destination_region_id} onChange={handleChange} id="" required
                                     className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
                                 >
                                     <option value="">
@@ -245,7 +257,7 @@ export default function InventoryInstallRequest() {
 
                             <div>
                                 <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Destination Warehouse <span className="text-red-500">*</span></label>
-                                <select name="destination_warehouse_id" value={form.destination_warehouse_id} onChange={handleChange}
+                                <select name="destination_warehouse_id" value={form.destination_warehouse_id} onChange={handleChange} required
                                     className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
                                 >
                                     <option value="">
@@ -260,7 +272,7 @@ export default function InventoryInstallRequest() {
                             </div>
 
                             <div>
-                                <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Destination Rack <span className="text-red-500">*</span></label>
+                                <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Destination Rack</label>
                                 <select name="destination_rack_id" value={form.destination_rack_id} onChange={handleChange} id=""
                                     className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
                                 >
@@ -281,6 +293,7 @@ export default function InventoryInstallRequest() {
                                     type="number"
                                     value={form.destination_start_unit}
                                     onChange={handleChange}
+                                    disabled={!form.destination_rack_id}
                                     className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] text-gray-500"
                                 />
                             </div>
@@ -294,6 +307,7 @@ export default function InventoryInstallRequest() {
                                     type="number"
                                     value={form.destination_height}
                                     onChange={handleChange}
+                                    disabled={!form.destination_rack_id}
                                     className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] text-gray-500"
                                 />
                             </div>
@@ -361,6 +375,41 @@ export default function InventoryInstallRequest() {
                                                 </TableCell>
                                                 <TableCell>{selectedDevice.vendor}</TableCell>
                                             </TableRow>
+                                            <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
+                                                <TableCell className="whitespace-nowrap font-medium text-gray-900">
+                                                    Region
+                                                </TableCell>
+                                                <TableCell>{selectedDevice.regions?.name}</TableCell>
+                                            </TableRow>
+                                            <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
+                                                <TableCell className="whitespace-nowrap font-medium text-gray-900">
+                                                    Warehouse
+                                                </TableCell>
+                                                <TableCell>{selectedDevice.warehouses?.name}</TableCell>
+                                            </TableRow>
+                                            <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
+                                                <TableCell className="whitespace-nowrap font-medium text-gray-900">
+                                                    Rack
+                                                </TableCell>
+                                                <TableCell>{selectedDevice.racks?.name}</TableCell>
+                                            </TableRow>
+                                            {selectedDevice.racks.id && (
+                                                <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
+                                                    <TableCell className="whitespace-nowrap font-medium text-gray-900">
+                                                        Start Unit
+                                                    </TableCell>
+                                                    <TableCell>{selectedDevice.start_unit}</TableCell>
+                                                </TableRow>
+                                            )}
+
+                                            {selectedDevice.racks.id && (
+                                                <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
+                                                    <TableCell className="whitespace-nowrap font-medium text-gray-900">
+                                                        Height
+                                                    </TableCell>
+                                                    <TableCell>{selectedDevice.height}</TableCell>
+                                                </TableRow>
+                                            )}
                                             <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
                                                 <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                                     Color

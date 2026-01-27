@@ -35,33 +35,33 @@ ADD COLUMN attributes jsonb DEFAULT '{}'::jsonb;
 
 
 
--- ALTER TABLE installation_requests
--- ALTER COLUMN server_id DROP NOT NULL;
+ALTER TABLE installation_requests
+ALTER COLUMN server_id DROP NOT NULL;
 
--- ALTER TABLE installation_requests
--- ADD COLUMN destination_region_id uuid,
--- ADD COLUMN destination_warehouse_id uuid,
--- ADD COLUMN destination_rack_id uuid,
--- ADD COLUMN destination_start_unit integer,
--- ADD COLUMN destination_height integer;
-
-
--- ALTER TABLE installation_requests
--- ADD CONSTRAINT installation_requests_region_id_fkey
--- FOREIGN KEY (destination_region_id) REFERENCES regions(id);
-
--- ALTER TABLE installation_requests
--- ADD CONSTRAINT installation_requests_warehouse_id_fkey
--- FOREIGN KEY (destination_warehouse_id) REFERENCES warehouses(id);
-
--- ALTER TABLE installation_requests
--- ADD CONSTRAINT installation_requests_rack_id_fkey
--- FOREIGN KEY (destination_rack_id) REFERENCES racks(id);
+ALTER TABLE installation_requests
+ADD COLUMN destination_region_id uuid,
+ADD COLUMN destination_warehouse_id uuid,
+ADD COLUMN destination_rack_id uuid,
+ADD COLUMN destination_start_unit integer,
+ADD COLUMN destination_height integer;
 
 
--- ALTER TABLE public.installation_requests
--- ADD COLUMN rejected_at timestamp with time zone null;
+ALTER TABLE installation_requests
+ADD CONSTRAINT installation_requests_region_id_fkey
+FOREIGN KEY (destination_region_id) REFERENCES regions(id);
+
+ALTER TABLE installation_requests
+ADD CONSTRAINT installation_requests_warehouse_id_fkey
+FOREIGN KEY (destination_warehouse_id) REFERENCES warehouses(id);
+
+ALTER TABLE installation_requests
+ADD CONSTRAINT installation_requests_rack_id_fkey
+FOREIGN KEY (destination_rack_id) REFERENCES racks(id);
 
 
--- ALTER TABLE public.installation_requests
--- ADD COLUMN rejected_by uuid NULL REFERENCES user_profile(id);
+ALTER TABLE public.installation_requests
+ADD COLUMN rejected_at timestamp with time zone null;
+
+
+ALTER TABLE public.installation_requests
+ADD COLUMN rejected_by uuid NULL REFERENCES user_profile(id);

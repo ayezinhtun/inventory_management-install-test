@@ -60,3 +60,34 @@ export const updateRack = async(id, values) => {
 
     return data;
 }
+
+
+export const fetchRackbyWarehouse = async(warehouseId) => {
+    const {data, error} = await supabase
+    .from('racks')
+    .select(`
+        id,
+        name,
+        size_u,
+        type,
+        status,
+        color,
+        notes,
+        warehouse_id,
+        warehouses (
+            id,
+            name,
+            region_id,
+            regions (
+                id,
+                name
+            )
+        )
+    `)
+    .eq('warehouse_id', warehouseId) 
+    .order('created_at', {ascending: false})
+
+    if(error) throw error;
+
+    return data;
+}

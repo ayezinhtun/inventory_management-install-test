@@ -38,7 +38,7 @@ export default function CreateInventory() {
         region_id: "",
         warehouse_id: "",
         rack_id: "",
-        status: "inactive",
+        status: "active",
         serial_no: "",
         type: "",
         model: "",
@@ -403,7 +403,7 @@ export default function CreateInventory() {
                 region_id: "",
                 warehouse_id: "",
                 rack_id: "",
-                status: "inactive",
+                status: "active",
                 serial_no: "",
                 type: "",
                 model: "",
@@ -497,6 +497,7 @@ export default function CreateInventory() {
                                 <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Type <span className="text-red-500">*</span></label>
                                 <select name="type" value={form.type} onChange={handleChange} id=""
                                     className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
+                                    required
                                 >
                                     <option value="">Select Type</option>
                                     <option value="server">Server</option>
@@ -513,6 +514,7 @@ export default function CreateInventory() {
                                     onChange={handleChange}
                                     placeholder="Device01"
                                     className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
+                                    required
                                 />
                             </div>
 
@@ -520,6 +522,7 @@ export default function CreateInventory() {
                                 <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Region <span className="text-red-500">*</span></label>
                                 <select name="region_id" id="" value={form.region_id} onChange={handleChange}
                                     className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
+                                    required
                                 >
                                     <option value="">
                                         No Region
@@ -536,6 +539,7 @@ export default function CreateInventory() {
                                 <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Warehouse <span className="text-red-500">*</span></label>
                                 <select name="warehouse_id" id="" value={form.warehouse_id} onChange={handleChange}
                                     className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
+                                    required
                                 >
                                     <option value="">
                                         No Warehouse
@@ -570,7 +574,6 @@ export default function CreateInventory() {
                                 >
                                     <option value="active">Active</option>
                                     <option value="inactive">Inactive</option>
-                                    <option value="sold">Sold</option>
                                 </select>
                             </div>
 

@@ -33,7 +33,7 @@ export default function EngineerRequests() {
 
                 if (profile.role === "engineer") {
                     // only requests ade by this engieer
-                    data = await fetchInventoryRequests(profile.id);
+                    data = await fetchInventoryRequestsbyUser(profile.id);
                 } else {
                     // Admin /PM see all requests
                     data = await fetchAllInventoryRequest();
@@ -89,6 +89,7 @@ export default function EngineerRequests() {
         const headers = ['Name', 'Requester', 'Quantity', 'Notes', 'Status'];
         exportToCSV(data, `inventory-requests-${new Date().toISOString().slice(0, 10)}.csv`, headers);
     }
+
 
     return (
         <div>
@@ -235,17 +236,17 @@ export default function EngineerRequests() {
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                filteredRequests.length === 0 ? (
+                                currentRegions.length === 0 ? (
                                     <TableRow>
                                         <TableCell
                                             colSpan={6}
                                             className="text-center"
                                         >
-                                            No Region found
+                                            No Request found
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    filteredRequests.map(r => (
+                                    currentRegions.map(r => (
                                         <TableRow key={r.id} className="bg-white">
                                             <TableCell className="p-4">
                                                 <Checkbox />
@@ -254,11 +255,11 @@ export default function EngineerRequests() {
                                             <TableCell>
                                                 {r.image ? (
                                                     <img
-                                                        src={`https://frbzprbrsihovjypoftc.supabase.co/storage/v1/object/public/inventory-images/${r.image}`}
+                                                        src={`https://mlozugcajyiygdgtzbnk.supabase.co/storage/v1/object/public/inventory-images/${r.image}`}
                                                         alt={r.item_name}
                                                         className="w-16 h-12 object-cover rounded-md"
                                                         onClick={() => {
-                                                            setSelectedImage(`https://frbzprbrsihovjypoftc.supabase.co/storage/v1/object/public/inventory-images/${r.image}`);
+                                                            setSelectedImage(`https://mlozugcajyiygdgtzbnk.supabase.co/storage/v1/object/public/inventory-images/${r.image}`);
                                                             setShowModal(true);
                                                         }}
                                                     />

@@ -91,7 +91,7 @@ export default function InventoryDetail() {
                 <div className="col-span-3">
                     <div className="w-full">
                         <img
-                            src={`https://frbzprbrsihovjypoftc.supabase.co/storage/v1/object/public/inventory-images/${inventory.image}`}
+                            src={`https://mlozugcajyiygdgtzbnk.supabase.co/storage/v1/object/public/inventory-images/${inventory.image}`}
                             alt={inventory.name}
                             className="w-full h-auto object-cover rounded-lg"
                         />

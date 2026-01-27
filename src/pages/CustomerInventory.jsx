@@ -222,7 +222,7 @@ export default function CustomerInventory() {
                                 currentInventorys.length === 0 ? (
                                     <TableRow>
                                         <TableCell
-                                            colSpan={5}
+                                            colSpan={8}
                                             className="text-center"
                                         >
                                             No Inventory found

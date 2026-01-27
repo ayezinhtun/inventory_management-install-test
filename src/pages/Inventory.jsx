@@ -12,8 +12,12 @@ import { fetchRack } from "../context/RackContext";
 import { exportToCSV } from "../utils/exportUtils";
 import AddCustomer from "../components/Inventory/addCustomer";
 import AppToast from "../components/toast/Toast";
+import ReservedStock from '../components/reservedStock/reservedStock';
+import { useUserProfiles } from "../context/UserProfileContext";
+
 
 export default function Inventory() {
+    const { profile } = useUserProfiles();
     const [toast, setToast] = useState(null);
 
     const [inventorys, setInventorys] = useState([]);
@@ -42,6 +46,9 @@ export default function Inventory() {
     const [showModal, setShowModal] = useState(false);
 
     const [selectedInventoryId, setSelectedInventoryId] = useState(null);
+
+
+    const [showReservedModal, setShowReservedModal] = useState(false);
 
     //for fetch warehouses
     const fetchWarehouses = async () => {
@@ -89,6 +96,12 @@ export default function Inventory() {
 
         try {
             await deleteInventory(id);
+
+            setToast({
+                type: "success",
+                message: "Inventory deleted successfully!"
+            })
+
             InventoryData();
         } catch (error) {
             setToast({
@@ -390,15 +403,31 @@ export default function Inventory() {
 
                                                     <Link to={`/inventory-detail/${inventory.id}`}><Eye className="text-indigo-500 hover:text-indigo-600" /></Link>
                                                     <Trash2 className="text-red-500 hover:text-red-500 cursor-pointer" onClick={() => handleDelete(inventory.id)} />
-                                                    <button
-                                                        onClick={() => {
-                                                            setSelectedInventoryId(inventory.id)
-                                                            setShowModal(true)
-                                                        }}
-                                                        className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-[#26599F] hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2 transition'
-                                                    >
-                                                        <span>Sell To Customer</span>
-                                                    </button>
+
+                                                    {profile?.role === "amdin" && (
+                                                        <button
+                                                            onClick={() => {
+                                                                setSelectedInventoryId(inventory);
+                                                                setShowReservedModal(true)
+                                                            }}
+                                                            className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-[#26599F] hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 transition'
+                                                        >
+                                                            <span>Reserved</span>
+                                                        </button>
+                                                    )}
+
+                                                    {profile?.role === "admin" && (
+                                                        <button
+                                                            onClick={() => {
+                                                                setSelectedInventoryId(inventory.id)
+                                                                setShowModal(true)
+                                                            }}
+                                                            className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-[#26599F] hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 transition'
+                                                        >
+                                                            <span>Customer</span>
+                                                        </button>
+                                                    )}
+
                                                 </TableCell>
                                             </TableRow>
                                         )
@@ -421,7 +450,11 @@ export default function Inventory() {
 
 
             {showModal &&
-                <AddCustomer onClose={() => setShowModal(false)} inventoryId={selectedInventoryId} onAdd={InventoryData} setToast={setToast}/>
+                <AddCustomer onClose={() => setShowModal(false)} inventoryId={selectedInventoryId} onAdd={InventoryData} setToast={setToast} />
+            }
+
+            {showReservedModal &&
+                <ReservedStock onClose={() => setShowReservedModal(false)} inventory={selectedInventoryId} onSuccess={InventoryData} setToast={setToast} />
             }
 
             {toast && (

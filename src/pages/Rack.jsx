@@ -64,6 +64,12 @@ export default function Rack() {
 
         try {
             await deleteRack(id);
+
+            setToast({
+                type: "success",
+                message: "Rack deleted successfully!"
+            });
+
             rackData();
         } catch (error) {
             setToast({

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { updateRack } from "../../context/RackContext";
 import { supabase } from "../../../supabase/supabase-client";
 
-export default function EditRack({ onClose, rack, warehouse, onUpdate, setTost }) {
+export default function EditRack({ onClose, rack, warehouse, onUpdate, setToast }) {
 
     const [form, setForm] = useState({
         name: rack.name || '',

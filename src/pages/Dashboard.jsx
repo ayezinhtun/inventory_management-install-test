@@ -69,7 +69,7 @@ export default function Dashboard() {
 
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
 
-                <div className="md:col-span-8 shadow rounded-lg border border-gray-200 h-[350px] overflow-y-auto">
+                <div className="md:col-span-7 shadow rounded-lg border border-gray-200 h-[350px] overflow-y-auto">
                     <div className="flex items-center justify-between py-3 border-b border-[#EAECF0] px-5 space-x-4">
                         <h5 className="text-xl py-5 font-bold leading-none text-gray-900">Recent Inventory</h5>
                         <Link to="/inventory" className="text-sm font-medium text-[#26599F] hover:underline">
@@ -118,7 +118,7 @@ export default function Dashboard() {
 
                 </div>
 
-                <div className="md:col-span-4">
+                <div className="md:col-span-5">
                     <RecentComponent />
                 </div>
             </div>

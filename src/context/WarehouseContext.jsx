@@ -50,3 +50,25 @@ export const updateWarehouse = async(id, values) => {
     if(error) throw error;
     return data;
 }
+
+
+export const getWarehousebyRegion = async (regionId) => {
+    const {data, error} = await supabase
+        .from('warehouses')
+        .select(`
+            id,
+            name,
+            description,
+            region_id,
+            regions (
+                id,
+                name
+            )
+        `)
+        .eq('region_id', regionId)
+        .order('created_at', {ascending: false})
+
+    if(error) throw error;
+
+    return data;
+}

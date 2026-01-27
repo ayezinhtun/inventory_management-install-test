@@ -41,3 +41,17 @@ using (true);
 
 
 -- rack name is do with unique in the sql editor direct
+
+
+CREATE POLICY "Allow authenticated upload"
+ON storage.objects
+FOR INSERT
+TO authenticated
+WITH CHECK (bucket_id = 'inventory-images');
+
+
+CREATE POLICY "Public read inventory images"
+ON storage.objects
+FOR SELECT
+TO public
+USING (bucket_id = 'inventory-images');

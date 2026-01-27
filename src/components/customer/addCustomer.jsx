@@ -79,7 +79,7 @@ export default function AddCustomer({ onClose, onAdd, setToast }) {
                         <div className="mb-4">
                             <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Contact Email <span className="text-red-500">*</span></label>
                             <input
-                                type="text"
+                                type="email"
                                 name="contact_email"
                                 value={form.contact_email}
                                 onChange={handleChange}
@@ -93,7 +93,7 @@ export default function AddCustomer({ onClose, onAdd, setToast }) {
                     <div className="mb-4">
                         <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Contact Number <span className="text-red-500">*</span></label>
                         <input
-                            type="text"
+                            type="tel"
                             name="contact_number"
                             value={form.contact_number}
                             onChange={handleChange}
@@ -104,7 +104,7 @@ export default function AddCustomer({ onClose, onAdd, setToast }) {
                     </div>
 
                     <div className="mb-4">
-                        <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Address <span className="text-red-500">*</span></label>
+                        <label htmlFor="" className="block text-sm font-medium mb-2 text-gray-900">Address</label>
                         <textarea
                             name="address"
                             value={form.address}

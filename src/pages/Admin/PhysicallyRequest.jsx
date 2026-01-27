@@ -197,43 +197,67 @@ export default function PhysicalInstall() {
                             </TableRow>
                         </TableHead>
                         <TableBody className="divide-y divide-gray-200">
-                            {requests.map((request => {
-                                return (
-                                    <TableRow key={request.id} className="bg-white">
-                                        <TableCell className="p-4">
-                                            <Checkbox />
+                            {loading ? (
+                                <TableRow>
+                                    <TableCell colSpan={9} className="text-center py-5">
+                                        <div>
+                                            <Spinner size="xl" color="info" aria-label="Loading..." />
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                requests.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell
+                                            colSpan={9}
+                                            className="text-center"
+                                        >
+                                            No Request found
                                         </TableCell>
-                                        <TableCell className="whitespace-nowrap font-medium text-gray-900">
-                                            {request.component.name}
-                                        </TableCell>
-                                        <TableCell>{request.quantity}</TableCell>
-                                        <TableCell>
-                                            {request.status}
-                                        </TableCell>
-
-                                        <TableCell>{request.requester.name}</TableCell>
-                                        <TableCell>{request.server?.name || ''}</TableCell>
-                                        <TableCell>{request.region?.name || ''}</TableCell>
-                                        <TableCell>{request.warehouse?.name || ''}</TableCell>
-                                        <TableCell>{request.rack?.name || ''}</TableCell>
-                                        <TableCell>{request.notes}</TableCell>
-
-                                        {request.status === 'admin_approved' && (
-                                            <>
-                                                <TableCell className="flex item-center space-x-3">
-                                                    <button
-                                                        onClick={() => handleComplete(request.id)}
-                                                        className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-offset-2 transition'
-                                                    >
-                                                        <span>Complete</span>
-                                                    </button>
-                                                </TableCell>
-                                            </>
-                                        )}
-
                                     </TableRow>
-                                )
-                            }))}
+                                ) : (
+                                    
+                                        requests.map((request => {
+                                            return (
+                                                <TableRow key={request.id} className="bg-white">
+                                                    <TableCell className="p-4">
+                                                        <Checkbox />
+                                                    </TableCell>
+                                                    <TableCell className="whitespace-nowrap font-medium text-gray-900">
+                                                        {request.component.name}
+                                                    </TableCell>
+                                                    <TableCell>{request.quantity}</TableCell>
+                                                    <TableCell>
+                                                        {request.status}
+                                                    </TableCell>
+
+                                                    <TableCell>{request.requester.name}</TableCell>
+                                                    <TableCell>{request.server?.name || ''}</TableCell>
+                                                    <TableCell>{request.region?.name || ''}</TableCell>
+                                                    <TableCell>{request.warehouse?.name || ''}</TableCell>
+                                                    <TableCell>{request.rack?.name || ''}</TableCell>
+                                                    <TableCell>{request.notes}</TableCell>
+
+                                                    {request.status === 'admin_approved' && (
+                                                        <>
+                                                            <TableCell className="flex item-center space-x-3">
+                                                                <button
+                                                                    onClick={() => handleComplete(request.id)}
+                                                                    className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-offset-2 transition'
+                                                                >
+                                                                    <span>Complete</span>
+                                                                </button>
+                                                            </TableCell>
+                                                        </>
+                                                    )}
+
+                                                </TableRow>
+                                            )
+                                        }
+                                        )
+                                        )
+                                    
+                                ))}
                         </TableBody>
                     </Table>
                 </div>

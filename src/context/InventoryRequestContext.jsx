@@ -21,7 +21,12 @@ export const fetchInventoryRequestsbyUser = async (userId) => {
             notes, 
             status, 
             image, 
-            created_at   
+            created_at, 
+            requester: user_profile (
+                id, 
+                name, 
+                email
+            )
         `)
         .eq('requester_id', userId)
         .order('created_at', {ascending: false});
