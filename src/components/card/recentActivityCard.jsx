@@ -14,7 +14,7 @@ export function RecentComponent({ limit = 5 }) {
     const fetchLogs = async () => {
       setLoading(true);
       try {
-        const data = await getAuditRowsForUI({ limit });
+        let data = await getAuditRowsForUI({ limit });
 
         if (profile?.role === "engineer") {
           // Only show logs for this engineer

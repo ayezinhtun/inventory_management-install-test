@@ -162,49 +162,112 @@ export const UserProfileProvider = ({ children }) => {
             .single();
 
         if (error) {
-            alert("Error updatin name");
+            setToast({
+                type: "error",
+                message: "Failed to update name: " + error.message,
+            })
             return false;
         }
 
-        setProfile(data);
-        alert("Name updated successfully!");
-        return true;
+        // setProfile(data);
+        setProfile(prev => ({
+            ...prev,
+            ...data,
+        }));
+        setToast({
+            type: "success",
+            message: "Profile name updated successfully",
+        }); return true;
     }
 
     //for update password
+    // const updatePassword = async (currentPassword, newPassword, confirmPassword) => {
+    //     if (!profile) return { success: false, message: "No profile found" };
+
+    //     if (!currentPassword || !newPassword || !confirmPassword) {
+    //         return { success: false, message: "All fields are required" };
+    //     }
+
+    //     if (newPassword !== confirmPassword) {
+    //         return { success: false, message: "New Password and ConfirmPassword do not match" };
+    //     }
+
+    //     // Re-authenticate
+    //     const { error: signInError } = await supabase.auth.signInWithPassword({
+    //         email: profile.email,
+    //         password: currentPassword,
+    //     });
+
+    //     if (signInError) {
+    //         return { success: false, message: "Current Password is incorrect" };
+    //     }
+
+    //     //update password
+    //     const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+    //     if (error) return { success: false, message: error.message };
+
+    //     return { success: true, message: "Password updated successfully!" };
+    // }
     const updatePassword = async (currentPassword, newPassword, confirmPassword) => {
-        if (!profile) return { success: false, message: "No profile found" };
+        if (!profile) {
+            setToast({ type: "error", message: "No profile found" });
+            return false;
+        }
 
         if (!currentPassword || !newPassword || !confirmPassword) {
-            return { success: false, message: "All fields are required" };
+            setToast({ type: "error", message: "All fields are required" });
+            return false;
         }
 
         if (newPassword !== confirmPassword) {
-            return { success: false, message: "New Password and ConfirmPassword do not match" };
+            setToast({
+                type: "error",
+                message: "New Password and Confirm Password do not match",
+            });
+            return false;
         }
 
-        // Re-authenticate
         const { error: signInError } = await supabase.auth.signInWithPassword({
             email: profile.email,
             password: currentPassword,
         });
 
         if (signInError) {
-            return { success: false, message: "Current Password is incorrect" };
+            setToast({
+                type: "error",
+                message: "Current Password is incorrect",
+            });
+            return false;
         }
 
-        //update password
         const { error } = await supabase.auth.updateUser({ password: newPassword });
 
-        if (error) return { success: false, message: error.message };
+        if (error) {
+            setToast({ type: "error", message: error.message });
+            return false;
+        }
 
-        return { success: true, message: "Password updated successfully!" };
-    }
+        setToast({
+            type: "success",
+            message: "Password updated successfully",
+        });
+
+        return true;
+    };
+
+
+    // useEffect(() => {
+    //     fetchUsers();
+    //     fetchProfile();
+    // }, [user]);
 
     useEffect(() => {
-        fetchUsers();
-        fetchProfile();
-    }, [user]);
+        if (user) {
+            fetchProfile();
+            fetchUsers();
+        }
+    }, [user?.id]);
 
     return (
         <UserProfileContext.Provider value={{ profile, profileLoading, users, loading, fetchUsers, updateUserRole, deleteUser, updateProfileName, updatePassword, toast, setToast }}>
@@ -213,9 +276,9 @@ export const UserProfileProvider = ({ children }) => {
             {toast && (
                 <div className="fixed top-5 right-5 z-50">
                     <AppToast
-                        type={toast.type}          
-                        message={toast.message}   
-                        onClose={() => setToast(null)}  
+                        type={toast.type}
+                        message={toast.message}
+                        onClose={() => setToast(null)}
                     />
                 </div>
             )}
