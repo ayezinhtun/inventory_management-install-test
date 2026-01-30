@@ -78,6 +78,10 @@ export default function Region() {
 
         try {
             await deleteRegion(id);
+            setToast({
+                type: "success",
+                message: "Region Delete Successfully!"
+            })
             fetchRegion();
         } catch (error) {
             console.error(error);

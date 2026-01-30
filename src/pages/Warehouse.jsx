@@ -92,6 +92,10 @@ export default function Warehouse() {
 
         try {
             await deleteWarehouse(id);
+            setToast({
+                type: "success",
+                message: "Warehouse Delete Successfully!"
+            })
             fetchWarehouses();
         } catch (error) {
             console.log('Error in delete warehouse', error)
@@ -316,7 +320,7 @@ export default function Warehouse() {
             }
 
             {showEditModal && selectedWarehouse && (
-                <EditWarehouse warehouse={selectedWarehouse} region={regions} onClose={() => setShowEditModal(false)} onUpdate={fetchWarehouses} setToast={setToast}/>
+                <EditWarehouse warehouse={selectedWarehouse} region={regions} onClose={() => setShowEditModal(false)} onUpdate={fetchWarehouses} setToast={setToast} />
             )
             }
 

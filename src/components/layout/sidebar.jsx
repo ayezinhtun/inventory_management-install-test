@@ -40,8 +40,8 @@ export default function SidebarComponent() {
             path: "/inventory",
             icon: <Package className="h-5 w-5 mr-2" />,
             subLinks: [
-                { id: "2-1", name: "Add Inventory", path: "/inventory/create-inventory" },
-                { id: "2-2", name: "Add Component", path: "/inventory/add-part" },
+                { id: "2-1", name: "Add Inventory", path: "/inventory/create-inventory", roles: ["admin"] },
+                { id: "2-2", name: "Add Component", path: "/inventory/add-part", roles: ['admin'] },
             ],
         },
         { id: 3, name: "Region", path: "/region", icon: <MapPin className="h-5 w-5 mr-2" /> },
@@ -154,28 +154,34 @@ export default function SidebarComponent() {
                                         {link.icon}
                                         <span>{link.name}</span>
                                     </div>
-                                    <span
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            toggleMenu(link.id);
-                                        }}
-                                    >
-                                        {isOpen ? <ChevronDown /> : <ChevronUp />}
-                                    </span>
+
+                                    {profile?.role === "admin" && (
+                                        <span
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                toggleMenu(link.id);
+                                            }}
+                                        >
+                                            {isOpen ? <ChevronDown /> : <ChevronUp />}
+                                        </span>
+                                    )}
+
                                 </div>
 
                                 {isOpen && (
                                     <div className="ml-6 flex flex-col">
-                                        {link.subLinks.map((sub) => (
-                                            <Link
-                                                key={sub.id}
-                                                to={sub.path}
-                                                className={`px-3 py-2 rounded-lg font-medium text-gray-700 hover:bg-[#F0EBFF] hover:text-[#26599F] ${location.pathname === sub.path ? "bg-[#F0EBFF] text-[#26599F]" : ""
-                                                    }`}
-                                            >
-                                                {sub.name}
-                                            </Link>
-                                        ))}
+                                        {link.subLinks
+                                            ?.filter(sub => !sub.roles || sub.roles.includes(profile?.role))
+                                            .map((sub) => (
+                                                <Link
+                                                    key={sub.id}
+                                                    to={sub.path}
+                                                    className={`px-3 py-2 rounded-lg font-medium text-gray-700 hover:bg-[#F0EBFF] hover:text-[#26599F] ${location.pathname === sub.path ? "bg-[#F0EBFF] text-[#26599F]" : ""
+                                                        }`}
+                                                >
+                                                    {sub.name}
+                                                </Link>
+                                            ))}
                                     </div>
                                 )}
                             </div>

@@ -5,7 +5,7 @@ import Pagination from "../components/pagination/pagination";
 import { Checkbox, Spinner, Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
 import { Dropdown, DropdownItem } from "flowbite-react";
 import EditRegionModal from "../components/region/editregion";
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { fetchInventory, deleteInventory } from "../context/InventoryContext";
 import { getWarehouse } from "../context/WarehouseContext";
 import { fetchRack } from "../context/RackContext";
@@ -18,7 +18,8 @@ import { useUserProfiles } from "../context/UserProfileContext";
 
 export default function Inventory() {
     const { profile } = useUserProfiles();
-    const [toast, setToast] = useState(null);
+    const location = useLocation();
+    const [toast, setToast] = useState(location.state?.toast || null);
 
     const [inventorys, setInventorys] = useState([]);
 
@@ -404,7 +405,7 @@ export default function Inventory() {
                                                     <Link to={`/inventory-detail/${inventory.id}`}><Eye className="text-indigo-500 hover:text-indigo-600" /></Link>
                                                     <Trash2 className="text-red-500 hover:text-red-500 cursor-pointer" onClick={() => handleDelete(inventory.id)} />
 
-                                                    {profile?.role === "amdin" && (
+                                                    {profile?.role === "admin" && (
                                                         <button
                                                             onClick={() => {
                                                                 setSelectedInventoryId(inventory);

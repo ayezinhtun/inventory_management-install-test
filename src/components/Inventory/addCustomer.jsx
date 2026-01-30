@@ -145,7 +145,7 @@ export default function AddCustomer({ onClose, inventoryId, onAdd, setToast }) {
             }
 
             setToast({
-                type: "error",
+                type: "success",
                 message: "Inventory sold successfully!"
             })
 

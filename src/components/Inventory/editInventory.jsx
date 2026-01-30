@@ -303,11 +303,8 @@ export default function EditInventory() {
 
             if (error) throw error;
 
-            setToast({
-                type: "success",
-                message: "Inventory updated successfully!"
-            })
-            navigate("/inventory");
+            navigate("/inventory", { state: { toast: { type: "success", message: "Inventory updated successfully!" } } });
+
         } catch (err) {
             console.error(err);
             setToast({
