@@ -15,6 +15,7 @@ export default function InstallRequestAdmin() {
     const [loading, setLoading] = useState(false);
 
     const fetchRequests = async () => {
+        if(!profile?.id) return;
         setLoading(true);
 
         try {
@@ -28,8 +29,10 @@ export default function InstallRequestAdmin() {
     }
 
     useEffect(() => {
+        if(!profile?.id) return;
+
         fetchRequests();
-    }, []);
+    }, [profile?.id]);
 
 
 

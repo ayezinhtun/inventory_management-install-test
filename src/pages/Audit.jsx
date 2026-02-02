@@ -12,13 +12,17 @@ import {
   DropdownItem,
 } from "flowbite-react";
 import { Download, ListFilter, Search, Trash2 } from "lucide-react";
-import { getAuditRowsForUI } from "../context/AuditContext";
+import { getAuditRowsForUI, deleteAuditLog } from "../context/AuditContext";
 import { useUserProfiles } from "../context/UserProfileContext";
+import AppToast from "../components/toast/Toast";
 
 export default function Audit() {
   const { profile, profileLoading } = useUserProfiles();
   // server data
   const [audits, setAudits] = useState([]);
+
+  const [toast, setToast] = useState(null);
+
 
   // UI state
   const [searchItem, setSearchItem] = useState("");
@@ -38,12 +42,16 @@ export default function Audit() {
       setAudits(rows);
     } catch (error) {
       console.error(error);
+      setToast({
+        type: "error",
+        message: "Failed to delete Rack!"
+      })
       setAudits([]);
     }
   };
 
   useEffect(() => {
-    if(!profile) return;
+    if (!profile) return;
     fetchAudits();
   }, [profile]);
 
@@ -58,6 +66,26 @@ export default function Audit() {
   }, [audits, searchItem, nameFilter]);
 
   const currentAudits = filteredAudits;
+
+  const handleDelete = async (audit) => {
+    if (!audit?.id) return;
+    const ok = window.confirm('Delete this audit entry? This cannot be undone.');
+    if (!ok) return;
+
+    try {
+      await deleteAuditLog(audit.id);
+
+      setToast({
+        type: "success",
+        message: "Audit deleted successfully!"
+      })
+      setAudits(prev => prev.filter(a => a.id !== audit.id));
+    } catch (e) {
+      console.error('Failed to delete Audit:', e);
+    }
+  };
+
+  
 
   return (
     <div>
@@ -79,8 +107,8 @@ export default function Audit() {
 
             <div
               className={`flex items-center border rounded-lg p-2 px-4 cursor-pointer ${showFilter
-                  ? "ring-4 ring-primary-300 outline-none border-none"
-                  : "border-gray-300"
+                ? "ring-4 ring-primary-300 outline-none border-none"
+                : "border-gray-300"
                 } text-gray-500`}
               onClick={() => setShowFilter((prev) => !prev)}
             >
@@ -90,6 +118,11 @@ export default function Audit() {
           </div>
 
           <div className="flex space-x-5">
+            <div
+              className="flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-[#26599F] hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2 transition"
+            >
+              <span>Clear All</span>
+            </div>
             <div
               className="flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-[#26599F] hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2 transition"
               onClick={fetchAudits}
@@ -167,7 +200,10 @@ export default function Audit() {
                     {new Date(audit.date).toLocaleString()}
                   </TableCell>
                   <TableCell className="flex items-center space-x-3">
-                    <Trash2 className="text-red-500 hover:text-red-700 cursor-pointer" />
+                    <Trash2
+                      className="text-red-500 hover:text-red-700 cursor-pointer"
+                      onClick={() => handleDelete(audit)}
+                    />
                   </TableCell>
                 </TableRow>
               ))}
@@ -182,6 +218,16 @@ export default function Audit() {
           </Table>
         </div>
       </div>
+
+      {toast && (
+        <div className="fixed top-5 right-5 z-50">
+          <AppToast
+            type={toast.type}
+            message={toast.message}
+            onClose={() => setToast(null)}
+          />
+        </div>
+      )}
     </div>
   );
 }

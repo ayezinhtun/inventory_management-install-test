@@ -34,6 +34,7 @@ export const getRelocationRequests = async (statuses, userId) => {
             component:inventory_id (id, name, type, model, vendor), 
             source:source_server_id (id, name, type), 
             dest_server:destination_server_id (id, name, type), 
+            dest_warehouse:destination_warehouse_id (id, name),
             requester:requested_by (id, name)
         `);
 
@@ -193,7 +194,7 @@ export const updateRelocationRequestStatus = async (id, status, userId) => {
                     model: srcItem.model,
                     vendor: srcItem.vendor,
                     attributes: srcItem.attributes || {},
-                    image: srcItem.image, 
+                    image: srcItem.image,
                     quantity: quantity,
                     region_id: destination_region_id,
                     warehouse_id: destination_warehouse_id,

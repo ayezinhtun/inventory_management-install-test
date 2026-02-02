@@ -23,15 +23,37 @@ export default function ComponentInstallRequest() {
     });
 
 
+    // useEffect(() => {
+    //     const fetchData = async () => {
+    //         const comps = await getComponents();
+    //         const srvs = await getServers();
+    //         setComponents(comps);
+    //         setServers(srvs);
+    //     };
+    //     fetchData();
+    // }, []);
+
     useEffect(() => {
-        const fetchData = async () => {
+        const load = async () => {
             const comps = await getComponents();
             const srvs = await getServers();
-            setComponents(comps);
-            setServers(srvs);
+
+            const regionIds = profile?.assignments?.regions || [];
+
+            const filteredServers = regionIds.length
+                ? srvs.filter(s => regionIds.includes(s.region_id))
+                : []; // or srvs
+
+            // If components need region filter:
+            const filteredComponents = regionIds.length
+                ? comps.filter(c => regionIds.includes(c.region_id))
+                : comps; // or []
+
+            setComponents(filteredComponents);
+            setServers(filteredServers);
         };
-        fetchData();
-    }, []);
+        load();
+    }, [profile?.assignments?.regions]);
 
     const selectedServer = useMemo(
         () => servers.find(s => s.id === form.server_id),
@@ -62,7 +84,7 @@ export default function ComponentInstallRequest() {
         return data
             .filter(i => i.inventorys.type === type)
             .reduce((sum, i) => sum + i.quantity, 0)
-            
+
     }
 
     const handleSubmit = async (e) => {

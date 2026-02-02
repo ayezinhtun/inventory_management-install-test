@@ -117,7 +117,6 @@ export default function ReservedStock() {
                 <TableHeadCell>Inventory Name</TableHeadCell>
                 <TableHeadCell>Quantity</TableHeadCell>
                 <TableHeadCell>Notes</TableHeadCell>
-                <TableHeadCell>Status</TableHeadCell>
                 <TableHeadCell>Action</TableHeadCell>
               </TableRow>
             </TableHead>
@@ -142,7 +141,6 @@ export default function ReservedStock() {
                     <TableCell>{r.inventory.name}</TableCell>
                     <TableCell>{r.quantity}</TableCell>
                     <TableCell>{r.notes}</TableCell>
-                    <TableCell>{r.status}</TableCell>
                     <TableCell>
                       <button
                         onClick={() => handleActivate(r)}

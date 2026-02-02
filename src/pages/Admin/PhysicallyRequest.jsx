@@ -158,7 +158,6 @@ export default function PhysicalInstall() {
                                             {status.charAt(0).toUpperCase() + status.slice(1)}
                                         </DropdownItem>
                                     ))}
-
                                 </Dropdown>
                             </div>
                         </div>
@@ -170,7 +169,6 @@ export default function PhysicalInstall() {
                             <span>Reset Filters</span>
                         </button>
                     </div>
-
                 )} */}
 
 

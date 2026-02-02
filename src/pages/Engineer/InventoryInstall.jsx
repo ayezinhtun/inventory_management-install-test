@@ -9,7 +9,7 @@ import { getWarehouse, getWarehousebyRegion } from "../../context/WarehouseConte
 import { fetchRack, fetchRackbyWarehouse } from "../../context/RackContext";
 import { createInstallRequest } from "../../context/InstallRequest";
 import AppToast from '../../components/toast/Toast'
-import { fetchInventory } from "../../context/InventoryContext";
+import { fetchInventory, fetchInventoryByRegions } from "../../context/InventoryContext";
 
 export default function InventoryInstallRequest() {
     const [toast, setToast] = useState(null);
@@ -33,39 +33,45 @@ export default function InventoryInstallRequest() {
     });
 
     useEffect(() => {
+        if (!profile?.assignments?.regions) return;
+
         const loadRegions = async () => {
             const data = await getRegion();
-            setRegions(data || []);
+            const filtered = (data || []).filter(r =>
+                profile.assignments.regions.includes(r.id)
+            );
+            setRegions(filtered);
         };
 
         loadRegions();
-    }, []);
-
-
+    }, [profile?.assignments?.regions]);
 
     useEffect(() => {
-        const fetchDevices = async () => {
-            try {
-                const data = await fetchInventory();
+        if (!profile?.assignments?.regions) return;
 
-                const filtered = data.filter(d =>
-                    ['server', 'switch', 'router'].includes(d.type) && d.status === 'active'
+        const fetchDevices = async () => {
+            setLoading(true);
+            try {
+                const regionIds = profile.assignments.regions;
+
+                const data = await fetchInventoryByRegions(regionIds);
+
+                const filtered = (data || []).filter(d =>
+                    ['server', 'switch', 'router'].includes(d.type) &&
+                    d.status === 'active'
                 );
 
-                setDevices(filtered || []);
+                setDevices(filtered);
             } catch (error) {
                 console.error('Failed to fetch inventory:', error.message);
+            } finally {
+                setLoading(false);
             }
-            // const { data, error } = await supabase
-            //     .from('inventorys')
-            //     .select('*')
-            //     .in('type', ['server', 'switch', 'router']);
-
-            // if (!error) setDevices(data);
         };
 
         fetchDevices();
-    }, []);
+    }, [profile?.assignments?.regions]);
+
 
     const handleChange = async (e) => {
         const { name, value } = e.target;
@@ -78,12 +84,19 @@ export default function InventoryInstallRequest() {
 
         // region selected -> fetch warehouses
         if (name === 'destination_region_id') {
-            setForm(prev => ({ ...prev, destination_warehouse_id: '', destination_rack_id: '' }));
+            setForm(prev => ({
+                ...prev,
+                destination_warehouse_id: '',
+                destination_rack_id: ''
+            }));
+
+            setWarehouses([]);
             setRacks([]);
 
             const data = await getWarehousebyRegion(value);
             setWarehouses(data || []);
         }
+
 
         // warehouse selected -> fetch racks
         if (name === 'destination_warehouse_id') {
@@ -119,13 +132,12 @@ export default function InventoryInstallRequest() {
 
                 setToast({
                     type: "error",
-                    message: "Start unit and heigth must be at least 1"
+                    message: "Start unit and height must be at least 1"
                 })
-                setLoading(false);
                 return;
             }
 
-            // get rack info 
+            // get rack info / rack size check
             const rackInfo = racks.find(r => r.id === form.destination_rack_id);
             const maxU = rackInfo?.size_u || 42;
 
@@ -134,34 +146,40 @@ export default function InventoryInstallRequest() {
                     type: "error",
                     message: `Exceeds rack capacity (Max ${maxU}U)`
                 })
-                setLoading(false);
                 return;
             }
 
-            // fetch overlapping units 
-            const { data: occupied } = await supabase
+            // fetch overlapping units this allow same rack, same device but new position
+            const { data: occupied, error } = await supabase
                 .from('inventorys')
                 .select('start_unit, height')
-                .eq('rack_id', form.destination_rack_id);
+                .eq('rack_id', form.destination_rack_id)
+                .neq('id', form.inventory_id);
+
+            if (error) {
+                setToast({
+                    type: "error",
+                    message: "Failed to validate rack occupancy"
+                });
+                return;
+            }
 
             for (let device of occupied || []) {
                 const deviceStart = device.start_unit;
                 const deviceEnd = device.start_unit + device.height - 1;
 
-                const overlap =
-                    (form.destination_start_unit >= deviceStart && form.destination_start_unit <= deviceEnd) ||
-                    (end >= deviceStart && end <= deviceEnd) ||
-                    (form.destination_start_unit <= deviceStart && end >= deviceEnd);
+
+                const overlap = start <= deviceEnd && end >= deviceStart;
 
                 if (overlap) {
                     setToast({
                         type: "error",
                         message: `This device overlaps with an existing device at units ${deviceStart}-${deviceEnd}.`
                     })
-                    setLoading(false);
                     return;
                 }
             }
+
         }
         setLoading(true);
 
@@ -216,6 +234,7 @@ export default function InventoryInstallRequest() {
                     </div>
                     <Button
                         type="submit"
+                        disabled={loading}
                         className="bg-[#26599F] text-lg"
                     >
                         Create Request
@@ -393,7 +412,7 @@ export default function InventoryInstallRequest() {
                                                 </TableCell>
                                                 <TableCell>{selectedDevice.racks?.name}</TableCell>
                                             </TableRow>
-                                            {selectedDevice.racks.id && (
+                                            {selectedDevice.racks?.id && (
                                                 <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
                                                     <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                                         Start Unit
@@ -402,7 +421,7 @@ export default function InventoryInstallRequest() {
                                                 </TableRow>
                                             )}
 
-                                            {selectedDevice.racks.id && (
+                                            {selectedDevice.racks?.id && (
                                                 <TableRow className="bg-white border-bottom border-gray-300 border-dashed">
                                                     <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                                         Height

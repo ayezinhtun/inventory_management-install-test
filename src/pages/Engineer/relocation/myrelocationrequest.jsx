@@ -104,7 +104,7 @@ export default function EngineerRelocationRequests() {
                       <TableCell>{r.status}</TableCell>
                       <TableCell>{r.requester?.name || ""}</TableCell>
                       <TableCell>{r.source?.name || ""}</TableCell>
-                      <TableCell>{r.destination_move_type === 'server' ? (r.dest_server?.name || '') : 'Warehouse'}</TableCell>
+                      <TableCell>{r.dest_server?.name || r.dest_warehouse?.name || '-'}</TableCell>
                       <TableCell>{r.notes || ""}</TableCell>
                     </TableRow>
                   ))

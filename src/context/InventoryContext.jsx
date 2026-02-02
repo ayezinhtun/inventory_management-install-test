@@ -133,3 +133,41 @@ export const fetchInstalledComponents = async (serverId) => {
   // sort by type in frontend
   return data.sort((a, b) => a.component.type.localeCompare(b.component.type));
 };
+
+
+
+export const fetchInventoryByRegions = async (regionIds) => {
+  if (!Array.isArray(regionIds) || regionIds.length === 0) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from('inventorys')
+    .select(`
+      id, 
+      region_id, 
+      warehouse_id, 
+      rack_id, 
+      name,
+      status,
+      serial_no, 
+      type, 
+      model, 
+      vendor, 
+      quantity,
+      start_unit, 
+      height, 
+      color, 
+      notes, 
+      attributes, 
+      image, 
+      regions(id, name),
+      racks(id, name), 
+      warehouses(id, name)
+    `)
+    .in('region_id', regionIds)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data;
+};

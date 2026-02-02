@@ -5,36 +5,89 @@ import { Checkbox, Spinner, Table, TableBody, TableCell, TableHead, TableHeadCel
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getWarehouse } from "../context/WarehouseContext";
-import { fetchRack } from '../context/RackContext';
-import { fetchInventory } from "../context/InventoryContext";
+import { fetchRack, fetchRackByRegions } from '../context/RackContext';
+import { fetchInventory, fetchInventoryByRegions } from "../context/InventoryContext";
+import { useUserProfiles } from "../context/UserProfileContext";
 
 export default function Dashboard() {
+    const { profile, profileLoading } = useUserProfiles();
     const [warehouses, setWarehouses] = useState([]);
     const [racks, setRacks] = useState([]);
     const [inventorys, setInventorys] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // for fetch warehouses
-    const fetchWarehouses = async () => {
-        const data = await getWarehouse();
-        setWarehouses(data);
-    }
 
-    // for fetch racks 
-    const fetchRacks = async () => {
-        const data = await fetchRack();
-        setRacks(data);
-    }
+    // // for fetch warehouses
+    // const fetchWarehouses = async () => {
+    //     const data = await getWarehouse();
+    //     setWarehouses(data);
+    // }
 
-    //for fetch Inventorys
-    const InventoryData = async () => {
-        try {
-            const data = await fetchInventory();
-            setInventorys(data);
-        } catch (error) {
-            console.log('Error in fetch Inventory', error);
-        }
-    }
+    // // for fetch racks 
+    // const fetchRacks = async () => {
+    //     const data = await fetchRack();
+    //     setRacks(data);
+    // }
+
+    // //for fetch Inventorys
+    // const InventoryData = async () => {
+    //     try {
+    //         const data = await fetchInventory();
+    //         setInventorys(data);
+    //     } catch (error) {
+    //         console.log('Error in fetch Inventory', error);
+    //     }
+    // }
+
+    useEffect(() => {
+        if (profileLoading) return;
+
+        const load = async () => {
+            setLoading(true);
+            try {
+                const role = profile?.role;
+                const assignedRegionIds = profile?.assignments?.regions || [];
+
+                if (role === "admin") {
+                    // admin: load everything
+                    const [wh, rk, inv] = await Promise.all([
+                        getWarehouse(),
+                        fetchRack(),
+                        fetchInventory()
+                    ]);
+                    setWarehouses(wh);
+                    setRacks(rk);
+                    setInventorys(inv);
+                } else {
+                    // non-admin: filter by assigned regions
+                    // warehouses: filter client-side
+                    const allWh = await getWarehouse();
+                    const wh = assignedRegionIds.length
+                        ? allWh.filter(w => assignedRegionIds.includes(w.region_id))
+                        : [];
+
+                    // racks & inventory: query by regions
+                    const [rk, inv] = await Promise.all([
+                        fetchRackByRegions(assignedRegionIds),
+                        fetchInventoryByRegions(assignedRegionIds)
+                    ]);
+
+                    setWarehouses(wh);
+                    setRacks(rk);
+                    setInventorys(inv);
+                }
+            } catch (err) {
+                console.error("Error loading dashboard data:", err);
+                setWarehouses([]);
+                setRacks([]);
+                setInventorys([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        load();
+    }, [profileLoading, profile?.role, profile?.assignments?.regions]);
 
     // fetch recent inventory
     useEffect(() => {
@@ -52,11 +105,12 @@ export default function Dashboard() {
         getInventory();
     }, []);
 
-    useEffect(() => {
-        fetchWarehouses();
-        fetchRacks();
-        InventoryData()
-    }, [])
+
+    // useEffect(() => {
+    //     fetchWarehoue();
+    //     fetchRacks();
+    //     InventoryData()
+    // }, [])
     return (
         <div>
             <h1 className="font-bold mb-5 text-[24px]">Dashboard</h1>

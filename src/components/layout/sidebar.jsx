@@ -44,8 +44,8 @@ export default function SidebarComponent() {
                 { id: "2-2", name: "Add Component", path: "/inventory/add-part", roles: ['admin'] },
             ],
         },
-        { id: 3, name: "Region", path: "/region", icon: <MapPin className="h-5 w-5 mr-2" /> },
-        { id: 4, name: "Warehouse", path: "/warehouse", icon: <Home className="h-5 w-5 mr-2" /> },
+        { id: 3, name: "Region", path: "/region", icon: <MapPin className="h-5 w-5 mr-2" />, roles: ["admin"] },
+        { id: 4, name: "Warehouse", path: "/warehouse", icon: <Home className="h-5 w-5 mr-2" />, roles: ["admin"] },
         { id: 5, name: "Rack", path: "/rack", icon: <Layers className="h-5 w-5 mr-2" /> },
         { id: 6, name: "Reserved Stock", path: "/reserved-stocks", icon: <Layers className="h-5 w-5 mr-2" />, roles: ["admin"] },
 

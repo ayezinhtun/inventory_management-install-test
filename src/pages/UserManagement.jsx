@@ -171,6 +171,14 @@ export default function UserMangement() {
             // for region
             const selectedRegions = userRegions[userId] || [];
 
+            if (selectedRegions.length === 0) {
+                setToast({
+                    type: "error",
+                    message: "Please assign at least one region before saving!"
+                });
+                return; // stop saving
+            }
+
             await supabase.from("user_regions").delete().eq("user_id", userId);
 
             const insertRegionData = selectedRegions.map((regionId) => ({

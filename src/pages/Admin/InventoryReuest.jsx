@@ -9,7 +9,6 @@ import { exportToCSV } from "../../utils/exportUtils";
 import AppToast from "../../components/toast/Toast";
 import { useUserProfiles } from "../../context/UserProfileContext";
 
-
 export default function AdminInventoryRequest() {
     const { profile } = useUserProfiles();
     const isAdmin = profile?.role === "admin";

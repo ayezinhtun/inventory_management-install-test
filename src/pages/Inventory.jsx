@@ -6,7 +6,7 @@ import { Checkbox, Spinner, Table, TableBody, TableCell, TableHead, TableHeadCel
 import { Dropdown, DropdownItem } from "flowbite-react";
 import EditRegionModal from "../components/region/editregion";
 import { Link, useLocation } from 'react-router-dom'
-import { fetchInventory, deleteInventory } from "../context/InventoryContext";
+import { fetchInventory, deleteInventory, fetchInventoryByRegions } from "../context/InventoryContext";
 import { getWarehouse } from "../context/WarehouseContext";
 import { fetchRack } from "../context/RackContext";
 import { exportToCSV } from "../utils/exportUtils";
@@ -17,7 +17,7 @@ import { useUserProfiles } from "../context/UserProfileContext";
 
 
 export default function Inventory() {
-    const { profile } = useUserProfiles();
+    const { profile, profileLoading } = useUserProfiles();
     const location = useLocation();
     const [toast, setToast] = useState(location.state?.toast || null);
 
@@ -79,9 +79,24 @@ export default function Inventory() {
 
     const InventoryData = async () => {
         setLoading(true);
+        // try {
+        //     const data = await fetchInventory();
+        //     setInventorys(data);
+        // } catch (error) {
+        //     console.log('Error in fetch Inventory', error);
+        // } finally {
+        //     setLoading(false);
+        // }
+
         try {
-            const data = await fetchInventory();
-            setInventorys(data);
+            if (profile?.role === "admin") {
+                const data = await fetchInventory();
+                setInventorys(data);
+            } else {
+                const regionIds = profile?.assignments?.regions || [];
+                const data = regionIds.length ? await fetchInventoryByRegions(regionIds) : [];
+                setInventorys(data);
+            }
         } catch (error) {
             console.log('Error in fetch Inventory', error);
         } finally {
@@ -165,11 +180,13 @@ export default function Inventory() {
         exportToCSV(data, `inventorys-${new Date().toISOString().slice(0, 10)}.csv`, headers);
     }
     useEffect(() => {
+        if(profileLoading) return;
+
         InventoryData();
         fetchWarehouses();
         RackData();
 
-    }, [])
+    }, [profileLoading, profile])
 
 
     return (

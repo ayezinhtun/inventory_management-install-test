@@ -2,15 +2,18 @@ import { CirclePlus, Download } from "lucide-react"
 import RackComponent from "../components/rack/rack"
 import { useEffect, useState } from "react"
 import AddRack from "../components/rack/addrack";
-import { deleteRack, fetchRack } from "../context/RackContext";
+import { deleteRack, fetchRack, fetchRackByRegions } from "../context/RackContext";
 import EditRack from "../components/rack/editRack";
 import { getWarehouse } from "../context/WarehouseContext";
 import { exportToCSV } from "../utils/exportUtils";
 import { fetchInventory } from '../context/InventoryContext';
 import { Spinner } from "flowbite-react";
 import AppToast from "../components/toast/Toast";
+import { useUserProfiles } from "../context/UserProfileContext";
 
 export default function Rack() {
+    const { profile, profileLoading } = useUserProfiles();
+
     const [toast, setToast] = useState(null);
 
     const [showAddModal, setShowAddModal] = useState(false);
@@ -33,9 +36,24 @@ export default function Rack() {
     //for fetch data from racks 
     const rackData = async () => {
         setLoading(true);
+        // try {
+        //     const data = await fetchRack();
+        //     setRacks(data);
+        // } catch (error) {
+        //     console.log('Error in fetch rack', error);
+        // } finally {
+        //     setLoading(false);
+        // }
+
         try {
-            const data = await fetchRack();
-            setRacks(data);
+            if (profile?.role === "admin") {
+                const data = await fetchRack();
+                setRacks(data);
+            } else {
+                const regionIds = profile?.assignments?.regions || [];
+                const data = regionIds.length ? await fetchRackByRegions(regionIds) : [];
+                setRacks(data);
+            }
         } catch (error) {
             console.log('Error in fetch rack', error);
         } finally {
@@ -102,23 +120,27 @@ export default function Rack() {
     }
 
     useEffect(() => {
+        if (profileLoading) return;
+
         rackData();
         fetchWarehouse();
         InventoryData();
-    }, [])
+    }, [profileLoading, profile])
 
     return (
 
         <div>
             <div className="flex justify-end mb-5">
                 <div className="flex space-x-5">
-                    <div
-                        className='flex items-center border rounded-lg p-2 px-4  cursor-pointer text-gray-500 hover:ring-4 hover:ring-primary-300 hover:border-none'
-                        onClick={() => setShowAddModal(true)}
-                    >
-                        <CirclePlus className="w-5 h-5 mr-2" />
-                        <span>Add New Rack</span>
-                    </div>
+                    {profile?.role === "admin" && (
+                        <div
+                            className='flex items-center border rounded-lg p-2 px-4  cursor-pointer text-gray-500 hover:ring-4 hover:ring-primary-300 hover:border-none'
+                            onClick={() => setShowAddModal(true)}
+                        >
+                            <CirclePlus className="w-5 h-5 mr-2" />
+                            <span>Add New Rack</span>
+                        </div>
+                    )}
 
                     <button
                         onClick={handleExportCSV}

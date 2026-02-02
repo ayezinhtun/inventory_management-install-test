@@ -102,3 +102,13 @@ export async function getAuditRowsForUI({ limit = 200, table = "", subjectId = "
 
   return uiRows;
 }
+
+
+export async function deleteAuditLog(id) {
+  if (!id) throw new Error('Missing audit id');
+  const { error } = await supabase.from('audit_logs').delete().eq('id', id);
+  if (error) throw error;
+  return true;
+}
+
+

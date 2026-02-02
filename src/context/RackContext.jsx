@@ -1,20 +1,20 @@
-import {supabase} from '../../supabase/supabase-client'
+import { supabase } from '../../supabase/supabase-client'
 
-export const createRack = async(racks) => {
-    const {data, error} = await supabase
-    .from('racks')
-    .insert([racks])
-    .select()
+export const createRack = async (racks) => {
+    const { data, error } = await supabase
+        .from('racks')
+        .insert([racks])
+        .select()
 
-    if(error) throw error;
+    if (error) throw error;
 
     return data;
 }
 
-export const fetchRack = async() => {
-    const {data, error} = await supabase
-    .from('racks')
-    .select(`
+export const fetchRack = async () => {
+    const { data, error } = await supabase
+        .from('racks')
+        .select(`
         id,
         name,
         size_u,
@@ -33,39 +33,39 @@ export const fetchRack = async() => {
             )
         )
     `)
-    .order('created_at', {ascending: false})
+        .order('created_at', { ascending: false })
 
-    if(error) throw error;
+    if (error) throw error;
 
     return data;
 }
 
 export const deleteRack = async (id) => {
-    const {error} = await supabase
-    .from('racks')
-    .delete()
-    .eq('id', id)
+    const { error } = await supabase
+        .from('racks')
+        .delete()
+        .eq('id', id)
 
-    if(error) throw error;
+    if (error) throw error;
 }
 
 
-export const updateRack = async(id, values) => {
-    const {data, error} = await supabase
-    .from('racks')
-    .update(values)
-    .eq('id', id)
+export const updateRack = async (id, values) => {
+    const { data, error } = await supabase
+        .from('racks')
+        .update(values)
+        .eq('id', id)
 
-    if(error) throw error;
+    if (error) throw error;
 
     return data;
 }
 
 
-export const fetchRackbyWarehouse = async(warehouseId) => {
-    const {data, error} = await supabase
-    .from('racks')
-    .select(`
+export const fetchRackbyWarehouse = async (warehouseId) => {
+    const { data, error } = await supabase
+        .from('racks')
+        .select(`
         id,
         name,
         size_u,
@@ -84,10 +84,41 @@ export const fetchRackbyWarehouse = async(warehouseId) => {
             )
         )
     `)
-    .eq('warehouse_id', warehouseId) 
-    .order('created_at', {ascending: false})
+        .eq('warehouse_id', warehouseId)
+        .order('created_at', { ascending: false })
 
-    if(error) throw error;
+    if (error) throw error;
 
     return data;
 }
+
+
+export const fetchRackByRegions = async (regionIds) => {
+  if (!Array.isArray(regionIds) || regionIds.length === 0) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from('racks')
+    .select(`
+      id,
+      name,
+      size_u,
+      type,
+      status,
+      color,
+      notes,
+      warehouse_id,
+      warehouses!inner(
+        id,
+        name,
+        region_id,
+        regions(id, name)
+      )
+    `)
+    .in('warehouses.region_id', regionIds)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data;
+};
