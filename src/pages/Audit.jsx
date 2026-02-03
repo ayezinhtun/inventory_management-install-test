@@ -235,7 +235,7 @@ export default function Audit() {
                       colSpan={5}
                       className="text-center"
                     >
-                      No Region found
+                      No Audit found
                     </TableCell>
                   </TableRow>
                 ) : (
