@@ -8,13 +8,16 @@ import "@fontsource/cardo/400.css";
 import "@fontsource/cardo/700.css";
 import { AuthProvider } from './context/AuthContext.jsx'
 import { UserProfileProvider } from './context/UserProfileContext.jsx'
+import { NotificationProvider } from './context/NotificationContext.jsx'
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
       <AuthProvider>
         <UserProfileProvider>
-          <App />
+          <NotificationProvider>
+            <App />
+          </NotificationProvider>
         </UserProfileProvider>
       </AuthProvider>
     </BrowserRouter>

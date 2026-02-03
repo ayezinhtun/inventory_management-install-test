@@ -20,20 +20,49 @@ export default function InstallRequestPM() {
 
     const fetchRequests = async () => {
         setLoading(true);
-
         try {
-            const data = await getInstallRequests(pmStatuses);
-            setRequests(data);
+            const assignedRegionIds = profile?.assignments?.regions || [];
+
+            // If PM has no assigned regions, show nothing (or show a message)
+            if (!Array.isArray(assignedRegionIds) || assignedRegionIds.length === 0) {
+                setRequests([]);
+                return;
+            }
+
+            // 1) Server-side filter by destination_region_id (covers requests with explicit destination)
+            // 2) Fetch all by statuses (to filter those with NULL destination_region_id but server region matches)
+            const [destFiltered, allForStatuses] = await Promise.all([
+                getInstallRequests(pmStatuses, null, assignedRegionIds),
+                getInstallRequests(pmStatuses) // no region filter -> includes NULL destination_region_id
+            ]);
+
+            // From the full list, take only those with NULL destination_region_id AND server’s warehouse.region_id in assigned regions
+            const serverRegionFiltered = allForStatuses.filter(req => {
+                if (req.destination_region_id) return false; // handled by destFiltered already
+                const serverRegionId = req?.server?.rack?.warehouse?.region_id;
+                return serverRegionId && assignedRegionIds.includes(serverRegionId);
+            });
+
+            // Merge and dedupe by id
+            const map = new Map();
+            [...destFiltered, ...serverRegionFiltered].forEach(r => map.set(r.id, r));
+            const merged = Array.from(map.values());
+
+            setRequests(merged);
         } catch (error) {
             console.error('Error fetching requests:', error);
+            setRequests([]);
         } finally {
             setLoading(false);
         }
-    }
+    };
 
     useEffect(() => {
+
+        if (!profile) return;
+
         fetchRequests();
-    }, []);
+    }, [profile?.assignments?.regions?.length]);
 
     const handleStatusChange = async (id, status) => {
         if (!profile?.id) {
@@ -307,3 +336,6 @@ export default function InstallRequestPM() {
 }
 
 
+
+
+// In Install Pm , need to filter with item source region id 

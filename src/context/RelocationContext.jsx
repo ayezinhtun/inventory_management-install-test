@@ -16,13 +16,14 @@ export const createRelocationRequest = async (payload) => {
     return data;
 };
 
-export const getRelocationRequests = async (statuses, userId) => {
+export const getRelocationRequests = async (statuses, userId, regionIds) => {
     let q = supabase
         .from('relocation_requests')
         .select(` 
             id, 
             inventory_id, 
             source_server_id, 
+            destination_move_type,
             destination_server_id, 
             destination_region_id, 
             destination_warehouse_id, 
@@ -33,14 +34,30 @@ export const getRelocationRequests = async (statuses, userId) => {
             created_at, 
             component:inventory_id (id, name, type, model, vendor), 
             source:source_server_id (id, name, type), 
-            dest_server:destination_server_id (id, name, type), 
+            dest_server:destination_server_id (
+                id,
+                name,
+                type,
+                rack_id,
+                rack:rack_id (
+                id,
+                warehouse_id,
+                warehouse:warehouse_id (id, name, region_id)
+                )
+            ),
             dest_warehouse:destination_warehouse_id (id, name),
             requester:requested_by (id, name)
         `);
 
     if (Array.isArray(statuses)) q = q.in('status', statuses);
     else if (statuses) q = q.eq('status', statuses);
+
     if (userId) q = q.eq('requested_by', userId);
+
+    if (Array.isArray(regionIds) && regionIds.length > 0) {
+        q = q.in('destination_region_id', regionIds);
+    }
+
     const { data, error } = await q.order('created_at', { ascending: false });
     if (error) throw error;
     return data;

@@ -18,7 +18,7 @@ export const createInstallRequest = async (payload) => {
 
 
 // Get all requests (can filter by status or user)
-export const getInstallRequests = async (statuses, userId) => {
+export const getInstallRequests = async (statuses, userId, regionIds) => {
   let query = supabase
     .from('installation_requests')
     .select(`
@@ -48,7 +48,16 @@ export const getInstallRequests = async (statuses, userId) => {
                 type,
                 rack_id,
                 start_unit,
-                height
+                height, 
+                rack:rack_id (
+                id,
+                warehouse_id,
+                warehouse:warehouse_id (
+                  id,
+                  name,
+                  region_id
+                )
+              )
             ) , 
             region:destination_region_id (
               id, 
@@ -76,6 +85,10 @@ export const getInstallRequests = async (statuses, userId) => {
   }
 
   if (userId) query = query.eq('requested_by', userId);
+
+  if (Array.isArray(regionIds) && regionIds.length > 0) {
+    query = query.in('destination_region_id', regionIds);
+  }
 
   const { data, error } = await query.order('created_at', { ascending: false });
   if (error) throw error;

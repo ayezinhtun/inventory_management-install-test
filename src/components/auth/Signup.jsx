@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import FloatingInput from '../input/FloatingInput';
 import { Spinner } from 'flowbite-react';
 import loginimg from '../../assets/login.png'
+import AppToast from '../toast/Toast';
 
 export default function Signup() {
     const [toast, setToast] = useState(null);
@@ -46,7 +47,8 @@ export default function Signup() {
             setToast({
                 type: "error",
                 message: "Passowrd must be at least 8 characters long, contain 1 uppercase, 1lowercase and 1 special character!"
-            })
+            });
+            setLoading(false);
             return;
         }
 
@@ -54,7 +56,8 @@ export default function Signup() {
             setToast({
                 type: "error",
                 message: "Passwords do not match!"
-            })
+            });
+            setLoading(false);
             return;
         }
 

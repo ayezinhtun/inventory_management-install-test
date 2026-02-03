@@ -96,7 +96,8 @@ export async function getAuditRowsForUI({ limit = 200, table = "", subjectId = "
       name: displayName,            // who did it
       email,                        // email of who did it
       action: describe(r),          // e.g., Created region "Yangon"
-      date: r.executed_at,          // when
+      date: r.executed_at,         // when
+      user_id: r.actor_uid,
     };
   });
 
@@ -111,4 +112,13 @@ export async function deleteAuditLog(id) {
   return true;
 }
 
+
+export const clearAllAuditLogs = async () => {
+  const { error } = await supabase
+    .from("audit_logs")
+    .delete()
+    .gt("id", 0);
+
+  if (error) throw error;
+};
 

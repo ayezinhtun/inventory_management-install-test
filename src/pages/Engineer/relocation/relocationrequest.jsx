@@ -40,14 +40,25 @@ export default function ComponentRelocationRequest() {
 
   useEffect(() => {
     const load = async () => {
-      const [{ data: srv }, { data: reg }, { data: wh }] = await Promise.all([
-        supabase.from('inventorys').select('*').eq('type', 'server'),
-        supabase.from('regions').select('id, name'),
-        supabase.from('warehouses').select('id, name, region_id'),
-      ]);
-      setServers(srv || []);
-      setRegions(reg || []);
-      setWarehouses(wh || []);
+      try {
+        const [{ data: srv }, { data: reg }, { data: wh }] = await Promise.all([
+          supabase.from('inventorys').select('*').eq('type', 'server'),
+          supabase.from('regions').select('id, name'),
+          supabase.from('warehouses').select('id, name, region_id'),
+        ]);
+
+        setServers(srv || []);
+
+        const assignedRegions = (reg || []).filter(r =>
+          profile?.assignments?.regions?.includes(r.id)
+        );
+
+        setRegions(assignedRegions);
+
+        setWarehouses(wh || []);
+      } catch (err) {
+        console.error('Failed to load data:', err.message);
+      }
     };
     load();
   }, []);
@@ -80,9 +91,13 @@ export default function ComponentRelocationRequest() {
 
 
   const warehouseOptions = useMemo(
-    () => warehouses.filter(w => !destRegionId || w.region_id === destRegionId),
+    () => {
+      if (!destRegionId) return [];
+      return warehouses.filter(w => w.region_id === destRegionId);
+    },
     [warehouses, destRegionId]
   );
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();

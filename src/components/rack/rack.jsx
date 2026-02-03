@@ -1,10 +1,12 @@
 import { ChevronDown, ChevronUp, Edit2, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useUserProfiles } from "../../context/UserProfileContext";
 
 export default function RackComponent({ rack, inventorys, onDelete, onEdit }) {
     const [collapsed, setCollapsed] = useState({});
     const navigate = useNavigate();
+    const { profile } = useUserProfiles();
 
     // Keep track of which units are already rendered for a device
     const renderedUnits = new Set();
@@ -35,16 +37,23 @@ export default function RackComponent({ rack, inventorys, onDelete, onEdit }) {
                 </div>
 
                 <div className="flex items-center">
-                    <Edit2
-                        className="me-4 cursor-pointer"
-                        size={20}
-                        onClick={() => onEdit(rack)}
-                    />
-                    <Trash2
-                        className="cursor-pointer"
-                        size={20}
-                        onClick={() => onDelete(rack.id)}
-                    />
+                    {profile?.role === 'admin' && (
+                        <Edit2
+                            className="me-4 cursor-pointer"
+                            size={20}
+                            onClick={() => onEdit(rack)}
+                        />
+                    )}
+
+                    {profile?.role === 'admin' && (
+                        <Trash2
+                            className="cursor-pointer"
+                            size={20}
+                            onClick={() => onDelete(rack.id)}
+                        />
+                    )}
+
+
                 </div>
             </div>
 

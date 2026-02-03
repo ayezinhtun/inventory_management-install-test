@@ -10,9 +10,10 @@ import {
   TableRow,
   Dropdown,
   DropdownItem,
+  Spinner,
 } from "flowbite-react";
 import { Download, ListFilter, Search, Trash2 } from "lucide-react";
-import { getAuditRowsForUI, deleteAuditLog } from "../context/AuditContext";
+import { getAuditRowsForUI, deleteAuditLog, clearAllAuditLogs } from "../context/AuditContext";
 import { useUserProfiles } from "../context/UserProfileContext";
 import AppToast from "../components/toast/Toast";
 
@@ -23,6 +24,8 @@ export default function Audit() {
 
   const [toast, setToast] = useState(null);
 
+  const [loading, setLoading] = useState(false);
+
 
   // UI state
   const [searchItem, setSearchItem] = useState("");
@@ -31,11 +34,12 @@ export default function Audit() {
 
   // load audit timeline and resolve user profiles (name/email)
   const fetchAudits = async () => {
+    setLoading(true);
     try {
       // Load from audit_logs and normalize to your UI rows
       let rows = await getAuditRowsForUI({ limit: 200 });
 
-      if (profile?.role === "engineer") {
+      if (profile?.role !== "admin") {
         // Only show logs for this engineer
         rows = rows.filter((r) => r.user_id === profile.id);
       }
@@ -47,6 +51,8 @@ export default function Audit() {
         message: "Failed to delete Rack!"
       })
       setAudits([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -85,7 +91,36 @@ export default function Audit() {
     }
   };
 
-  
+
+  const handleClearAll = async () => {
+    const ok = window.confirm(
+      "This will permanently delete ALL audit logs.\nThis action cannot be undone."
+    );
+    if (!ok) return;
+
+    setLoading(true);
+
+    try {
+      await clearAllAuditLogs();
+      setAudits([]);
+
+      setToast({
+        type: "success",
+        message: "All audit logs have been deleted"
+      });
+    } catch (error) {
+      console.error(error);
+      setToast({
+        type: "error",
+        message: "Failed to clear audit logs"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+
 
   return (
     <div>
@@ -117,9 +152,11 @@ export default function Audit() {
             </div>
           </div>
 
+
           <div className="flex space-x-5">
             <div
-              className="flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-[#26599F] hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2 transition"
+              className="flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-red-500 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2 transition"
+              onClick={handleClearAll}
             >
               <span>Clear All</span>
             </div>
@@ -183,37 +220,52 @@ export default function Audit() {
               </TableRow>
             </TableHead>
             <TableBody className="divide-y divide-gray-200">
-              {currentAudits.map((audit, index) => (
-                <TableRow
-                  key={`${audit.email}-${audit.date}-${index}`}
-                  className="bg-white"
-                >
-                  <TableCell className="p-4">
-                    <Checkbox />
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap font-medium text-gray-900">
-                    {audit.name}
-                  </TableCell>
-                  <TableCell>{audit.email}</TableCell>
-                  <TableCell>{audit.action}</TableCell>
-                  <TableCell>
-                    {new Date(audit.date).toLocaleString()}
-                  </TableCell>
-                  <TableCell className="flex items-center space-x-3">
-                    <Trash2
-                      className="text-red-500 hover:text-red-700 cursor-pointer"
-                      onClick={() => handleDelete(audit)}
-                    />
-                  </TableCell>
-                </TableRow>
-              ))}
-              {currentAudits.length === 0 && (
+              {loading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-gray-400">
-                    No audit entries
+                  <TableCell colSpan={5} className="text-center py-5">
+                    <div>
+                      <Spinner size="xl" color="info" aria-label="Loading..." />
+                    </div>
                   </TableCell>
                 </TableRow>
+              ) : (
+                currentAudits.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
+                      className="text-center"
+                    >
+                      No Region found
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  currentAudits.map((audit, index) => (
+                    <TableRow
+                      key={`${audit.email}-${audit.date}-${index}`}
+                      className="bg-white"
+                    >
+                      <TableCell className="p-4">
+                        <Checkbox />
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap font-medium text-gray-900">
+                        {audit.name}
+                      </TableCell>
+                      <TableCell>{audit.email}</TableCell>
+                      <TableCell>{audit.action}</TableCell>
+                      <TableCell>
+                        {new Date(audit.date).toLocaleString()}
+                      </TableCell>
+                      <TableCell className="flex items-center space-x-3">
+                        <Trash2
+                          className="text-red-500 hover:text-red-700 cursor-pointer"
+                          onClick={() => handleDelete(audit)}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )
               )}
+
             </TableBody>
           </Table>
         </div>

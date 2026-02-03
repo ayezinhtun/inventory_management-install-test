@@ -13,19 +13,55 @@ export default function PMRelocationRequests() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const pmStatuses = ['pm_approve_pending', 'pm_approved', 'rejected', 'admin_approved', 'complete'];
+  
   const fetchRequests = async () => {
     setLoading(true);
     try {
-      const data = await getRelocationRequests(["pm_approve_pending", "pm_approved", "rejected", "admin_approved", "complete"]);
-      setRequests(data || []);
-    } catch (e) {
-      setToast({ type: "error", message: e.message });
+      const assignedRegionIds = profile?.assignments?.regions || [];
+
+      // If PM has no assigned regions, show nothing (or show a message)
+      if (!Array.isArray(assignedRegionIds) || assignedRegionIds.length === 0) {
+        setRequests([]);
+        return;
+      }
+
+      // 1) Filter by destination_region_id (warehouse moves)
+      // 2) Fetch all by statuses (to filter server moves by destination server region on frontend)
+      const [destFiltered, allForStatuses] = await Promise.all([
+        getRelocationRequests(pmStatuses, null, assignedRegionIds),
+        getRelocationRequests(pmStatuses) // no region filter
+      ]);
+
+      // Keep only server-move requests where destination server’s warehouse.region_id is in assigned regions
+      const serverMoveFiltered = allForStatuses.filter(req => {
+        if (req.destination_move_type !== 'server') return false;
+        // ignore if already matched via destination_region_id (should be null for server move)
+        if (req.destination_region_id) return false;
+        const destServerRegionId = req?.dest_server?.rack?.warehouse?.region_id;
+        return destServerRegionId && assignedRegionIds.includes(destServerRegionId);
+      });
+
+      // Merge and dedupe by id
+      const map = new Map();
+      [...destFiltered, ...serverMoveFiltered].forEach(r => map.set(r.id, r));
+      const merged = Array.from(map.values());
+
+      setRequests(merged);
+    } catch (error) {
+      console.error('Error fetching relocation requests:', error);
+      setRequests([]);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { fetchRequests(); }, []);
+
+  useEffect(() => {
+    if (!profile) return;
+
+    fetchRequests();
+  }, [profile?.assignments?.regions?.length]);
 
   const handleStatusChange = async (id, status) => {
     if (!profile?.id) {

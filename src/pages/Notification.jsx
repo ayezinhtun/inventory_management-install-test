@@ -1,223 +1,214 @@
-import { Check, CirclePlus, Delete, Dot, Download, Edit, ListFilter, Mail, MailOpen, MapPin, Pen, Search, Trash2 } from "lucide-react"
-import { useEffect, useState } from "react";
-import { getAuditRowsForUI } from "../context/AuditContext";
+import { MailOpen, Trash2 } from "lucide-react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { supabase } from "../../supabase/supabase-client";
 import { useUserProfiles } from "../context/UserProfileContext";
+import { NotificationContext } from "../context/NotificationContext";
+import { Spinner } from "flowbite-react";
 
 export default function Notification() {
+  const { profile } = useUserProfiles();
+  const { notifications, readIds, reload } = useContext(NotificationContext);
 
-    const { profile } = useUserProfiles();
-    const [notis, setNotis] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [pending, setPending] = useState(new Set());
 
-    const toRelativeTime = (iso) => {
-        if (!iso) return "-";
-        const now = Date.now();
-        const t = new Date(iso).getTime();
-        const diff = Math.max(0, Math.floor((now - t) / 1000));
-        if (diff < 5) return "Just now";
-        if (diff < 60) return `${diff}s ago`;
-        const m = Math.floor(diff / 60);
-        if (m < 60) return `${m}m ago`;
-        const h = Math.floor(m / 60);
-        if (h < 24) return `${h}h ago`;
-        const d = Math.floor(h / 24);
-        return `${d} days ago`;
-    };
+  // helper: relative time
+  const toRelativeTime = (iso) => {
+    if (!iso) return "-";
+    const now = Date.now();
+    const t = new Date(iso).getTime();
+    const diff = Math.max(0, Math.floor((now - t) / 1000));
+    if (diff < 5) return "Just now";
+    if (diff < 60) return `${diff}s ago`;
+    const m = Math.floor(diff / 60);
+    if (m < 60) return `${m}m ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h ago`;
+    return `${Math.floor(h / 24)} days ago`;
+  };
 
-    const load = async () => {
-        try {
-            const [installEvents, relocationEvents] = await Promise.all([
-                getAuditRowsForUI({ limit: 150, table: "installation_requests" }),
-                getAuditRowsForUI({ limit: 150, table: "relocation_requests" }),
-            ]);
+  // Formatters when title is not provided by trigger (fallback)
+  const prettyVerb = (n) => {
+    const t = (n.type || '').toUpperCase();
+    if (t === 'INSERT') return 'created';
+    if (t === 'UPDATE') return n.status ? `changed status into ${n.status}` : 'updated';
+    return 'updated';
+  };
+  const prettyTarget = (n) => {
+    if (n.table_name === 'installation_requests') return 'install request';
+    if (n.table_name === 'relocation_requests') return 'relocation request';
+    if (n.table_name === 'inventory_requests') return 'inventory request';
+    return 'request';
+  };
 
-            let filteredInstallEvents = installEvents || [];
-            let filteredRelocationEvents = relocationEvents || [];
+  const prettyVerbForInsert = (n) => `${prettyTarget(n)} created`;
+  const prettyVerbForUpdate = (n) =>
+    n.status ? `changed ${prettyTarget(n)} status into ${n.status}` : `updated ${prettyTarget(n)}`;
 
-            if (profile?.role === "admin") {
-                filteredInstallEvents = filteredInstallEvents.filter(
-                    (r) => r.status === "pm_approved" || r.status === "admin_approved" || r.status === "complete" || r.status === "rejected"
-                );
+  const notis = useMemo(() => {
+    return (notifications || []).map((n) => {
+      const actorName = n.actor?.name || n.requester?.name || 'Someone';
+      const phrase =
+        (n.type || '').toUpperCase() === 'INSERT'
+          ? prettyVerbForInsert(n)
+          : prettyVerbForUpdate(n);
+      const fallbackTitle = `${actorName} ${phrase}`;
+      return {
+        id: n.id,
+        title: n.title || fallbackTitle,   // prefer DB title; fallback to actorName + phrase
+        date: n.created_at,
+        isRead: readIds.has(n.id),
+      };
+    });
+  }, [notifications, readIds]);
+  const load = async () => {
+    if (!profile?.id) return;
+    setLoading(true);
+    try {
+      // context is authoritative; just trigger reload for safety
+      await reload?.();
+    } finally {
+      setLoading(false);
+    }
+  };
 
-                filteredRelocationEvents = filteredRelocationEvents.filter(
-                    (r) => r.status === "pm_approved" || r.status === "admin_approved" || r.status === "complete" || r.status === "rejected"
-                );
-            } else if (profile?.role === "pm") {
-                filteredInstallEvents = filteredInstallEvents.filter(
-                    (r) => r.status === "pm_approve_pending" || r.status === "rejected" || r.status === "complete"
-                );
-                filteredRelocationEvents = filteredRelocationEvents.filter(
-                    (r) => r.status === "pm_approve_pending" || r.status === "rejected" || r.status === "complete"
-                );
-            } else if (profile?.role === "engineer") {
-                filteredInstallEvents = filteredInstallEvents.filter(
-                    (r) => r.user_id === profile.id && (r.status === "rejected" || r.status === "complete")
-                );
-                filteredRelocationEvents = filteredRelocationEvents.filter(
-                    (r) => r.user_id === profile.id && (r.status === "rejected" || r.status === "complete")
-                );
-            }
+  useEffect(() => {
+    load();
+  }, [profile?.id]);
 
+  // mark single notification as read
+  const markAsRead = async (notificationId) => {
+    if (!profile?.id || !notificationId) return;
+    if (pending.has(notificationId)) return;
+    if (readIds.has(notificationId)) return;
 
-            // fetch install details (component + server) using audit row_id_text as the install request id
-            const installIds = Array.from(new Set((filteredInstallEvents || []).map(r => r.row_id_text).filter(Boolean)));
-            let installDetailById = {};
-            if (installIds.length > 0) {
-                const { data: installRows } = await supabase
-                    .from("installation_requests")
-                    .select(`
-          id,
-          component:inventory_id ( name ),
-          server:server_id ( name )
-        `)
-                    .in("id", installIds);
-                if (Array.isArray(installRows)) {
-                    installDetailById = installRows.reduce((acc, row) => {
-                        acc[row.id] = {
-                            compName: row?.component?.name || "-",
-                            serverName: row?.server?.name || "warehouse",
-                        };
-                        return acc;
-                    }, {});
-                }
-            }
+    setPending((prev) => {
+      const s = new Set(prev);
+      s.add(notificationId);
+      return s;
+    });
 
-            // get user's read receipts
-            let readIds = new Set();
-            if (profile?.id) {
-                const { data: reads, error } = await supabase
-                    .from("notification_reads")
-                    .select("audit_id")
-                    .eq("user_id", profile.id);
-                if (!error && Array.isArray(reads)) {
-                    readIds = new Set(reads.map(r => r.audit_id));
-                }
-            }
+    await supabase.from("notification_reads").insert({
+      user_id: profile.id,
+      notification_id: notificationId,
+    });
+    // update immediately (no refresh needed)
+    optimisticMarkRead?.(notificationId);
 
-            // map install rows to your exact noti shape, keeping internal fields for read state
-            const installNotis = (filteredInstallEvents || []).map(r => {
-                const d = installDetailById[r.row_id_text] || {};
-                const comp = d.compName || "-";
-                const server = d.serverName || "warehouse";
-                const who = r.name || "-";
-                return {
-                    _auditId: r.id, // internal for mark-as-read
-                    title: `${who} requests to install ${comp} into ${server}`,
-                    Date: toRelativeTime(r.date),
-                    _sortDate: r.date,
-                    _isRead: readIds.has(r.id),
-                };
-            });
+    try {
+      await supabase.from("notification_reads").insert({
+        user_id: profile.id,
+        notification_id: notificationId,
+      });
+      // Realtime in NotificationContext will add to readIds; no manual state update needed
+    } catch (_) {
+      // swallow; UI remains clickable
+    } finally {
+      setPending((prev) => {
+        const s = new Set(prev);
+        s.delete(notificationId);
+        return s;
+      });
+    }
+  };
 
-            // keep relocation generic (optional)
-            const relocationNotis = (filteredRelocationEvents || []).map(r => ({
-                _auditId: r.id,
-                title: `${r.name || "-"} ${r.action} (relocation)`,
-                Date: toRelativeTime(r.date),
-                _sortDate: r.date,
-                _isRead: readIds.has(r.id),
-            }));
+  // mark all as read
+  const markAllAsRead = async () => {
+    if (!profile?.id) return;
 
-            const merged = [...installNotis, ...relocationNotis]
-                .sort((a, b) => new Date(b._sortDate) - new Date(a._sortDate));
+    const unread = notis.filter((n) => !n.isRead);
+    if (unread.length === 0) return;
 
-            setNotis(merged);
-        } catch (e) {
-            console.error(e);
-        }
-    };
+    setLoading(true);
+    try {
+      await supabase
+        .from("notification_reads")
+        .insert(
+          unread.map((n) => ({
+            user_id: profile.id,
+            notification_id: n.id,
+          }))
+        );
+      // Realtime will update readIds
+    } catch (_) {
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    useEffect(() => { load(); }, [profile?.id]);
-
-    // Realtime: refresh on new notification rows (optional, for auto-update)
-    useEffect(() => {
-        const channel = supabase
-            .channel("audit-realtime")
-            .on(
-                "postgres_changes",
-                { event: "INSERT", schema: "public", table: "audit_logs" },
-                (payload) => {
-                    const t = (payload?.new?.table_name || "").toLowerCase();
-                    if (t === "installation_requests" || t === "relocation_requests") {
-                        load();
-                    }
-                }
-            )
-            .subscribe();
-        return () => { supabase.removeChannel(channel); };
-    }, []);
-
-
-
-
-    const markAsRead = async (auditId) => {
-        if (!profile?.id || !auditId) return;
-        try {
-            await supabase.from("notification_reads").insert({
-                user_id: profile.id,
-                audit_id: auditId
-            });
-            // Optimistic UI update
-            setNotis(prev => prev.map(n => n._auditId === auditId ? { ...n, _isRead: true } : n));
-        } catch (e) {
-            // ignore duplicates (unique constraint)
-            setNotis(prev => prev.map(n => n._auditId === auditId ? { ...n, _isRead: true } : n));
-        }
-    };
-
-    const currentNotis = notis;
-
-    return (
-        <div>
-
-            <div className="bg-white shadow rounded-lg border border-gray-200 overflow-auto">
-                <div className="flex items-center justify-end py-3 border-b border-[#EAECF0] px-5 space-x-4">
-
-                    <div className="flex space-x-5">
-
-                        <div
-                            className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-[#26599F] hover:bg-blue-900 hover:border-none hover:outline-none'
-                        >
-                            <span>Mark As All Read</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="overflow-x-auto rounded-lg flex flex-col gap-y-2 py-2">
-
-                    {currentNotis.map((noti, index) => {
-                        return (
-                            <div key={index} className="flex items-center justify-between px-4">
-                                <div className="flex items-center gap-2">
-                                    <Dot />
-                                    <p className="text-gray-600">{noti.title}</p>
-                                </div>
-
-                                <div className="flex items-center gap-4">
-                                    <p className="text-gray-400">
-                                        {noti.Date}
-                                    </p>
-                                    <div
-                                        className="p-2 hover:bg-gray-100 hover:rounded-lg cursor-pointer relative group inline-block"
-                                        onClick={() => markAsRead(noti._auditId)}
-                                        title="Mark as read"
-                                    >
-                                        <MailOpen className={noti._isRead ? "text-gray-400" : "text-gray-600"} />
-                                    </div>
-                                    <div className="hover:bg-gray-100 hover:rounded-lg p-2">
-                                        <Trash2 className="text-red-500" />
-                                    </div>
-                                </div>
-                            </div>
-                        )
-                    })}
-
-                </div>
-
-
+  return (
+    <div>
+      <div className="bg-white shadow rounded-lg border border-gray-200 overflow-auto">
+        <div className="flex items-center justify-end py-3 border-b border-[#EAECF0] px-5 space-x-4">
+          <div className="flex space-x-5">
+            <div
+              className="flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-[#26599F] hover:bg-blue-900"
+              onClick={markAllAsRead}
+            >
+              <span>Mark As All Read</span>
             </div>
-
-
+          </div>
         </div>
-    )
+
+        <div className="overflow-x-auto rounded-lg flex flex-col gap-y-4 py-2">
+          {loading && (
+            <div className="flex justify-center py-6">
+              <Spinner size="lg" />
+            </div>
+          )}
+
+          {!loading && notis.length === 0 && (
+            <div className="text-center text-gray-500 py-6">
+              No Notification Found
+            </div>
+          )}
+
+          {!loading &&
+            notis.map((noti, index) => {
+              const disabled = noti.isRead || pending.has(noti.id);
+
+              return (
+                <div
+                  key={index}
+                  className="flex items-center justify-between ps-4 gap-2"
+                >
+                  <div className="flex items-center gap-2">
+                    <p className="text-gray-600">{noti.title}</p>
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    <p className="text-gray-400">
+                      {toRelativeTime(noti.date)}
+                    </p>
+
+                    <div
+                      className={`p-2 hover:bg-gray-100 hover:rounded-lg ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                        }`}
+                      onClick={() => !disabled && markAsRead(noti.id)}
+                      title={
+                        noti.isRead
+                          ? 'Already read'
+                          : pending.has(noti.id)
+                            ? 'Marking...'
+                            : 'Mark as read'
+                      }
+                    >
+                      <MailOpen
+                        className={
+                          noti.isRead ? "text-gray-400" : "text-gray-600"
+                        }
+                      />
+                    </div>
+
+                    <div className="hover:bg-gray-100 hover:rounded-lg p-2">
+                      <Trash2 className="text-red-500" />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+        </div>
+      </div>
+    </div>
+  );
 }
