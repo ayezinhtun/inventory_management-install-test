@@ -39,6 +39,7 @@ import AdminRelocationRequests from "./pages/Admin/adminrelocationrequest"
 import PhysicalRelocationRequests from "./pages/Admin/physicalrelocationrequest"
 import { useState } from "react"
 import ReservedStock from "./pages/ReservedStock"
+import TypeManagementPage from "./pages/Inventory/TypeManagement"
 
 function App() {
   return (
@@ -82,6 +83,7 @@ function App() {
 
 
           {/*for admin*/}
+          <Route path="/inventory/type-management" element={<TypeManagementPage />} />
           <Route path="/request/admin" element={<AdminInventoryRequest />} />
           <Route path="/install-request/admin" element={<InstallRequestAdmin />} />
           <Route path="/install-request/physical" element={<PhysicalInstall />} />

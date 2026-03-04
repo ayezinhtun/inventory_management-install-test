@@ -20,6 +20,7 @@ import {
     UserCheck,
     Truck,
     Repeat,
+    Settings
 } from "lucide-react";
 import logo from "../../assets/logo.png";
 import { useUserProfiles } from "../../context/UserProfileContext";
@@ -40,8 +41,9 @@ export default function SidebarComponent() {
             path: "/inventory",
             icon: <Package className="h-5 w-5 mr-2" />,
             subLinks: [
-                { id: "2-1", name: "Add Inventory", path: "/inventory/create-inventory", roles: ["admin"] },
-                { id: "2-2", name: "Add Component", path: "/inventory/add-part", roles: ['admin'] },
+                { id: "2-1", name: "Type Management", path: "/inventory/type-management", roles: ["admin"] },
+                { id: "2-2", name: "Add Inventory", path: "/inventory/create-inventory", roles: ["admin"] },
+                { id: "2-3", name: "Add Component", path: "/inventory/add-part", roles: ['admin'] },
             ],
         },
         { id: 3, name: "Region", path: "/region", icon: <MapPin className="h-5 w-5 mr-2" />, roles: ["admin"] },

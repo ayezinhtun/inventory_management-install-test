@@ -7,6 +7,7 @@ import { getRegion } from "../../context/RegionContext";
 import { supabase } from "../../../supabase/supabase-client";
 import { InventoryCreate } from "../../context/InventoryContext";
 import AppToast from "../toast/Toast";
+import { getInventoryTypes } from "../../context/TypeContext";
 
 export default function CreatePart() {
     const [toast, setToast] = useState(null);
@@ -19,7 +20,9 @@ export default function CreatePart() {
 
     const [warehouses, setWarehouses] = useState([]);
 
-    const [attributeFields, setAttributeFields] = useState([]);
+    const [types, setTypes] = useState([]);
+
+    const [typeSpecs, setTypeSpecs] = useState([]);
 
     const [error, setError] = useState(null);
 
@@ -35,24 +38,27 @@ export default function CreatePart() {
         model: "",
         vendor: "",
         notes: "",
-        attributes: "",
+        attributes: {},
         quantity: 1
     });
 
-
-    // Default attributes by type
-    const typeAttributes = {
-        ram: ["capacity", "speed", "form_factor"],
-        cpu: ["cores", "threads", "frequency", "socket"],
-        ssd: ["capacity", "interface", "form_factor"],
-    };
+    useEffect(() => {
+        const loadTypes = async () => {
+            try {
+                const data = await getInventoryTypes();
+                setTypes(data || []);
+            } catch (error) {
+                console.error('Failed to load types:', error);
+            }
+        };
+        loadTypes();
+    }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
 
         setForm(prev => ({ ...prev, [name]: value }))
     }
-
 
     const handleAttrChange = (e) => {
         const { name, value } = e.target;
@@ -65,15 +71,7 @@ export default function CreatePart() {
         }));
     };
 
-    const addCustomAttribute = () => {
-        const attrName = prompt("Enter attribute name:");
-        if (!attrName) return;
-        setAttributeFields((prev) => [...prev, attrName]);
-        setForm((prev) => ({
-            ...prev,
-            attributes: { ...prev.attributes, [attrName]: "" },
-        }));
-    };
+
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -92,7 +90,6 @@ export default function CreatePart() {
             setImageFile(null);
             return;
         }
-
 
         // to validate file size 
         const validateFilesize = 5 * 1024 * 1024;
@@ -113,32 +110,22 @@ export default function CreatePart() {
     }
 
     const renderAttributes = () => {
-        const typeKey = (form.type || "").toLowerCase();
-        const defaults = typeAttributes[form.type] || [];
         return (
-            <div className="flex flex-col gap-2">
-                <Button
-                    type="button"
-                    onClick={addCustomAttribute}
-                    className="bg-[#26599F] text-white w-3xs mb-2"
-                >
-                    + Add Custom Attribute
-                </Button>
-
-                <div className="grid grid-cols-3 gap-4 w-full">
-                    {[...defaults, ...attributeFields].map((attr) => (
-                        <div key={attr}>
-                            <label className="block text-sm font-medium mb-1">{attr.toUpperCase()}</label>
-                            <input
-                                type="text"
-                                name={attr}
-                                value={form.attributes[attr] || ""}
-                                onChange={handleAttrChange}
-                                className="w-full p-2.5 border border-gray-300 rounded-lg"
-                            />
-                        </div>
-                    ))}
-                </div>
+            <div className="grid grid-cols-3 gap-4 w-full">
+                {typeSpecs.map((attr, index) => (
+                    <div key={index}>
+                        <label className="block text-sm font-medium mb-1">
+                            {attr.toUpperCase()}
+                        </label>
+                        <input
+                            type="text"
+                            name={attr}
+                            value={form.attributes[attr] || ""}
+                            onChange={handleAttrChange}
+                            className="w-full p-2.5 border border-gray-300 rounded-lg"
+                        />
+                    </div>
+                ))}
             </div>
         );
     };
@@ -147,10 +134,13 @@ export default function CreatePart() {
         e.preventDefault();
 
         setError(null);
-
         setLoading(true);
 
         try {
+            // Get the selected type to get its name
+            const selectedType = types.find(t => t.name === form.type);
+
+            // Upload image if provided
             let imageUrl = null;
             if (imageFile) {
                 const ext = imageFile.name.split(".").pop();
@@ -169,34 +159,19 @@ export default function CreatePart() {
                 imageUrl = data.path;
             }
 
-            const { data: existing, error: fetchError } = await supabase
-                .from("inventorys")
-                .select("id")
-                .eq("name", form.name)
-                .limit(1)
-                .single();
-
-            if (existing) {
-                setToast({
-                    type: "error",
-                    message: "This inventory name already exists. Please choose a different name."
-                })
-                return;
-            }
-
+            // Submit via your context function
             await InventoryCreate({
                 ...form,
+                type: form.type.toLowerCase(),
                 region_id: form.region_id || null,
                 warehouse_id: form.warehouse_id || null,
                 notes: form.notes || null,
-                image: imageUrl
+                image: imageUrl,
             });
-
             setToast({
                 type: "success",
-                message: "Inventory added successfully"
+                message: "Component added successfully!"
             })
-
             setForm({
                 name: "",
                 region_id: "",
@@ -207,7 +182,7 @@ export default function CreatePart() {
                 model: "",
                 vendor: "",
                 notes: "",
-                attributes: "",
+                attributes: {},
                 quantity: 1
             });
 
@@ -215,10 +190,13 @@ export default function CreatePart() {
             setImageFile(null);
         } catch (err) {
             console.log(err.message);
+            setToast({
+                type: "error",
+                message: err.message || "Failed to create component"
+            });
         } finally {
             setLoading(false)
         }
-
     };
 
     useEffect(() => {
@@ -252,7 +230,6 @@ export default function CreatePart() {
         };
         loadWh();
     }, [form.region_id]);
-
 
     return (
         <div>
@@ -323,14 +300,27 @@ export default function CreatePart() {
                             <select
                                 name="type"
                                 value={form.type}
-                                onChange={handleChange}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    setForm(prev => ({ ...prev, type: value }));
+
+                                    // Load specifications for selected type
+                                    const type = types.find(t => t.name.toLowerCase() === value.toLowerCase());
+                                    if (type) {
+                                        setTypeSpecs(Array.isArray(type.specifications) ? type.specifications : []);
+                                    } else {
+                                        setTypeSpecs([]);
+                                    }
+                                }}
                                 required
                                 className="w-full p-2.5 border border-gray-300 rounded-lg"
                             >
                                 <option value="">Select Type</option>
-                                <option value="ram">RAM</option>
-                                <option value="cpu">CPU</option>
-                                <option value="ssd">SSD</option>
+                                {types.map((type) => (
+                                    <option key={type.id} value={type.name.toLowerCase()}>
+                                        {type.name.charAt(0).toUpperCase() + type.name.slice(1)}
+                                    </option>
+                                ))}
                             </select>
                         </div>
 
@@ -447,10 +437,10 @@ export default function CreatePart() {
                             />
                         </div>
 
-                        {form.type && (
+                        {typeSpecs.length > 0 && (
                             <div className="col-span-3 mt-2 border border-gray-200 p-4 rounded">
                                 <label className="block mb-2 font-medium">
-                                    {form.type.toUpperCase()} Specifications
+                                    Specifications
                                 </label>
                                 {renderAttributes()}
                             </div>
