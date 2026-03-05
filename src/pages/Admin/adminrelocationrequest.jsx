@@ -45,8 +45,8 @@ export default function AdminRelocationRequests() {
         p_meta: {}
       });
 
-      
-      
+
+
       setToast({ type: "success", message: "Status updated!" });
       fetchRequests();
     } catch (err) {
@@ -134,7 +134,13 @@ export default function AdminRelocationRequests() {
                       <TableCell>{r.quantity}</TableCell>
                       <TableCell>{r.status}</TableCell>
                       <TableCell>{r.requester?.name || ""}</TableCell>
-                      <TableCell>{r.source?.name || ""}</TableCell>
+                      <TableCell>
+                        {r.source_server_id ? (
+                          r.source?.name || ""
+                        ) : (
+                          r.source_warehouse?.name || r.source_region?.name || ""
+                        )}
+                      </TableCell>
                       <TableCell>{r.dest_server?.name || r.dest_warehouse?.name || '-'}</TableCell>
                       <TableCell>{r.notes || ""}</TableCell>
                       <TableCell className="flex item-center space-x-3">

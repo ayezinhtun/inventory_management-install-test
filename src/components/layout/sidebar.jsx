@@ -69,8 +69,7 @@ export default function SidebarComponent() {
             icon: <PackagePlus className="h-5 w-5 mr-2" />,
             roles: ["engineer"],
             subLinks: [
-                { id: "9-1", name: "Inventory Install", path: "/install-requests/inventory" },
-                { id: "9-2", name: "Component Install", path: "/install-requests/component" },
+                { id: "9-1", name: "Component Install", path: "/install-requests/component" },
             ],
         },
 
@@ -81,17 +80,18 @@ export default function SidebarComponent() {
             icon: <Repeat className="h-5 w-5 mr-2" />,
             roles: ["engineer"],
             subLinks: [
-                { id: "10-1", name: "Component Relocation", path: "/relocation-requests/component" },
+                { id: "10-1", name: "Inventory Relocation", path: "/relocation-requests/inventory" },
+                { id: "10-2", name: "Component Relocation", path: "/relocation-requests/component" },
             ],
         },
 
         { id: 12, name: "Install PM", path: "/install-request/pm", icon: <ClipboardCheck className="h-5 w-5 mr-2" />, roles: ["PM"] },
         { id: 13, name: "Install Admin", path: '/install-request/admin', icon: <ClipboardCheck className="h-5 w-5 mr-2" />, roles: ["admin"] },
-        { id: 14, name: "Physical Install", path: '/install-request/physical', icon: <ClipboardCheck className="h-5 w-5 mr-2" />, roles: ["admin"] },
+        { id: 14, name: "Physical Install", path: '/install-request/physical', icon: <ClipboardCheck className="h-5 w-5 mr-2" />, roles: ["engineer"] },
 
         { id: 15, name: "Relocation PM", path: '/relocation-requests/pmrelocationrequest', icon: <MapPin className="h-5 w-5 mr-2" />, roles: ["PM"] },
         { id: 16, name: "Relocation Admin", path: '/relocation-requests/adminrelocationrequest', icon: <MapPin className="h-5 w-5 mr-2" />, roles: ["admin"] },
-        { id: 17, name: "Physical Relocation", path: '/relocation-requests/physicalrelocationrequest', icon: <MapPin className="h-5 w-5 mr-2" />, roles: ["admin"] },
+        { id: 17, name: "Physical Relocation", path: '/relocation-requests/physicalrelocationrequest', icon: <MapPin className="h-5 w-5 mr-2" />, roles: ["engineer"] },
 
 
         { id: 18, name: "Users", path: "/user", icon: <User className="h-5 w-5 mr-2" />, roles: ["admin"] },

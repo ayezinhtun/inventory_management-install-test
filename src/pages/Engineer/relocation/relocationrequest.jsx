@@ -213,7 +213,7 @@ export default function ComponentRelocationRequest() {
             <Link to="/inventory" className="p-2 hover:bg-gray-100 rounded-sm flex items-center me-2">
               <MoveLeft />
             </Link>
-            <h1 className="font-bold text-[24px]">Create Relocation Request</h1>
+            <h1 className="font-bold text-[24px]">Create Relocation Component</h1>
           </div>
           <Button type="submit" className="bg-[#26599F]">
             {loading ? 'Submitting...' : 'Create Request'}

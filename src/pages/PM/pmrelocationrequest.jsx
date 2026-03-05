@@ -14,7 +14,7 @@ export default function PMRelocationRequests() {
   const [loading, setLoading] = useState(false);
 
   const pmStatuses = ['pm_approve_pending', 'pm_approved', 'rejected', 'admin_approved', 'complete'];
-  
+
   const fetchRequests = async () => {
     setLoading(true);
     try {
@@ -163,7 +163,13 @@ export default function PMRelocationRequests() {
                       <TableCell>{r.quantity}</TableCell>
                       <TableCell>{r.status}</TableCell>
                       <TableCell>{r.requester?.name || ""}</TableCell>
-                      <TableCell>{r.source?.name || ""}</TableCell>
+                      <TableCell>
+                        {r.source_server_id ? (
+                          r.source?.name || ""
+                        ) : (
+                          r.source_warehouse?.name || r.source_region?.name || ""
+                        )}
+                      </TableCell>
                       <TableCell> {r.dest_server?.name || r.dest_warehouse?.name || '-'}</TableCell>
                       <TableCell>{r.notes || ""}</TableCell>
                       <TableCell className="flex item-center space-x-3">

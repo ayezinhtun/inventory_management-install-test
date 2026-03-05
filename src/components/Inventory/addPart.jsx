@@ -24,6 +24,11 @@ export default function CreatePart() {
 
     const [typeSpecs, setTypeSpecs] = useState([]);
 
+    const [existingInventory, setExistingInventory] = useState([]);
+
+    const [showNameDropdown, setShowNameDropdown] = useState(false);
+
+    const [partInventory, setPartInventory] = useState([]);
     const [error, setError] = useState(null);
 
     const [loading, setLoading] = useState(false);
@@ -54,10 +59,69 @@ export default function CreatePart() {
         loadTypes();
     }, []);
 
+    useEffect(() => {
+        const loadExistingInventoryByType = async () => {
+            if (!form.type) {
+                setExistingInventory([]);
+                return;
+            }
+
+            const { data, error } = await supabase
+                .from('inventorys')
+                .select('id, name, type, region_id, warehouse_id, status, serial_no, model, vendor, notes, attributes, image')
+                .eq('type', (form.type || "").toLowerCase())
+                .order('name');
+
+            if (error) {
+                console.error(error);
+                setExistingInventory([]);
+                return;
+            }
+
+            setExistingInventory(data || []);
+        };
+
+        loadExistingInventoryByType();
+    }, [form.type]);
+
+
+    const handleNameSuggestionClick = (inv) => {
+        setForm((prev) => ({
+            ...prev,
+            name: inv?.name || "",
+            region_id: inv?.region_id || "",
+            warehouse_id: inv?.warehouse_id || "",
+            status: inv?.status || "active",
+            serial_no: inv?.serial_no || "",
+            model: inv?.model || "",
+            vendor: inv?.vendor || "",
+            notes: inv?.notes || "",
+            attributes: inv?.attributes || {},
+            quantity: prev.quantity
+        }));
+
+        //load image if exists
+        if (inv?.image) {
+            setImagePreview(`https://mlozugcajyiygdgtzbnk.supabase.co/storage/v1/object/public/inventory-images/${inv.image}`);
+        }
+
+        const chosenType = (inv?.type || form.type || "").toLowerCase();
+        if (chosenType) {
+            const t = types.find((x) => x.name?.toLowerCase() === chosenType);
+            setTypeSpecs(t ? (Array.isArray(t.specifications) ? t.specifications : []) : []);
+        }
+
+        setShowNameDropdown(false);
+    }
+
     const handleChange = (e) => {
         const { name, value } = e.target;
 
         setForm(prev => ({ ...prev, [name]: value }))
+
+        if (name === "name") {
+            setShowNameDropdown(value.length > 0);
+        }
     }
 
     const handleAttrChange = (e) => {
@@ -139,6 +203,61 @@ export default function CreatePart() {
         try {
             // Get the selected type to get its name
             const selectedType = types.find(t => t.name === form.type);
+
+            const { data: existing, error: fetchError } = await supabase
+                .from("inventorys")
+                .select("id, quantity, name, type, model, vendor, attributes, region_id, warehouse_id, serial_no, notes, status")
+                .eq("name", (form.name || "").trim())
+                .eq("type", (form.type || "").toLowerCase())
+                .eq("model", (form.model || "").trim())
+                .eq("vendor", (form.vendor || "").trim())
+                .eq("region_id", form.region_id || null)
+                .eq("warehouse_id", form.warehouse_id || null)
+                .eq("serial_no", (form.serial_no || "").trim())
+                .eq("notes", (form.notes || "").trim())
+                .eq("status", form.status)
+                .limit(1)
+                .maybeSingle();
+
+            if (fetchError) throw fetchError;
+
+            // If exact match exists (all fields same except quantity), update quantity
+            if (existing?.id) {
+                const addQty = Number(form.quantity || 1);
+                const nextQty = Number(existing.quantity || 0) + addQty;
+
+                const { error: updateError } = await supabase
+                    .from("inventorys")
+                    .update({ quantity: nextQty })
+                    .eq("id", existing.id);
+
+                if (updateError) throw updateError;
+
+                setToast({
+                    type: "success",
+                    message: "Stock quantity updated successfully."
+                });
+
+                // Reset form
+                setForm({
+                    name: "",
+                    region_id: "",
+                    warehouse_id: "",
+                    status: "active",
+                    serial_no: "",
+                    type: "",
+                    model: "",
+                    vendor: "",
+                    notes: "",
+                    attributes: {},
+                    quantity: 1
+                });
+
+                setTypeSpecs([]);
+                setImagePreview(null);
+                setImageFile(null);
+                return; 
+            }
 
             // Upload image if provided
             let imageUrl = null;
@@ -333,7 +452,26 @@ export default function CreatePart() {
                                 onChange={handleChange}
                                 required
                                 className="w-full p-2.5 border border-gray-300 rounded-lg"
+                                onFocus={() => setShowNameDropdown(form.name.length > 0)}
+                                onBlur={() => setTimeout(() => setShowNameDropdown(false), 200)}
                             />
+
+                            {showNameDropdown && (
+                                <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-lg mt-1 max-h-40 overflow-y-auto">
+                                    {existingInventory
+                                        .filter((inv) => (inv.name || "").toLowerCase().startsWith((form.name || "").toLowerCase()))
+                                        .slice(0, 8)
+                                        .map((inv) => (
+                                            <div
+                                                key={inv.id}
+                                                className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                                                onClick={() => handleNameSuggestionClick(inv)}
+                                            >
+                                                {inv.name}
+                                            </div>
+                                        ))}
+                                </div>
+                            )}
                         </div>
 
                         <div>

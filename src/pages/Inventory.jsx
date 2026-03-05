@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import CardComponent from "../components/card/crad";
 import { CirclePlus, Delete, Download, Edit, Eye, ListFilter, MapPin, Package, Pen, Search, Trash2 } from "lucide-react"
-import Pagination from "../components/pagination/pagination";
 import { Checkbox, Spinner, Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
 import { Dropdown, DropdownItem } from "flowbite-react";
 import EditRegionModal from "../components/region/editregion";
@@ -138,22 +137,9 @@ export default function Inventory() {
 
         (warehouseFilter === "" || inventory.warehouses?.name === warehouseFilter) &&
 
-        (rackFilter === "" || inventory.racks?.name === rackFilter) &&
-
-        inventory.quantity > 0
+        (rackFilter === "" || inventory.racks?.name === rackFilter)
 
     )
-
-    // this is for pagination
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 3;
-
-    const indexOfLast = currentPage * itemsPerPage;
-    const indexOfFirst = indexOfLast - itemsPerPage;
-    const currentInventorys = filteredInventorys.slice(indexOfFirst, indexOfLast);
-
-    const totalPages = Math.ceil(filteredInventorys.length / itemsPerPage);
-
 
     const handleExportCSV = () => {
         const data = inventorys.map(i => ({
@@ -180,7 +166,7 @@ export default function Inventory() {
         exportToCSV(data, `inventorys-${new Date().toISOString().slice(0, 10)}.csv`, headers);
     }
     useEffect(() => {
-        if(profileLoading) return;
+        if (profileLoading) return;
 
         InventoryData();
         fetchWarehouses();
@@ -360,14 +346,13 @@ export default function Inventory() {
                     <Table hoverable>
                         <TableHead>
                             <TableRow>
-                                <TableHeadCell className="p-4">
-                                    <Checkbox />
-                                </TableHeadCell>
+
                                 <TableHeadCell>Name</TableHeadCell>
                                 <TableHeadCell>Serial Number</TableHeadCell>
                                 <TableHeadCell>Warehouse</TableHeadCell>
                                 <TableHeadCell>Rack</TableHeadCell>
                                 <TableHeadCell>Status</TableHeadCell>
+                                <TableHeadCell>Stock</TableHeadCell>
                                 <TableHeadCell colSpan={3}>
                                     <span>Action</span>
                                 </TableHeadCell>
@@ -383,7 +368,7 @@ export default function Inventory() {
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                currentInventorys.length === 0 ? (
+                                filteredInventorys.length === 0 ? (
                                     <TableRow>
                                         <TableCell
                                             colSpan={5}
@@ -394,12 +379,10 @@ export default function Inventory() {
                                     </TableRow>
                                 ) : (
 
-                                    currentInventorys.map((inventory, id) => {
+                                    filteredInventorys.map((inventory, id) => {
                                         return (
                                             <TableRow key={inventory.id} className="bg-white">
-                                                <TableCell className="p-4">
-                                                    <Checkbox />
-                                                </TableCell>
+
                                                 <TableCell className="whitespace-nowrap font-medium text-gray-900">
                                                     {inventory.name}
                                                 </TableCell>
@@ -407,6 +390,17 @@ export default function Inventory() {
                                                 <TableCell>{inventory.warehouses?.name}</TableCell>
                                                 <TableCell>{inventory.racks?.name}</TableCell>
                                                 <TableCell>{inventory.status}</TableCell>
+                                                <TableCell className="whitespace-nowrap">
+                                                    {inventory.quantity > 0 ? (
+                                                        <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                                                            {inventory.quantity} in stock
+                                                        </span>
+                                                        ) : (
+                                                        <span className="whitespace-nowrap bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                                                            Out of Stock
+                                                        </span>
+                                                    )}
+                                                </TableCell>
                                                 <TableCell className="flex items-center space-x-3">
                                                     <Link
                                                         to={
@@ -458,11 +452,7 @@ export default function Inventory() {
                     </Table>
                 </div>
 
-                <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setCurrentPage}
-                />
+
             </div>
 
 

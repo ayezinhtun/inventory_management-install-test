@@ -70,8 +70,8 @@ export default function EngineerRelocationRequests() {
                 <TableHeadCell>Qty</TableHeadCell>
                 <TableHeadCell>Status</TableHeadCell>
                 <TableHeadCell>Requester</TableHeadCell>
-                <TableHeadCell>From</TableHeadCell>
-                <TableHeadCell>To</TableHeadCell>
+                <TableHeadCell>Source</TableHeadCell>
+                <TableHeadCell>Destination</TableHeadCell>
                 <TableHeadCell>Note</TableHeadCell>
               </TableRow>
             </TableHead>
@@ -103,7 +103,13 @@ export default function EngineerRelocationRequests() {
                       <TableCell>{r.quantity}</TableCell>
                       <TableCell>{r.status}</TableCell>
                       <TableCell>{r.requester?.name || ""}</TableCell>
-                      <TableCell>{r.source?.name || ""}</TableCell>
+                      <TableCell>
+                        {r.source_server_id ? (
+                          r.source?.name || ""
+                        ) : (
+                          r.source_warehouse?.name || r.source_region?.name || ""
+                        )}
+                      </TableCell>
                       <TableCell>{r.dest_server?.name || r.dest_warehouse?.name || '-'}</TableCell>
                       <TableCell>{r.notes || ""}</TableCell>
                     </TableRow>

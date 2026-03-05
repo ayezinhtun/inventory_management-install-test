@@ -27,7 +27,7 @@ import AdminInventoryRequest from "./pages/Admin/InventoryReuest"
 import editRequestInventory from "./components/Inventory/editrequestInventory"
 import EditRequestInventory from "./components/Inventory/editrequestInventory"
 import EngineerInstallRequests from "./pages/Engineer/InstallRequest"
-import InventoryInstallRequest from "./pages/Engineer/InventoryInstall"
+import InventoryRelocation from './pages/Engineer/relocation/InventoryRelocation'
 import ComponentInstallRequest from "./pages/Engineer/ComponentInstall"
 import InstallRequestPM from "./pages/PM/InstallRequest"
 import InstallRequestAdmin from "./pages/Admin/InstallRequestAdmin"
@@ -75,9 +75,9 @@ function App() {
           <Route path="/request/engineer" element={<EngineerRequests />} />
           <Route path="/request/edit/:id" element={<EditRequestInventory />} />
           <Route path="/install-requests" element={<EngineerInstallRequests />} />
-          <Route path="/install-requests/inventory" element={<InventoryInstallRequest />} />
           <Route path="install-requests/component" element={<ComponentInstallRequest />}></Route>
 
+          <Route path="/relocation-requests/inventory" element={<InventoryRelocation />} />
           <Route path="/relocation-requests/component" element={<ComponentRelocationRequest />} />
           <Route path="/relocation-requests/myrelocationrequest" element={<EngineerRelocationRequests />} />
 

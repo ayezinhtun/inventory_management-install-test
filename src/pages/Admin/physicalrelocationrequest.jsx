@@ -90,8 +90,8 @@ export default function PhysicalRelocationRequests() {
                 <TableHeadCell>Qty</TableHeadCell>
                 <TableHeadCell>Status</TableHeadCell>
                 <TableHeadCell>Requester</TableHeadCell>
-                <TableHeadCell>From</TableHeadCell>
-                <TableHeadCell>To</TableHeadCell>
+                <TableHeadCell>Source</TableHeadCell>
+                <TableHeadCell>Destination</TableHeadCell>
                 <TableHeadCell>Note</TableHeadCell>
                 <TableHeadCell>{requests.some(r => r.status === 'complete') ? '' : 'Action'}</TableHeadCell>
               </TableRow>
@@ -124,7 +124,13 @@ export default function PhysicalRelocationRequests() {
                       <TableCell>{r.quantity}</TableCell>
                       <TableCell>{r.status}</TableCell>
                       <TableCell>{r.requester?.name || ""}</TableCell>
-                      <TableCell>{r.source?.name || ""}</TableCell>
+                      <TableCell>
+                        {r.source_server_id ? (
+                          r.source?.name || ""
+                        ) : (
+                          r.source_warehouse?.name || r.source_region?.name || ""
+                        )}
+                      </TableCell>
                       <TableCell>{r.dest_server?.name || r.dest_warehouse?.name || '-'}</TableCell>
                       <TableCell>{r.notes || ""}</TableCell>
                       <TableCell className="space-x-3">

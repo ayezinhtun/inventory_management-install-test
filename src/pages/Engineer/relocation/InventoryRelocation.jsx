@@ -1,15 +1,15 @@
 import { Button, Spinner, Table, TableHead, TableBody, TableRow, TableCell, TableHeadCell } from "flowbite-react";
 import { MoveLeft } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useUserProfiles } from "../../context/UserProfileContext";
+import { useUserProfiles } from "../../../context/UserProfileContext";
 import { useEffect, useState } from "react";
-import { supabase } from "../../../supabase/supabase-client";
-import { getRegion } from "../../context/RegionContext";
-import { getWarehouse, getWarehousebyRegion } from "../../context/WarehouseContext";
-import { fetchRack, fetchRackbyWarehouse } from "../../context/RackContext";
-import { createInstallRequest } from "../../context/InstallRequest";
-import AppToast from '../../components/toast/Toast'
-import { fetchInventory, fetchInventoryByRegions } from "../../context/InventoryContext";
+import { supabase } from "../../../../supabase/supabase-client";
+import { getRegion } from "../../../context/RegionContext";
+import { getWarehouse, getWarehousebyRegion } from "../../../context/WarehouseContext";
+import { fetchRack, fetchRackbyWarehouse } from "../../../context/RackContext";
+import { createRelocationRequest } from "../../../context/RelocationContext";
+import AppToast from '../../../components/toast/Toast'
+import { fetchInventory, fetchInventoryByRegions } from "../../../context/InventoryContext";
 
 export default function InventoryInstallRequest() {
     const [toast, setToast] = useState(null);
@@ -184,8 +184,11 @@ export default function InventoryInstallRequest() {
         setLoading(true);
 
         try {
-            await createInstallRequest({
+            await createRelocationRequest({
                 inventory_id: form.inventory_id,
+                source_server_id: null,
+                destination_move_type: 'warehouse',
+                destination_server_id: null,
                 quantity: 1,
                 requested_by: profile.id,
                 notes: form.notes,
@@ -193,12 +196,19 @@ export default function InventoryInstallRequest() {
                 destination_warehouse_id: form.destination_warehouse_id,
                 destination_rack_id: form.destination_rack_id || null,
                 destination_start_unit: form.destination_start_unit || null,
-                destination_height: form.destination_height || null
+                destination_height: form.destination_height || null, 
+
+                 // Store original location (only for inventory relocations)
+                source_region_id: selectedDevice.region_id,
+                source_warehouse_id: selectedDevice.warehouse_id,
+                source_rack_id: selectedDevice.rack_id,
+                source_start_unit: selectedDevice.start_unit,
+                source_height: selectedDevice.height,
             });
 
             setToast({
                 type: "success",
-                message: "Installation request submitted! Waiting for approval"
+                message: "Relocation request submitted! Waiting for approval"
             })
 
 
@@ -230,7 +240,7 @@ export default function InventoryInstallRequest() {
                 <div className="mb-5 flex items-center justify-between">
                     <div className="flex items-center">
                         <Link to="/inventory" className="p-2 hover:bg-gray-100 rounded-sm flex items-center me-2"><MoveLeft /></Link>
-                        <h1 className="font-bold text-[24px]">Create Inventory Request</h1>
+                        <h1 className="font-bold text-[24px]">Create Relocation Inventory</h1>
                     </div>
                     <Button
                         type="submit"
