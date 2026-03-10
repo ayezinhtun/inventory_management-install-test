@@ -35,6 +35,7 @@ export default function CustomerInventory() {
 
         (nameFilter === "" || c.customers?.contact_person === nameFilter)
     )
+    
 
     const currentInventorys = filteredInventorys;
 
