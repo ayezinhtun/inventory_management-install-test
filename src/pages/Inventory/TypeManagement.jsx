@@ -387,7 +387,7 @@ export default function TypeManagementPage() {
                                     name="name"
                                     value={form.name}
                                     onChange={handleFormChange}
-                                    placeholder="e.g., server, switch, router"
+                                    placeholder="e.g., ram, SSD"
                                     className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300 text-gray-700"
                                     required
                                 />
@@ -401,7 +401,7 @@ export default function TypeManagementPage() {
                                     name="description"
                                     value={form.description}
                                     onChange={handleFormChange}
-                                    placeholder="Brief description of this inventory type"
+                                    placeholder="Description of this inventory type"
                                     rows={3}
                                     className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300 text-gray-700"
                                 />
