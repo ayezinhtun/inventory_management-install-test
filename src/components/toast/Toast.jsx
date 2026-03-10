@@ -1,4 +1,5 @@
 import { Toast, ToastToggle } from "flowbite-react";
+import { useEffect } from "react";
 import { HiCheck, HiExclamation, HiX } from "react-icons/hi";
 
 export default function AppToast({ type = "success", message, onClose }) {
@@ -18,6 +19,16 @@ export default function AppToast({ type = "success", message, onClose }) {
   };
 
   const { icon, bg } = config[type];
+
+  // Auto-dimiss after 3 seconds 
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onClose();
+    }, 3000);
+
+    return () => clearTimeout(timer); 
+  }, [onClose]);
 
   return (
     <Toast>

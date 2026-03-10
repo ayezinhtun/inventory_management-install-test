@@ -4,13 +4,17 @@ import { supabase } from "../../supabase/supabase-client";
 import { useUserProfiles } from "../context/UserProfileContext";
 import { NotificationContext } from "../context/NotificationContext";
 import { Spinner } from "flowbite-react";
+import AppToast from "../components/toast/Toast";
 
 export default function Notification() {
   const { profile } = useUserProfiles();
-  const { notifications, readIds, reload } = useContext(NotificationContext);
+  const { notifications, readIds, reload, optimisticDelete, optimisticMarkRead } = useContext(NotificationContext);
 
   const [loading, setLoading] = useState(false);
   const [pending, setPending] = useState(new Set());
+  const [toast, setToast] = useState(null);
+
+  console.log('Notifications in UI:', notifications);
 
   // helper: relative time
   const toRelativeTime = (iso) => {
@@ -112,6 +116,48 @@ export default function Notification() {
     }
   };
 
+  const deleteNotification = async (notificationId) => {
+    if (!profile?.id || !notificationId) return;
+    if (pending.has(notificationId)) return;
+
+    const isConfirmed = window.confirm("Are you sure you want to delete this notification?");
+    if (!isConfirmed) return;
+
+    setPending((prev) => {
+      const s = new Set(prev);
+      s.add(notificationId);
+      return s;
+    });
+
+    try {
+      await supabase.from("notification_deletions").insert({
+        notification_id: notificationId,
+        deleted_by: profile.id,
+      });
+
+      // Updte immediately (no refresh needed)
+      optimisticDelete?.(notificationId);
+
+      setToast({
+        type: "success",
+        message: "Notification deleted successfully!"
+      });
+
+    } catch (error) {
+      console.error("Error deleting notification:", error);
+      setToast({
+        type: "error",
+        message: "Failed to delete notification!"
+      });
+    } finally {
+      setPending((prev) => {
+        const s = new Set(prev);
+        s.delete(notificationId);
+        return s;
+      })
+    }
+  }
+
   // mark all as read
   const markAllAsRead = async () => {
     if (!profile?.id) return;
@@ -200,15 +246,31 @@ export default function Notification() {
                       />
                     </div>
 
-                    <div className="hover:bg-gray-100 hover:rounded-lg p-2">
+                    <div
+                      className={`hover:bg-gray-100 hover:rounded-lg p-2 ${pending.has(noti.id) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                      onClick={() => !pending.has(noti.id) && deleteNotification(noti.id)}
+                      title={pending.has(noti.id) ? 'Deleting...' : 'Delete notification'}
+                    >
                       <Trash2 className="text-red-500" />
                     </div>
+
                   </div>
                 </div>
               );
             })}
         </div>
       </div>
+
+      {toast && (
+        <div className="fixed top-5 right-5 z-50">
+          <AppToast
+            type={toast.type}
+            message={toast.message}
+            onClose={() => setToast(null)}
+          />
+        </div>
+      )}
+
     </div>
   );
 }

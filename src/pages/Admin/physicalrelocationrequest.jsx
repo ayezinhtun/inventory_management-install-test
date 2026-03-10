@@ -18,7 +18,13 @@ export default function PhysicalRelocationRequests() {
     try {
       // Physical sees items awaiting completion and completed history
       const data = await getRelocationRequests(["admin_approved", "complete"]);
-      setRequests(data || []);
+
+      // show only requests created by this user
+      const myRequests = data.filter(
+        r => r.requested_by === profile?.id
+      );
+
+      setRequests(myRequests || []);
     } catch (e) {
       setToast({ type: "error", message: e.message });
     } finally {
@@ -26,9 +32,13 @@ export default function PhysicalRelocationRequests() {
     }
   };
 
-  useEffect(() => { fetchRequests(); }, []);
+  useEffect(() => {
+    if (profile?.id) {
+      fetchRequests();
+    }
+  }, [profile]);
 
-  const handleComplete = async (id) => {
+  const handleComplete = async (relocationId) => {
     if (!profile?.id) {
       setToast({ type: "error", message: "Operator not logged in!" });
       return;
@@ -36,7 +46,7 @@ export default function PhysicalRelocationRequests() {
     const ok = window.confirm("Mark as complete?");
     if (!ok) return;
     try {
-      await updateRelocationRequestStatus(id, "complete", profile.id);
+      await updateRelocationRequestStatus(relocationId, "complete", profile.id);
 
       setToast({ type: "success", message: "Completed!" });
       fetchRequests();
@@ -109,7 +119,7 @@ export default function PhysicalRelocationRequests() {
                 requests.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={7}
+                      colSpan={8}
                       className="text-center"
                     >
                       No Request found
@@ -135,8 +145,13 @@ export default function PhysicalRelocationRequests() {
                       <TableCell>{r.notes || ""}</TableCell>
                       <TableCell className="space-x-3">
                         {r.status === 'admin_approved' && (
+
                           <button
-                            onClick={() => handleComplete(r.id)}
+
+                            onClick={() => {
+                              console.log('🔍 About to call handleComplete with:', r.id);
+                              handleComplete(r.id);
+                            }}
                             className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 transition'
                           >
                             <span>Complete</span>

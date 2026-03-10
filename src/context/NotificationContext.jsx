@@ -9,6 +9,7 @@ export function NotificationProvider({ children }) {
   const { profile } = useUserProfiles();
   const [notifications, setNotifications] = useState([]);
   const [readIds, setReadIds] = useState(new Set());
+  const [deletedIds, setDeletedIds] = useState(new Set());
 
   // Derive assigned region IDs from profile.assignments.regions
   const assignedRegionStrings = useMemo(
@@ -19,16 +20,28 @@ export function NotificationProvider({ children }) {
   // Role-based visibility
   const visibleFilter = (n) => {
     const role = (profile?.role || '').toLowerCase();
+
+    console.log('🔍 Checking notification:', n.id, 'for role:', role);
+    console.log('👤 User ID:', profile?.id, 'actor_user_id:', n.actor_user_id, 'requested_by:', n.requested_by);
+
     if (role === 'admin') {
       const s = (n.status || '').toLowerCase();
-      return ['pm_approved', 'admin_approved', 'complete'].includes(s);
+      const result = ['pm_approved', 'admin_approved', 'complete', 'rejected'].includes(s);
+      console.log('Admin filter result:', result); 
+      return result;
     }
     if (role === 'pm') {
       if (!assignedRegionStrings.length) return false;
-      return assignedRegionStrings.includes(String(n.region_id));
+      const result =assignedRegionStrings.includes(String(n.region_id));
+      console.log('PM filter result:', result, 'region:', n.region_id);
+      return result;
     }
+
     // engineer: actor or requester
-    return n.actor_user_id === profile?.id || n.requested_by === profile?.id;
+    const result = n.actor_user_id === profile?.id || n.requested_by === profile?.id;
+
+    console.log('Engineer filter result:', result);
+    return result;
   };
 
   const load = async () => {
@@ -70,10 +83,26 @@ export function NotificationProvider({ children }) {
       return;
     }
 
+    const { data: deletedData, error: deletedErr } = await supabase
+      .from('notification_deletions')
+      .select('notification_id')
+      .eq('deleted_by', profile.id);
+
+    if (deletedErr) {
+      console.error('notification_deletions load error', deletedErr);
+      return;
+    }
+
     const readSet = new Set((readsData || []).map((r) => r.notification_id));
-    setNotifications((notifData || []).filter(visibleFilter));
+    const deletedSet = new Set((deletedData || []).map((d) => d.notification_id));
+    const filteredNotifications = (notifData || []).filter(n =>
+      visibleFilter(n) && !deletedSet.has(n.id)
+    );
+    setNotifications(filteredNotifications);
     setReadIds(readSet);
+    setDeletedIds(deletedSet);
   };
+
 
   useEffect(() => {
     load();
@@ -82,6 +111,9 @@ export function NotificationProvider({ children }) {
   useEffect(() => {
     if (!profile?.id) return;
 
+    console.log('👤 Setting up real-time for user:', profile.id, 'role:', profile.role);
+    console.log('🌍 Assigned regions:', assignedRegionStrings);
+
     const channel = supabase.channel('notifications-live');
 
     // New notifications (INSERT). Payload won't include embedded names; rely on title from trigger.
@@ -89,12 +121,14 @@ export function NotificationProvider({ children }) {
       'postgres_changes',
       { event: 'INSERT', schema: 'public', table: 'notifications' },
       (payload) => {
+        console.log('📥 INSERT listener fired:', payload.new);
         const n = payload.new;
         if (visibleFilter(n)) {
           setNotifications((prev) => [n, ...prev].slice(0, 200));
         }
       }
     );
+
 
     // New read receipts for this user
     channel.on(
@@ -109,11 +143,61 @@ export function NotificationProvider({ children }) {
       }
     );
 
-    channel.subscribe();
+    // New deletions for this user
+    channel.on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'notification_deletions', filter: `deleted_by=eq.${profile.id}` },
+      (payload) => {
+        setDeletedIds((prev) => {
+          const s = new Set(prev);
+          s.add(payload.new.notification_id);
+          return s;
+        });
+
+        // Remove from notifications list
+        setNotifications((prev) => prev.filter(n => n.id !== payload.new.notification_id));
+      }
+    );
+
+    // UPDATE listener
+    channel.on(
+      'postgres_changes',
+      { event: 'UPDATE', schema: 'public', table: 'notifications' },
+      (payload) => {
+        console.log('🔄 UPDATE listener fired:', payload.new);
+        const updated = payload.new;
+        if (visibleFilter(updated)) {
+          setNotifications((prev) => {
+            const index = prev.findIndex(n => n.id === updated.id);
+            if (index !== -1) {
+              const updatedList = [...prev];
+              updatedList[index] = updated;
+              return updatedList;
+            }
+            return prev;
+          });
+        }
+      }
+    );
+
+    channel.subscribe((status) => {
+      console.log('🔌 Channel subscription status:', status);
+      if (status === 'SUBSCRIBED') {
+        console.log('✅ Successfully subscribed to real-time updates');
+      } else if (status === 'CHANNEL_ERROR') {
+        console.error('❌ Channel subscription error:', status);
+      } else if (status === 'TIMED_OUT') {
+        console.error('❌ Channel subscription timed out:', status);
+      }
+    });
     return () => {
       supabase.removeChannel(channel);
     };
+
   }, [profile?.id, profile?.role, JSON.stringify(assignedRegionStrings)]);
+
+
+
 
   const unreadCount = useMemo(() => {
     return notifications.filter((n) => !readIds.has(n.id)).length;
@@ -127,6 +211,18 @@ export function NotificationProvider({ children }) {
     });
   };
 
+
+  const optimisticDelete = (notificationId) => {
+    setDeletedIds(prev => {
+      const s = new Set(prev);
+      s.add(notificationId);
+      return s;
+    });
+
+    // Remove form notifications list immediately
+    setNotifications(prev => prev.filter(n => n.id !== notificationId));
+  }
+
   const value = useMemo(
     () => ({
       notifications,
@@ -134,8 +230,9 @@ export function NotificationProvider({ children }) {
       unreadCount,
       reload: load,
       optimisticMarkRead,
+      optimisticDelete,
     }),
-    [notifications, readIds, unreadCount, optimisticMarkRead]
+    [notifications, readIds, unreadCount, optimisticMarkRead, optimisticDelete]
   );
 
   return <NotificationContext.Provider value={value}>{children}</NotificationContext.Provider>;

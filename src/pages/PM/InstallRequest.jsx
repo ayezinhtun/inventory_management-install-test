@@ -222,9 +222,6 @@ export default function InstallRequestPM() {
                                 <TableHeadCell>Status</TableHeadCell>
                                 <TableHeadCell>Requester</TableHeadCell>
                                 <TableHeadCell>Destination Server</TableHeadCell>
-                                <TableHeadCell>Destination Region</TableHeadCell>
-                                <TableHeadCell>Destination Warehouse</TableHeadCell>
-                                <TableHeadCell>Destination Rack</TableHeadCell>
                                 <TableHeadCell>Note</TableHeadCell>
 
 

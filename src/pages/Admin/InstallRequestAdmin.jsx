@@ -61,7 +61,7 @@ export default function InstallRequestAdmin() {
                 req.id === id ? { ...req, status } : req
             ));
 
-            
+
             setToast({
                 type: "success",
                 message: "Request Approve successfully!"
@@ -197,8 +197,8 @@ export default function InstallRequestAdmin() {
                                 <TableHeadCell>Requester</TableHeadCell>
                                 <TableHeadCell>Destination Server</TableHeadCell>
                                 <TableHeadCell>Destination Region</TableHeadCell>
-                                <TableHeadCell>Destination Warehouse</TableHeadCell>
-                                <TableHeadCell>Destination Rack</TableHeadCell>
+                                {/* <TableHeadCell>Destination Warehouse</TableHeadCell>
+                                <TableHeadCell>Destination Rack</TableHeadCell> */}
                                 <TableHeadCell>Note</TableHeadCell>
 
                                 <TableHeadCell>
@@ -219,7 +219,7 @@ export default function InstallRequestAdmin() {
                                 requests.length === 0 ? (
                                     <TableRow>
                                         <TableCell
-                                            colSpan={9}
+                                            colSpan={7}
                                             className="text-center"
                                         >
                                             No Request found
@@ -244,8 +244,8 @@ export default function InstallRequestAdmin() {
                                                 <TableCell>{request.requester.name}</TableCell>
                                                 <TableCell>{request.server?.name || ''}</TableCell>
                                                 <TableCell>{request.region?.name || ''}</TableCell>
-                                                <TableCell>{request.warehouse?.name || ''}</TableCell>
-                                                <TableCell>{request.rack?.name || ''}</TableCell>
+                                                {/* <TableCell>{request.warehouse?.name || ''}</TableCell>
+                                                <TableCell>{request.rack?.name || ''}</TableCell> */}
                                                 <TableCell>{request.notes}</TableCell>
 
                                                 {request.status === 'pm_approved' && (
@@ -253,12 +253,13 @@ export default function InstallRequestAdmin() {
                                                         <TableCell className="flex item-center space-x-3">
                                                             <button
                                                                 onClick={() => {
-                                                                    if (!profile?.id)
-                                                                        return
-                                                                    setToast({
-                                                                        type: "error",
-                                                                        message: "Admin Not logged in yet!"
-                                                                    })
+                                                                    if (!profile?.id) {
+                                                                        setToast({
+                                                                            type: "error",
+                                                                            message: "Admin Not logged in yet!"
+                                                                        })
+                                                                    }
+
                                                                     handleStatusChange(request.id, "admin_approved")
                                                                 }}
                                                                 className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-offset-2 transition'

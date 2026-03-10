@@ -8,6 +8,38 @@ export const createInstallRequest = async (payload) => {
     status: 'pm_approve_pending'
   };
 
+  if(payload.server_id) {
+    try {
+      // Get region from the selected device
+      const {data: deviceData, error: deviceError} = await supabase
+        .from('inventorys')
+        .select('region_id, type, name')
+        .eq('id', payload.server_id)
+        .single(); 
+
+        if(deviceError) {
+          console.error('Colud not get device region:', deviceError);
+          throw new Error('Device not found or has no region assigned');
+        }
+
+        if(!deviceData.region_id) {
+          console.error('Device has no region_id:', deviceData); 
+          throw new Error('Device has no region assigned');
+        }
+
+        // Set the destination_region_id from the device
+        newPayload.destination_region_id = deviceData.region_id;
+        console.log('Got region from device:', deviceData.name, deviceData.region_id);
+
+    } catch (error) {
+      console.error('Error getting device region:', error);
+      throw error;
+    }
+  } else {
+    throw new Error('Device is required for installation requests');
+  }
+
+
   const { data, error } = await supabase
     .from('installation_requests')
     .insert([newPayload])
@@ -120,7 +152,10 @@ export const updateInstallRequestStatus = async (id, status, userId) => {
   if (status === "pm_approved") payload.pm_approved_at = new Date().toISOString();
   if (status === "admin_approved") payload.admin_approved_at = new Date().toISOString();
   if (status === "rejected") payload.rejected_at = new Date().toISOString();
-  if (status === "complete") payload.completed_at = new Date().toISOString();
+  if (status === "complete") {
+    payload.completed_at = new Date().toISOString();
+    payload.completed_by = userId;
+  }
 
   // 4️⃣ Handle complete (installation)
   if (status === "complete") {

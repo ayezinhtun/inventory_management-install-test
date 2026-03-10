@@ -129,6 +129,7 @@ export default function RequestInventory() {
                 quantity: parseInt(form.quantity),
                 notes: form.notes,
                 image: imageUrl,
+                regions: profile.region_id ? [profile.region_id] : []
             });
 
             setToast({
@@ -136,7 +137,11 @@ export default function RequestInventory() {
                 message: "Request submitted successfully!"
             })
             // setForm({ item_name: "", quantity: 1, notes: "" });
-            navigate('/request/engineer');
+
+            setTimeout(() => {
+                navigate('/request/engineer');
+            }, 1000);
+
             setImageFile(null);
             setImagePreview(null);
         } catch (err) {

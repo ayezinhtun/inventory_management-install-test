@@ -32,11 +32,11 @@ export default function PasswordTab() {
     }
     return (
         <div>
-            <h3 className="text-[20px] font-bold mb-6">Change Password</h3>
+            <h3 className="text-[20px] font-medium mb-6">Change Password</h3>
 
             <div className="flex flex-col space-y-4">
                 <div className="flex flex-col space-y-2">
-                    <label htmlFor="" className="text-gray-700 font-bold" >Current Password</label>
+                    <label htmlFor="" className="text-gray-700 font-medium" >Current Password</label>
 
                     <div className="relative flex items-center">
                         <input
@@ -57,7 +57,7 @@ export default function PasswordTab() {
                 </div>
 
                 <div className="flex flex-col space-y-2">
-                    <label htmlFor="" className="text-gray-700 font-bold" >New Password</label>
+                    <label htmlFor="" className="text-gray-700 font-medium" >New Password</label>
                     <div className="relative flex items-center">
                         <input
                             type={showNewPassword ? "text" : "password"}
@@ -76,7 +76,7 @@ export default function PasswordTab() {
                 </div>
 
                 <div className="flex flex-col space-y-2">
-                    <label htmlFor="" className="text-gray-700 font-bold" >Confirm New Password</label>
+                    <label htmlFor="" className="text-gray-700 font-medium" >Confirm New Password</label>
                     <div className="relative flex items-center">
                         <input
                             type={showConfirmPassword ? "text" : "password"}

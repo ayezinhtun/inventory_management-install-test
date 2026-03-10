@@ -117,7 +117,7 @@ export const clearAllAuditLogs = async () => {
   const { error } = await supabase
     .from("audit_logs")
     .delete()
-    .gt("id", 0);
+    .not("id", "is", null);
 
   if (error) throw error;
 };

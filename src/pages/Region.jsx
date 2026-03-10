@@ -55,15 +55,7 @@ export default function Region() {
         (nameFilter === "" || region.name === nameFilter)
     )
 
-    // this is for pagination
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 3;
-
-    const indexOfLast = currentPage * itemsPerPage;
-    const indexOfFirst = indexOfLast - itemsPerPage;
-    const currentRegions = filteredRegions.slice(indexOfFirst, indexOfLast);
-
-    const totalPages = Math.ceil(filteredRegions.length / itemsPerPage);
+    const currentRegions = filteredRegions;
 
     // for edit
 
@@ -256,11 +248,6 @@ export default function Region() {
                     </Table>
                 </div>
 
-                <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setCurrentPage}
-                />
 
             </div>
 

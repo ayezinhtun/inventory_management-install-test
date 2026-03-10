@@ -154,12 +154,15 @@ export default function Audit() {
 
 
           <div className="flex space-x-5">
-            <div
-              className="flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-red-500 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2 transition"
-              onClick={handleClearAll}
-            >
-              <span>Clear All</span>
-            </div>
+            {profile.role === "admin" && (
+              <div
+                className="flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-red-500 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2 transition"
+                onClick={handleClearAll}
+              >
+                <span>Clear All</span>
+              </div>
+            )}
+
             {/* <div
               className="flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-[#26599F] hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2 transition"
               onClick={fetchAudits}
@@ -214,9 +217,7 @@ export default function Audit() {
                 <TableHeadCell>Email</TableHeadCell>
                 <TableHeadCell>Action</TableHeadCell>
                 <TableHeadCell>Date</TableHeadCell>
-                <TableHeadCell>
-                  <span>Action</span>
-                </TableHeadCell>
+
               </TableRow>
             </TableHead>
             <TableBody className="divide-y divide-gray-200">
@@ -255,12 +256,14 @@ export default function Audit() {
                       <TableCell>
                         {new Date(audit.date).toLocaleString()}
                       </TableCell>
-                      <TableCell className="flex items-center space-x-3">
-                        <Trash2
-                          className="text-red-500 hover:text-red-700 cursor-pointer"
-                          onClick={() => handleDelete(audit)}
-                        />
-                      </TableCell>
+                      {profile.role === "admin" && (
+                        <TableCell className="flex items-center space-x-3">
+                          <Trash2
+                            className="text-red-500 hover:text-red-700 cursor-pointer"
+                            onClick={() => handleDelete(audit)}
+                          />
+                        </TableCell>
+                      )}
                     </TableRow>
                   ))
                 )

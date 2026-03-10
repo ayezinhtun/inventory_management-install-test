@@ -47,6 +47,8 @@ export const fetchAllInventoryRequest = async () => {
             status, 
             image, 
             created_at, 
+            updated_at, 
+            regions, 
             requester:user_profile (
                 id, 
                 name, 

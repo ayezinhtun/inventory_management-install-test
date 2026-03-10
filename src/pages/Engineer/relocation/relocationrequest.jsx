@@ -178,6 +178,16 @@ export default function ComponentRelocationRequest() {
         quantity: Number(quantity),
         requested_by: profile.id,
         notes,
+        specifications: selectedInstalled.attributes || {},
+        component_name: selectedInstalled.component?.name,
+        component_type: selectedInstalled.component?.type,
+      });
+
+      console.log('🔍 Form sending:', {
+        selectedInstalled,
+        specs: selectedInstalled.attributes,
+        name: selectedInstalled.component?.name,
+        type: selectedInstalled.component?.type
       });
 
       await supabase.rpc('log_event', {

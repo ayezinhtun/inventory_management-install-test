@@ -44,9 +44,6 @@ export default function AdminRelocationRequests() {
         p_subject_id: id,
         p_meta: {}
       });
-
-
-
       setToast({ type: "success", message: "Status updated!" });
       fetchRequests();
     } catch (err) {

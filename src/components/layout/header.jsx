@@ -45,7 +45,7 @@ export default function Header() {
 
       <div className="flex items-center gap-2">
         <Link to='/notification'>
-          <button type="button" className="relative flex">
+          <button type="button" className="relative flex" key={unreadCount}>
             <Bell
               className={`me-3 font-bold ${location.pathname === '/notification' ? 'text-[#26599F]' : 'text-gray-600 hover:text-[#26599F]'}`}
               size={28}

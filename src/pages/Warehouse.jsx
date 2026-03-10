@@ -48,15 +48,7 @@ export default function Warehouse() {
     )
 
 
-    // this is for pagination
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 3;
-
-    const indexOfLast = currentPage * itemsPerPage;
-    const indexOfFirst = indexOfLast - itemsPerPage;
-    const currentWarehouses = filteredWarehouses.slice(indexOfFirst, indexOfLast);
-
-    const totalPages = Math.ceil(filteredWarehouses.length / itemsPerPage);
+    const currentWarehouses = filteredWarehouses;
 
 
     //for fetch region
@@ -306,12 +298,6 @@ export default function Warehouse() {
                         </TableBody>
                     </Table>
                 </div>
-
-                <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setCurrentPage}
-                />
 
             </div>
 

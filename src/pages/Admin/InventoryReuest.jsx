@@ -8,12 +8,15 @@ import Pagination from "../../components/pagination/pagination";
 import { exportToCSV } from "../../utils/exportUtils";
 import AppToast from "../../components/toast/Toast";
 import { useUserProfiles } from "../../context/UserProfileContext";
+import { supabase } from "../../../supabase/supabase-client";
 
 export default function AdminInventoryRequest() {
     const { profile } = useUserProfiles();
     const isAdmin = profile?.role === "admin";
 
     const [toast, setToast] = useState(null);
+
+    const [pmRegions, setPmRegions] = useState([]);
 
     const navigate = useNavigate();
 
@@ -36,6 +39,32 @@ export default function AdminInventoryRequest() {
     useEffect(() => {
         loadRequests();
     }, []);
+
+    useEffect(() => {
+
+        const fetchPMRegions = async () => {
+            // Fix case sensitivity - role is 'PM' not 'pm'
+            if (!profile?.id || profile?.role !== 'PM') {
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .from('user_regions')
+                    .select('region_id')
+                    .eq('user_id', profile.id);
+
+
+                if (error) throw error;
+                setPmRegions(data.map(r => r.region_id));
+            } catch (err) {
+                console.error('Failed to fetch PM regions:', err);
+            }
+        };
+
+
+        fetchPMRegions();
+    }, [profile?.id, profile?.role]);
 
     const loadRequests = async () => {
         try {
@@ -76,28 +105,44 @@ export default function AdminInventoryRequest() {
         }
     }
 
-    const filteredRequests = requests.filter(request =>
-        request.item_name.toLowerCase().includes(searchItem.toLowerCase()) &&
+    const filteredRequests = requests.filter(request => {
+        // Base filtering by search, name, and status
+        const baseFilter =
+            request.item_name.toLowerCase().includes(searchItem.toLowerCase()) &&
+            (nameFilter === "" || request.item_name === nameFilter) &&
+            (statusFilter === "" || request.status === statusFilter);
 
-        (nameFilter === "" || request.item_name === nameFilter) &&
+        // If admin, show all requests that pass base filter
+        if (isAdmin) {
+            return baseFilter;
+        }
 
-        (statusFilter === "" || request.status === statusFilter)
-    )
+        // If PM, filter by assigned regions from user_regions table
+        const userRegions = pmRegions; // Use  PM regions
+        const requestRegions = request.regions || [];
 
-    const [currentPage, setCurrentPage] = useState(1);
-    const itmesPerPage = 3;
+        // Convert both to strings for comparison
+        const userRegionStrings = userRegions.map(String);
+        const requestRegionStrings = requestRegions.map(String);
 
-    const indexOfLast = currentPage * itmesPerPage;
-    const indexOfFirst = indexOfLast - itmesPerPage;
-    const currentRegions = filteredRequests.slice(indexOfFirst, indexOfLast);
+        // Check if request has any region that matches PM's assigned regions
+        const hasMatchingRegion = requestRegionStrings.some(region =>
+            userRegionStrings.includes(region)
+        );
 
-    const totalPages = Math.ceil(filteredRequests.length / itmesPerPage);
+        return baseFilter && hasMatchingRegion;
+    });
 
-    const totalRequests = requests.length;
-    const pendingRequests = requests.filter(r => r.status === "pending").length;
-    const purchaseRequests = requests.filter(r => r.status === "purchase").length;
-    const rejectedCount = requests.filter(r => r.status === 'rejected').length;
-    const availableCount = requests.filter(r => r.status === 'available').length;
+    const currentRequests = filteredRequests;
+
+    const sourceData = isAdmin ? requests : filteredRequests;
+
+    const totalRequests = sourceData.length;
+    const pendingRequests = sourceData.filter(r => r.status === "pending").length;
+    const purchaseRequests = sourceData.filter(r => r.status === "approved").length;
+    const rejectedCount = sourceData.filter(r => r.status === "rejected").length;
+    const availableCount = sourceData.filter(r => r.status === "available").length;
+
 
 
     const handleExportCSV = () => {
@@ -256,7 +301,7 @@ export default function AdminInventoryRequest() {
                                 filteredRequests.length === 0 ? (
                                     <TableRow>
                                         <TableCell
-                                            colSpan={6}
+                                            colSpan={7}
                                             className="text-center"
                                         >
                                             No Request found
@@ -345,11 +390,7 @@ export default function AdminInventoryRequest() {
                         </TableBody>
                     </Table>
                 </div>
-                <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setCurrentPage}
-                />
+                
 
             </div>
 

@@ -104,16 +104,7 @@ export default function Customer() {
         (nameFilter === "" || customer.contact_person === nameFilter)
     )
 
-    // this is for pagination
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 3;
-
-    const indexOfLast = currentPage * itemsPerPage;
-    const indexOfFirst = indexOfLast - itemsPerPage;
-    const currentCustomers = filteredCustomers.slice(indexOfFirst, indexOfLast);
-
-    const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
-
+    const currentCustomers = filteredCustomers;
 
     useEffect(() => {
         fetchCustomer();
@@ -266,11 +257,7 @@ export default function Customer() {
                     </Table>
                 </div>
 
-                <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setCurrentPage}
-                />
+                
 
             </div>
 

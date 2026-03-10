@@ -181,6 +181,9 @@ export default function Inventory() {
 
             <div className="grid grid-cols-3 gap-10 mb-5">
                 <CardComponent title="Total Inventory" count={inventorys.length} icon={Package} color="bg-blue-100" iconColor="text-blue-600" />
+                <CardComponent title="In Stock" count={inventorys.filter(item => item.quantity > 0).length} icon={Package} color="bg-blue-100" iconColor="text-green-600" />
+                <CardComponent title="Out of Stock" count={inventorys.filter(item => item.quantity === 0).length} icon={Package} color="bg-blue-100" iconColor="text-red-600" />
+
             </div>
 
             <div className="bg-white shadow rounded-lg border border-gray-200 overflow-auto">
@@ -395,7 +398,7 @@ export default function Inventory() {
                                                         <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
                                                             {inventory.quantity} in stock
                                                         </span>
-                                                        ) : (
+                                                    ) : (
                                                         <span className="whitespace-nowrap bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
                                                             Out of Stock
                                                         </span>

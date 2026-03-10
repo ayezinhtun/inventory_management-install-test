@@ -23,7 +23,13 @@ export default function PhysicalInstall() {
 
         try {
             const data = await getInstallRequests(comStatus);
-            setRequests(data);
+
+            // show only requests created by this user
+            const myRequests = data.filter(
+                r => r.requested_by === profile?.id
+            );
+
+            setRequests(myRequests);
         } catch (error) {
             console.error('Error fetching requests:', error);
         } finally {
@@ -32,8 +38,10 @@ export default function PhysicalInstall() {
     }
 
     useEffect(() => {
-        fetchRequests();
-    }, []);
+        if (profile?.id) {
+            fetchRequests();
+        }
+    }, [profile]);
 
     const handleComplete = async (id) => {
         if (!profile?.id) {
@@ -214,47 +222,47 @@ export default function PhysicalInstall() {
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    
-                                        requests.map((request => {
-                                            return (
-                                                <TableRow key={request.id} className="bg-white">
-                                                    <TableCell className="p-4">
-                                                        <Checkbox />
-                                                    </TableCell>
-                                                    <TableCell className="whitespace-nowrap font-medium text-gray-900">
-                                                        {request.component.name}
-                                                    </TableCell>
-                                                    <TableCell>{request.quantity}</TableCell>
-                                                    <TableCell>
-                                                        {request.status}
-                                                    </TableCell>
 
-                                                    <TableCell>{request.requester.name}</TableCell>
-                                                    <TableCell>{request.server?.name || ''}</TableCell>
-                                                    <TableCell>{request.region?.name || ''}</TableCell>
-                                                    <TableCell>{request.warehouse?.name || ''}</TableCell>
-                                                    <TableCell>{request.rack?.name || ''}</TableCell>
-                                                    <TableCell>{request.notes}</TableCell>
+                                    requests.map((request => {
+                                        return (
+                                            <TableRow key={request.id} className="bg-white">
+                                                <TableCell className="p-4">
+                                                    <Checkbox />
+                                                </TableCell>
+                                                <TableCell className="whitespace-nowrap font-medium text-gray-900">
+                                                    {request.component.name}
+                                                </TableCell>
+                                                <TableCell>{request.quantity}</TableCell>
+                                                <TableCell>
+                                                    {request.status}
+                                                </TableCell>
 
-                                                    {request.status === 'admin_approved' && (
-                                                        <>
-                                                            <TableCell className="flex item-center space-x-3">
-                                                                <button
-                                                                    onClick={() => handleComplete(request.id)}
-                                                                    className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-offset-2 transition'
-                                                                >
-                                                                    <span>Complete</span>
-                                                                </button>
-                                                            </TableCell>
-                                                        </>
-                                                    )}
+                                                <TableCell>{request.requester.name}</TableCell>
+                                                <TableCell>{request.server?.name || ''}</TableCell>
+                                                <TableCell>{request.region?.name || ''}</TableCell>
+                                                <TableCell>{request.warehouse?.name || ''}</TableCell>
+                                                <TableCell>{request.rack?.name || ''}</TableCell>
+                                                <TableCell>{request.notes}</TableCell>
 
-                                                </TableRow>
-                                            )
-                                        }
+                                                {request.status === 'admin_approved' && (
+                                                    <>
+                                                        <TableCell className="flex item-center space-x-3">
+                                                            <button
+                                                                onClick={() => handleComplete(request.id)}
+                                                                className='flex items-center border rounded-lg p-2 px-4 cursor-pointer text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-offset-2 transition'
+                                                            >
+                                                                <span>Complete</span>
+                                                            </button>
+                                                        </TableCell>
+                                                    </>
+                                                )}
+
+                                            </TableRow>
                                         )
-                                        )
-                                    
+                                    }
+                                    )
+                                    )
+
                                 ))}
                         </TableBody>
                     </Table>

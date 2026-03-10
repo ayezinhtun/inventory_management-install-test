@@ -40,6 +40,7 @@ export default function SidebarComponent() {
             name: "Inventory",
             path: "/inventory",
             icon: <Package className="h-5 w-5 mr-2" />,
+            chevronRoles: ["admin"],
             subLinks: [
                 { id: "2-1", name: "Type Management", path: "/inventory/type-management", roles: ["admin"] },
                 { id: "2-2", name: "Add Inventory", path: "/inventory/create-inventory", roles: ["admin"] },
@@ -57,6 +58,7 @@ export default function SidebarComponent() {
             path: "/customer",
             icon: <UsersRound className="h-5 w-5 mr-2" />,
             roles: ["admin"],
+            chevronRoles: ["admin"],
             subLinks: [{ id: "6-1", name: "Inventory", path: "/customer/inventory" }],
         },
         { id: 8, name: "Inventory Requests", path: "/request/admin", icon: <Send className="h-5 w-5 mr-2" />, roles: ["admin", "PM"] },
@@ -64,10 +66,11 @@ export default function SidebarComponent() {
 
         {
             id: 10,
-            name: "Install Requests",
+            name: "Install Request",
             path: "/install-requests",
             icon: <PackagePlus className="h-5 w-5 mr-2" />,
             roles: ["engineer"],
+            chevronRoles: ["engineer"],
             subLinks: [
                 { id: "9-1", name: "Component Install", path: "/install-requests/component" },
             ],
@@ -75,13 +78,14 @@ export default function SidebarComponent() {
 
         {
             id: 11,
-            name: "Relocation Requests",
+            name: "Relocation Request",
             path: "/relocation-requests/myrelocationrequest",
             icon: <Repeat className="h-5 w-5 mr-2" />,
             roles: ["engineer"],
+            chevronRoles: ["engineer"],
             subLinks: [
-                { id: "10-1", name: "Inventory Relocation", path: "/relocation-requests/inventory" },
-                { id: "10-2", name: "Component Relocation", path: "/relocation-requests/component" },
+                { id: "10-1", name: "Inventory", path: "/relocation-requests/inventory" },
+                { id: "10-2", name: "Component", path: "/relocation-requests/component" },
             ],
         },
 
@@ -129,7 +133,7 @@ export default function SidebarComponent() {
     })
 
     return (
-        <div className="bg-white w-64 shadow-xl h-full fixed left-0 top-0 z-40 flex flex-col">
+        <div className="bg-white w-66 shadow-xl h-full fixed left-0 top-0 z-40 flex flex-col">
             {/* Logo */}
             <Link to="/" className="p-4 flex flex-col items-center space-x-3">
                 <img src={logo} alt="logo" className="h-15 mb-1" />
@@ -157,7 +161,7 @@ export default function SidebarComponent() {
                                         <span>{link.name}</span>
                                     </div>
 
-                                    {profile?.role === "admin" && (
+                                    {link.chevronRoles?.includes(profile?.role) && (
                                         <span
                                             onClick={(e) => {
                                                 e.stopPropagation();

@@ -36,15 +36,7 @@ export default function CustomerInventory() {
         (nameFilter === "" || c.customers?.contact_person === nameFilter)
     )
 
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 3;
-
-    const indexOfLast = currentPage * itemsPerPage;
-    const indexOfFirst = indexOfLast - itemsPerPage;
-    const currentInventorys = filteredInventorys.slice(indexOfFirst, indexOfLast);
-
-
-    const totalPages = Math.ceil(filteredInventorys.length / itemsPerPage);
+    const currentInventorys = filteredInventorys;
 
     const fetchInventorys = async () => {
         setLoading(true);
@@ -275,11 +267,6 @@ export default function CustomerInventory() {
                     </Table>
                 </div>
 
-                <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setCurrentPage}
-                />
 
                 {showEditModal && selectedCustomerInventory && (
                     <EditCustomerInventory

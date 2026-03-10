@@ -225,16 +225,7 @@ export default function UserMangement() {
         (nameFilter === "" || user.name === nameFilter)
     )
 
-    // this is for pagination
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 3;
-
-    const indexOfLast = currentPage * itemsPerPage;
-    const indexOfFirst = indexOfLast - itemsPerPage;
-    const currentUsers = filteredUsers.slice(indexOfFirst, indexOfLast);
-
-    const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
-
+    const currentUsers = filteredUsers;
 
     return (
         <div>
@@ -397,12 +388,6 @@ export default function UserMangement() {
                         </TableBody>
                     </Table>
                 </div>
-
-                <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setCurrentPage}
-                />
 
             </div>
 

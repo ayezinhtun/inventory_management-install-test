@@ -16,11 +16,11 @@ export default function ProfileTab() {
     }
     return (
         <div>
-            <h3 className="text-[20px] font-bold mb-6">Profile Settings</h3>
+            <h3 className="text-[20px] font-medium mb-6">Profile Settings</h3>
 
             <div className="flex flex-col space-y-4">
                 <div className="flex flex-col space-y-2">
-                    <label htmlFor="" className="text-gray-700 font-semibold" >Name</label>
+                    <label htmlFor="" className="font-medium" >Name</label>
                     <input
                         type="text"
                         id="name"
@@ -31,7 +31,7 @@ export default function ProfileTab() {
                 </div>
 
                 <div className="flex flex-col space-y-2">
-                    <label htmlFor="" className="text-gray-700 font-semibold" >Email</label>
+                    <label htmlFor="" className="font-medium" >Email</label>
                     <input type="email" value={profile?.email || 'Email'} disabled className="w-full px-3 py-3 border-1 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500" />
                 </div>
 
