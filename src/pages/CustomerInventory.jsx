@@ -37,6 +37,7 @@ export default function CustomerInventory() {
     )
     
 
+    
     const currentInventorys = filteredInventorys;
 
     const fetchInventorys = async () => {
