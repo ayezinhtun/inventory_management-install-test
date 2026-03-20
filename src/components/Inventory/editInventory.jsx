@@ -21,7 +21,7 @@ export default function EditInventory() {
         region_id: "",
         warehouse_id: "",
         rack_id: "",
-        status: "active",
+        status: "working",
         serial_no: "",
         type: "",
         model: "",
@@ -420,8 +420,8 @@ export default function EditInventory() {
                             <div>
                                 <label className="block text-sm font-medium mb-2 text-gray-900">Status <span className="text-red-500">*</span></label>
                                 <select name="status" value={form.status} onChange={handleChange} className="w-full p-2.5 border border-gray-300 rounded-lg">
-                                    <option value="active">Active</option>
-                                    <option value="inactive">Inactive</option>
+                                    <option value="working">Working</option>
+                                    <option value="broken">Broken</option>
                                 </select>
                             </div>
 

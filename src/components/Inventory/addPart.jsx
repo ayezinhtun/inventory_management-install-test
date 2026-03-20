@@ -37,7 +37,7 @@ export default function CreatePart() {
         name: "",
         region_id: "",
         warehouse_id: "",
-        status: "active",
+        status: "working",
         serial_no: "",
         type: "",
         model: "",
@@ -91,7 +91,7 @@ export default function CreatePart() {
             name: inv?.name || "",
             region_id: inv?.region_id || "",
             warehouse_id: inv?.warehouse_id || "",
-            status: inv?.status || "active",
+            status: inv?.status || "working",
             serial_no: inv?.serial_no || "",
             model: inv?.model || "",
             vendor: inv?.vendor || "",
@@ -243,7 +243,7 @@ export default function CreatePart() {
                     name: "",
                     region_id: "",
                     warehouse_id: "",
-                    status: "active",
+                    status: "working",
                     serial_no: "",
                     type: "",
                     model: "",
@@ -295,7 +295,7 @@ export default function CreatePart() {
                 name: "",
                 region_id: "",
                 warehouse_id: "",
-                status: "active",
+                status: "working",
                 serial_no: "",
                 type: "",
                 model: "",
@@ -522,8 +522,8 @@ export default function CreatePart() {
                             <select name="status" value={form.status} onChange={handleChange} id=""
                                 className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
                             >
-                                <option value="active">Active</option>
-                                <option value="inactive">Inactive</option>
+                                <option value="working">Working</option>
+                                <option value="broken">Broken</option>
                             </select>
                         </div>
 

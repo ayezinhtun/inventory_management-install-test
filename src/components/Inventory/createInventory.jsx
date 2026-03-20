@@ -38,7 +38,7 @@ export default function CreateInventory() {
         region_id: "",
         warehouse_id: "",
         rack_id: "",
-        status: "active",
+        status: "working",
         serial_no: "",
         type: "",
         model: "",
@@ -403,7 +403,7 @@ export default function CreateInventory() {
                 region_id: "",
                 warehouse_id: "",
                 rack_id: "",
-                status: "active",
+                status: "working",
                 serial_no: "",
                 type: "",
                 model: "",
@@ -572,8 +572,8 @@ export default function CreateInventory() {
                                 <select name="status" value={form.status} onChange={handleChange} id=""
                                     className="w-full p-2.5 border border-gray-300 rounded-lg transition-all duration-200 outline-none focus:border-[#26599F] border-gray-300  text-gray-500"
                                 >
-                                    <option value="active">Active</option>
-                                    <option value="inactive">Inactive</option>
+                                    <option value="working">Working</option>
+                                    <option value="broken">Broken</option>
                                 </select>
                             </div>
 

@@ -18,7 +18,7 @@ export default function EditPart() {
         serial_no: "",
         region_id: "",
         warehouse_id: "",
-        status: "inactive",
+        status: "working",
         model: "",
         vendor: "",
         quantity: 1,
@@ -352,9 +352,8 @@ export default function EditPart() {
                         <div>
                             <label className="block text-sm font-medium mb-2">Status *</label>
                             <select name="status" value={form.status} onChange={handleChange} className="w-full p-2.5 border border-gray-300 rounded-lg">
-                                <option value="active">Active</option>
-                                <option value="inactive">Inactive</option>
-                                <option value="sold">Sold</option>
+                                <option value="working">Working</option>
+                                <option value="broken">Broken</option>
                             </select>
                         </div>
 
